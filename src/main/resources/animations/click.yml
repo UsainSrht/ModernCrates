@@ -1,0 +1,52 @@
+type: CLICK
+gui_title: "&6&lClick to Reveal"
+gui_rows: 3
+gui_fill:
+  material: "BLACK_STAINED_GLASS_PANE"
+  name: " "
+total_ticks: 5
+stay_open_after_reward_ticks: 40
+start_tick_rate: 2
+tick_rate_modifier: 1
+reward_slots:
+  - 10
+  - 11
+  - 12
+  - 13
+  - 14
+  - 15
+  - 16
+filler_slots:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 17
+  - 18
+  - 19
+  - 20
+  - 21
+  - 22
+  - 23
+  - 24
+  - 25
+  - 26
+reward_hide_item:
+  material: "GRAY_STAINED_GLASS_PANE"
+  name: "&7&lClick to Reveal"
+shuffle_amount: 3
+shuffle_ticks: 5
+reward_amount: 3
+show_revealed_items_for: 20
+shuffling_title: "&e&lShuffling..."
+sounds:
+  shuffle: "BLOCK_NOTE_BLOCK_PLING"
+  reward: "ENTITY_PLAYER_LEVELUP"
+  hide: "BLOCK_NOTE_BLOCK_BASS"
+  reveal: "ENTITY_EXPERIENCE_ORB_PICKUP"

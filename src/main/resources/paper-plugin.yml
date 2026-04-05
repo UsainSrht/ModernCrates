@@ -1,0 +1,9 @@
+name: ModernCrates
+version: '${project.version}'
+main: me.usainsrht.moderncrates.ModernCratesPlugin
+api-version: '1.21'
+folia-supported: true
+description: API-first crate lootbox plugin for Paper/Folia
+authors:
+  - UsainSrht
+website: ''

@@ -1,0 +1,143 @@
+name: "Example Crate"
+animation: "csgo"
+
+key:
+  required: true
+  material: "TRIPWIRE_HOOK"
+  count: 1
+  name: "&6&lExample Key"
+  lore:
+    - "&7Use this key to open the"
+    - "&6Example Crate"
+  enchantments:
+    UNBREAKING: 1
+  item_flags:
+    - HIDE_ENCHANTS
+
+item:
+  material: "CHEST"
+  name: "&6&lExample Crate"
+  lore:
+    - "&7Right-click to place"
+    - "&7or use in your inventory"
+
+bounce_back: true
+
+hologram:
+  lines:
+    - "&6&lExample Crate"
+    - "&7Right-click to open"
+  offset:
+    - 0.5
+    - 1.5
+    - 0.5
+
+preview:
+  title: "&6Preview - Example Crate"
+  rows: 6
+  fill:
+    material: "BLACK_STAINED_GLASS_PANE"
+    name: " "
+  close:
+    slot: 49
+    material: "BARRIER"
+    name: "&c&lClose"
+  next:
+    slot: 50
+    material: "ARROW"
+    name: "&a&lNext Page"
+  previous:
+    slot: 48
+    material: "ARROW"
+    name: "&a&lPrevious Page"
+  sound:
+    - "BLOCK_CHEST_OPEN"
+
+announce:
+  to_everyone: true
+  single: "&6<player> &7won &6<reward_name> &7from the &6Example Crate&7!"
+  multiple: "&6<player> &7won multiple rewards from the &6Example Crate&7!"
+  multiple_item: " &8- &6<reward_name>"
+
+rewards:
+  diamond_sword:
+    chance: 5.0
+    display:
+      material: "DIAMOND_SWORD"
+      name: "&b&lDiamond Sword"
+      lore:
+        - "&7A powerful diamond sword!"
+        - ""
+        - "&eChance: &65%"
+      enchantments:
+        SHARPNESS: 3
+        UNBREAKING: 2
+    items:
+      sword:
+        material: "DIAMOND_SWORD"
+        amount: 1
+        name: "&b&lDiamond Sword"
+        enchantments:
+          SHARPNESS: 3
+          UNBREAKING: 2
+    announce: "&6<player> &7won a &b&lDiamond Sword &7from the &6Example Crate&7!"
+  golden_apple:
+    chance: 15.0
+    display:
+      material: "GOLDEN_APPLE"
+      name: "&6Golden Apples"
+      lore:
+        - "&7A stack of golden apples"
+        - ""
+        - "&eChance: &615%"
+    items:
+      apples:
+        material: "GOLDEN_APPLE"
+        amount: 8
+        name: "&6Golden Apple"
+  iron_set:
+    chance: 25.0
+    display:
+      material: "IRON_CHESTPLATE"
+      name: "&f&lIron Armor Set"
+      lore:
+        - "&7A full set of iron armor"
+        - ""
+        - "&eChance: &625%"
+    items:
+      helmet:
+        material: "IRON_HELMET"
+        amount: 1
+      chestplate:
+        material: "IRON_CHESTPLATE"
+        amount: 1
+      leggings:
+        material: "IRON_LEGGINGS"
+        amount: 1
+      boots:
+        material: "IRON_BOOTS"
+        amount: 1
+  money:
+    chance: 30.0
+    display:
+      material: "GOLD_INGOT"
+      name: "&e$1000"
+      lore:
+        - "&7A nice sum of money"
+        - ""
+        - "&eChance: &630%"
+    commands:
+      - "eco give <player> 1000"
+  common_reward:
+    chance: 25.0
+    display:
+      material: "COAL"
+      name: "&7Coal"
+      lore:
+        - "&7Better luck next time!"
+        - ""
+        - "&eChance: &625%"
+    items:
+      coal:
+        material: "COAL"
+        amount: 16
