@@ -23,7 +23,7 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        // End session with reward grant — the key was already consumed
+        // End session with reward grant â€” the key was already consumed
         var crate = plugin.getAnimationManager().getCrateForSession(player);
         plugin.getAnimationManager().endSession(player, crate);
         plugin.getChatInputManager().cancel(player);

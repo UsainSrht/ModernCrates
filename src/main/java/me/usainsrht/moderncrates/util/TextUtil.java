@@ -7,32 +7,23 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 /**
  * Utility for text formatting using MiniMessage.
- * Supports legacy '&' codes by converting them to MiniMessage format.
  * All parsed components have italic(false) applied so Minecraft's default
  * italic on custom item names/lore is suppressed.
  */
 public final class TextUtil {
 
     private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
-    private static final LegacyComponentSerializer LEGACY =
-            LegacyComponentSerializer.legacyAmpersand();
 
     private TextUtil() {}
 
     /**
-     * Parses a string that may contain legacy '&' color codes or MiniMessage tags.
      * Applies italic(false) to suppress Minecraft's default italic on custom items.
      */
     public static Component parse(String text) {
         if (text == null || text.isEmpty()) {
             return Component.empty();
         }
-        Component parsed;
-        if (text.contains("&")) {
-            parsed = LEGACY.deserialize(text);
-        } else {
-            parsed = MINI_MESSAGE.deserialize(text);
-        }
+        Component parsed = MINI_MESSAGE.deserialize(text);
         return parsed.decoration(TextDecoration.ITALIC, false);
     }
 

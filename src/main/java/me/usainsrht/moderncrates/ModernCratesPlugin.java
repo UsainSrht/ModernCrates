@@ -197,7 +197,7 @@ public class ModernCratesPlugin extends JavaPlugin {
     public boolean tryOpenCrate(Player player, Crate crate) {
         // Check if player already has an active session
         if (animationManager.hasActiveSession(player)) {
-            player.sendMessage(TextUtil.parse("&cYou already have a crate open!"));
+            player.sendMessage(TextUtil.parse("<red>You already have a crate open!"));
             return false;
         }
 
@@ -220,14 +220,14 @@ public class ModernCratesPlugin extends JavaPlugin {
         // Find animation
         Animation animation = animationRegistry.get(crate.getAnimationId());
         if (animation == null) {
-            player.sendMessage(TextUtil.parse("&cAnimation not found: " + crate.getAnimationId()));
+            player.sendMessage(TextUtil.parse("<red>Animation not found: " + crate.getAnimationId()));
             return false;
         }
 
         // Find animation type
         AnimationType type = animationTypeRegistry.get(animation.getTypeId());
         if (type == null) {
-            player.sendMessage(TextUtil.parse("&cAnimation type not found: " + animation.getTypeId()));
+            player.sendMessage(TextUtil.parse("<red>Animation type not found: " + animation.getTypeId()));
             return false;
         }
 

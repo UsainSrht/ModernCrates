@@ -210,7 +210,7 @@ public class ClickAnimationSession implements AnimationSession, ModernCratesGui 
     }
 
     private ItemStack createDefaultHideItem() {
-        return ItemBuilder.create("YELLOW_STAINED_GLASS_PANE", "&eClick to reveal!", null);
+        return ItemBuilder.create("YELLOW_STAINED_GLASS_PANE", "<yellow>Click to reveal!", null);
     }
 
     @Override
@@ -257,7 +257,7 @@ public class ClickAnimationSession implements AnimationSession, ModernCratesGui 
             return; // Inventory is transitioning (e.g. title update)
         }
         if (!finished.get()) {
-            // Player closed early — stop everything, ensure a reward is granted
+            // Player closed early â€” stop everything, ensure a reward is granted
             cleanup();
             if (revealedSlots.isEmpty()) {
                 fallbackReward = RewardSelector.selectWeighted(crate);

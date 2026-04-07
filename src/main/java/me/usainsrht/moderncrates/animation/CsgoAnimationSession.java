@@ -43,7 +43,7 @@ public class CsgoAnimationSession implements AnimationSession, ModernCratesGui {
     private final AtomicBoolean finished = new AtomicBoolean(false);
     private final AtomicBoolean cancelled = new AtomicBoolean(false);
 
-    // Animation state — mirrors the old AitoCrates approach
+    // Animation state â€” mirrors the old AitoCrates approach
     private int ticksPassed = 0;
     private int itemsTicked = 0;
     private int tickRate;
@@ -336,7 +336,7 @@ public class CsgoAnimationSession implements AnimationSession, ModernCratesGui {
     @Override
     public void handleClose(InventoryCloseEvent event) {
         if (!finished.get()) {
-            // Player closed early — stop everything and determine reward
+            // Player closed early â€” stop everything and determine reward
             cancelAllTasks();
             if (selectedReward == null) {
                 int ri = animation.getRewardIndex() - 1;

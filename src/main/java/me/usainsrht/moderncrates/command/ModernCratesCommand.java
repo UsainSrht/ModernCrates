@@ -138,7 +138,7 @@ public class ModernCratesCommand {
 
     private int handleMenu(CommandContext<CommandSourceStack> ctx) {
         if (!(ctx.getSource().getSender() instanceof Player player)) {
-            ctx.getSource().getSender().sendMessage(TextUtil.parse("&cThis command can only be used by players."));
+            ctx.getSource().getSender().sendMessage(TextUtil.parse("<red>This command can only be used by players."));
             return Command.SINGLE_SUCCESS;
         }
 
@@ -158,7 +158,7 @@ public class ModernCratesCommand {
 
     private int handleEditor(CommandContext<CommandSourceStack> ctx) {
         if (!(ctx.getSource().getSender() instanceof Player player)) {
-            ctx.getSource().getSender().sendMessage(TextUtil.parse("&cThis command can only be used by players."));
+            ctx.getSource().getSender().sendMessage(TextUtil.parse("<red>This command can only be used by players."));
             return Command.SINGLE_SUCCESS;
         }
 
@@ -169,7 +169,7 @@ public class ModernCratesCommand {
 
     private int handlePreview(CommandContext<CommandSourceStack> ctx) {
         if (!(ctx.getSource().getSender() instanceof Player player)) {
-            ctx.getSource().getSender().sendMessage(TextUtil.parse("&cThis command can only be used by players."));
+            ctx.getSource().getSender().sendMessage(TextUtil.parse("<red>This command can only be used by players."));
             return Command.SINGLE_SUCCESS;
         }
 
@@ -187,7 +187,7 @@ public class ModernCratesCommand {
 
     private int handleOpen(CommandContext<CommandSourceStack> ctx) {
         if (!(ctx.getSource().getSender() instanceof Player player)) {
-            ctx.getSource().getSender().sendMessage(TextUtil.parse("&cThis command can only be used by players."));
+            ctx.getSource().getSender().sendMessage(TextUtil.parse("<red>This command can only be used by players."));
             return Command.SINGLE_SUCCESS;
         }
 

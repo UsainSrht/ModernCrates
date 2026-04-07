@@ -94,13 +94,13 @@ public class AdminEditorGui implements ModernCratesGui {
     // ========================
 
     private void renderMainMenu() {
-        inventory = Bukkit.createInventory(this, 27, TextUtil.parse("&4&lModernCrates Editor"));
+        inventory = Bukkit.createInventory(this, 27, TextUtil.parse("<dark_red><bold>ModernCrates Editor"));
         fillBlack();
 
-        inventory.setItem(11, ItemBuilder.create("CHEST", "&6&lCrates",
-                List.of("&7Manage all crates", "&7" + plugin.getCrateRegistry().size() + " loaded")));
-        inventory.setItem(15, ItemBuilder.create("CLOCK", "&b&lAnimations",
-                List.of("&7Manage all animations", "&7" + plugin.getAnimationRegistry().size() + " loaded")));
+        inventory.setItem(11, ItemBuilder.create("CHEST", "<gold><bold>Crates",
+                List.of("<gray>Manage all crates", "<gray>" + plugin.getCrateRegistry().size() + " loaded")));
+        inventory.setItem(15, ItemBuilder.create("CLOCK", "<aqua><bold>Animations",
+                List.of("<gray>Manage all animations", "<gray>" + plugin.getAnimationRegistry().size() + " loaded")));
     }
 
     private void handleMainMenu(int slot) {
@@ -120,24 +120,24 @@ public class AdminEditorGui implements ModernCratesGui {
         var crates = new ArrayList<>(plugin.getCrateRegistry().values());
         int rows = Math.max(2, Math.min(6, (int) Math.ceil((crates.size() + 2) / 9.0) + 1));
 
-        inventory = Bukkit.createInventory(this, rows * 9, TextUtil.parse("&4&lCrates"));
+        inventory = Bukkit.createInventory(this, rows * 9, TextUtil.parse("<dark_red><bold>Crates"));
         fillBlack();
 
         // Back button
-        inventory.setItem(inventory.getSize() - 9, ItemBuilder.create("ARROW", "&c&lBack", List.of("&7Return to main menu")));
+        inventory.setItem(inventory.getSize() - 9, ItemBuilder.create("ARROW", "<red><bold>Back", List.of("<gray>Return to main menu")));
 
         // Create new crate
-        inventory.setItem(inventory.getSize() - 1, ItemBuilder.create("EMERALD", "&a&lCreate New Crate",
-                List.of("&7Click to create a new crate")));
+        inventory.setItem(inventory.getSize() - 1, ItemBuilder.create("EMERALD", "<green><bold>Create New Crate",
+                List.of("<gray>Click to create a new crate")));
 
         for (int i = 0; i < crates.size() && i < inventory.getSize() - 9; i++) {
             Crate crate = crates.get(i);
             String mat = crate.getItemConfig() != null ? crate.getItemConfig().getMaterial() : "CHEST";
-            ItemStack item = ItemBuilder.create(mat, "&6&l" + crate.getName(), List.of(
-                    "&7ID: &f" + crate.getId(),
-                    "&7Animation: &f" + crate.getAnimationId(),
-                    "&7Rewards: &f" + crate.getRewards().size(),
-                    "", "&eLeft-click to edit", "&cRight-click to delete"
+            ItemStack item = ItemBuilder.create(mat, "<gold><bold>" + crate.getName(), List.of(
+                    "<gray>ID: <white>" + crate.getId(),
+                    "<gray>Animation: <white>" + crate.getAnimationId(),
+                    "<gray>Rewards: <white>" + crate.getRewards().size(),
+                    "", "<yellow>Left-click to edit", "<red>Right-click to delete"
             ));
             setEditorTag(item, "editor_crate", crate.getId());
             inventory.setItem(i, item);
@@ -155,7 +155,7 @@ public class AdminEditorGui implements ModernCratesGui {
             crate.setRewards(new LinkedHashMap<>());
             CrateItemConfig itemCfg = new CrateItemConfig();
             itemCfg.setMaterial("CHEST");
-            itemCfg.setName("&6&l" + crate.getName());
+            itemCfg.setName("<gold><bold>" + crate.getName());
             crate.setItemConfig(itemCfg);
             plugin.getCrateRegistry().put(newId, crate);
             saveCrate(crate);
@@ -186,37 +186,37 @@ public class AdminEditorGui implements ModernCratesGui {
         mode = EditorMode.CRATE_EDIT;
         editingCrate = crate;
 
-        inventory = Bukkit.createInventory(this, 54, TextUtil.parse("&4&lEditing: " + crate.getName()));
+        inventory = Bukkit.createInventory(this, 54, TextUtil.parse("<dark_red><bold>Editing: " + crate.getName()));
         fillBlack();
 
         // Row 1: Name, Animation
-        inventory.setItem(10, ItemBuilder.create("NAME_TAG", "&e&lName: &f" + crate.getName(),
-                List.of("&7Click to rename")));
+        inventory.setItem(10, ItemBuilder.create("NAME_TAG", "<yellow><bold>Name: <white>" + crate.getName(),
+                List.of("<gray>Click to rename")));
         inventory.setItem(12, createAnimationSelector(crate));
 
         // Row 1: Key toggle, Bounce back
         inventory.setItem(14, ItemBuilder.create("TRIPWIRE_HOOK",
-                "&e&lKey Required: &f" + (crate.requiresKey() ? "Yes" : "No"),
-                List.of("&7Click to toggle")));
+                "<yellow><bold>Key Required: <white>" + (crate.requiresKey() ? "Yes" : "No"),
+                List.of("<gray>Click to toggle")));
         inventory.setItem(16, ItemBuilder.create(crate.isBounceBack() ? "SLIME_BALL" : "SNOWBALL",
-                "&e&lBounce Back: &f" + (crate.isBounceBack() ? "On" : "Off"),
-                List.of("&7Click to toggle")));
+                "<yellow><bold>Bounce Back: <white>" + (crate.isBounceBack() ? "On" : "Off"),
+                List.of("<gray>Click to toggle")));
 
         // Row 2: Sub-editors
-        inventory.setItem(19, ItemBuilder.create("TRIPWIRE_HOOK", "&d&lKey Settings",
-                List.of("&7Click to edit key config")));
-        inventory.setItem(21, ItemBuilder.create("CHEST", "&d&lItem Display",
-                List.of("&7Click to edit crate item appearance")));
-        inventory.setItem(23, ItemBuilder.create("ARMOR_STAND", "&d&lHologram",
-                List.of("&7Click to edit hologram config")));
-        inventory.setItem(25, ItemBuilder.create("ENDER_EYE", "&d&lPreview",
-                List.of("&7Click to edit preview settings")));
+        inventory.setItem(19, ItemBuilder.create("TRIPWIRE_HOOK", "<light_purple><bold>Key Settings",
+                List.of("<gray>Click to edit key config")));
+        inventory.setItem(21, ItemBuilder.create("CHEST", "<light_purple><bold>Item Display",
+                List.of("<gray>Click to edit crate item appearance")));
+        inventory.setItem(23, ItemBuilder.create("ARMOR_STAND", "<light_purple><bold>Hologram",
+                List.of("<gray>Click to edit hologram config")));
+        inventory.setItem(25, ItemBuilder.create("ENDER_EYE", "<light_purple><bold>Preview",
+                List.of("<gray>Click to edit preview settings")));
 
         // Row 3: More sub-editors
-        inventory.setItem(28, ItemBuilder.create("GOAT_HORN", "&d&lAnnounce",
-                List.of("&7Click to edit announce config")));
-        inventory.setItem(30, ItemBuilder.create("DIAMOND", "&6&lRewards (" + crate.getRewards().size() + ")",
-                List.of("&7Click to manage rewards")));
+        inventory.setItem(28, ItemBuilder.create("GOAT_HORN", "<light_purple><bold>Announce",
+                List.of("<gray>Click to edit announce config")));
+        inventory.setItem(30, ItemBuilder.create("DIAMOND", "<gold><bold>Rewards (" + crate.getRewards().size() + ")",
+                List.of("<gray>Click to manage rewards")));
 
         // Location
         String locStr = crate.isPhysical()
@@ -225,29 +225,29 @@ public class AdminEditorGui implements ModernCratesGui {
                 + (int) crate.getCrateLocation().getY() + " "
                 + (int) crate.getCrateLocation().getZ()
                 : "None (Virtual)";
-        inventory.setItem(32, ItemBuilder.create("COMPASS", "&e&lLocation: &f" + locStr,
-                List.of("&7Click to set to your position", "&7Shift-click to clear (virtual)")));
+        inventory.setItem(32, ItemBuilder.create("COMPASS", "<yellow><bold>Location: <white>" + locStr,
+                List.of("<gray>Click to set to your position", "<gray>Shift-click to clear (virtual)")));
 
         // Bottom: Save, Back
-        inventory.setItem(45, ItemBuilder.create("ARROW", "&c&lBack", List.of("&7Return to crate list")));
-        inventory.setItem(49, ItemBuilder.create("LIME_WOOL", "&a&lSave to File",
-                List.of("&7Saves this crate to YAML")));
+        inventory.setItem(45, ItemBuilder.create("ARROW", "<red><bold>Back", List.of("<gray>Return to crate list")));
+        inventory.setItem(49, ItemBuilder.create("LIME_WOOL", "<green><bold>Save to File",
+                List.of("<gray>Saves this crate to YAML")));
 
         player.openInventory(inventory);
     }
 
     private ItemStack createAnimationSelector(Crate crate) {
         List<String> lore = new ArrayList<>();
-        lore.add("&7Click to cycle animations");
+        lore.add("<gray>Click to cycle animations");
         lore.add("");
         for (String animId : plugin.getAnimationRegistry().keySet()) {
             if (animId.equals(crate.getAnimationId())) {
-                lore.add("&a> " + animId);
+                lore.add("<green>> " + animId);
             } else {
-                lore.add("&7  " + animId);
+                lore.add("<gray>  " + animId);
             }
         }
-        return ItemBuilder.create("CLOCK", "&e&lAnimation: &f" + crate.getAnimationId(), lore);
+        return ItemBuilder.create("CLOCK", "<yellow><bold>Animation: <white>" + crate.getAnimationId(), lore);
     }
 
     private void handleCrateEdit(int slot, boolean shiftClick) {
@@ -306,7 +306,7 @@ public class AdminEditorGui implements ModernCratesGui {
             case 45 -> openCrateList();
             case 49 -> {
                 saveCrate(editingCrate);
-                player.sendMessage(TextUtil.parse("&aCrate saved to file!"));
+                player.sendMessage(TextUtil.parse("<green>Crate saved to file!"));
             }
         }
     }
@@ -320,58 +320,58 @@ public class AdminEditorGui implements ModernCratesGui {
         editingCrate = crate;
         CrateKeyConfig kc = crate.getKeyConfig();
 
-        inventory = Bukkit.createInventory(this, 54, TextUtil.parse("&4&lKey Settings: " + crate.getName()));
+        inventory = Bukkit.createInventory(this, 54, TextUtil.parse("<dark_red><bold>Key Settings: " + crate.getName()));
         fillBlack();
 
         if (kc == null) {
-            inventory.setItem(22, ItemBuilder.create("BARRIER", "&cNo key config",
-                    List.of("&7Click to create default key config")));
+            inventory.setItem(22, ItemBuilder.create("BARRIER", "<red>No key config",
+                    List.of("<gray>Click to create default key config")));
         } else {
             inventory.setItem(10, ItemBuilder.create(kc.isRequired() ? "LIME_DYE" : "GRAY_DYE",
-                    "&e&lRequired: &f" + kc.isRequired(), List.of("&7Click to toggle")));
+                    "<yellow><bold>Required: <white>" + kc.isRequired(), List.of("<gray>Click to toggle")));
             inventory.setItem(12, ItemBuilder.create(kc.getMaterial() != null ? kc.getMaterial() : "TRIPWIRE_HOOK",
-                    "&e&lMaterial: &f" + (kc.getMaterial() != null ? kc.getMaterial() : "TRIPWIRE_HOOK"),
-                    List.of("&7Click to change material")));
+                    "<yellow><bold>Material: <white>" + (kc.getMaterial() != null ? kc.getMaterial() : "TRIPWIRE_HOOK"),
+                    List.of("<gray>Click to change material")));
             inventory.setItem(14, createNumberItem("PAPER", "Count", kc.getCount()));
             inventory.setItem(16, ItemBuilder.create("NAME_TAG",
-                    "&e&lName: &f" + (kc.getName() != null ? kc.getName() : "none"),
-                    List.of("&7Click to set name")));
+                    "<yellow><bold>Name: <white>" + (kc.getName() != null ? kc.getName() : "none"),
+                    List.of("<gray>Click to set name")));
 
             // Lore
             List<String> loreLines = new ArrayList<>();
-            loreLines.add("&7Click to add a line");
-            loreLines.add("&7Right-click to clear lore");
+            loreLines.add("<gray>Click to add a line");
+            loreLines.add("<gray>Right-click to clear lore");
             loreLines.add("");
             if (kc.getLore() != null) {
-                for (String l : kc.getLore()) loreLines.add("&f" + l);
+                for (String l : kc.getLore()) loreLines.add("<white>" + l);
             }
-            inventory.setItem(28, ItemBuilder.create("WRITABLE_BOOK", "&e&lLore", loreLines));
+            inventory.setItem(28, ItemBuilder.create("WRITABLE_BOOK", "<yellow><bold>Lore", loreLines));
 
             // Enchantments
             List<String> enchLore = new ArrayList<>();
-            enchLore.add("&7Click to add enchantment");
-            enchLore.add("&7Right-click to clear");
+            enchLore.add("<gray>Click to add enchantment");
+            enchLore.add("<gray>Right-click to clear");
             enchLore.add("");
             if (kc.getEnchantments() != null) {
                 for (var e : kc.getEnchantments().entrySet()) {
-                    enchLore.add("&f" + e.getKey() + " &7= &f" + e.getValue());
+                    enchLore.add("<white>" + e.getKey() + " <gray>= <white>" + e.getValue());
                 }
             }
-            inventory.setItem(30, ItemBuilder.create("ENCHANTING_TABLE", "&e&lEnchantments", enchLore));
+            inventory.setItem(30, ItemBuilder.create("ENCHANTING_TABLE", "<yellow><bold>Enchantments", enchLore));
 
             // Item Flags
             List<String> flagLore = new ArrayList<>();
-            flagLore.add("&7Click to add flag");
-            flagLore.add("&7Right-click to clear");
+            flagLore.add("<gray>Click to add flag");
+            flagLore.add("<gray>Right-click to clear");
             flagLore.add("");
             if (kc.getItemFlags() != null) {
-                for (String f : kc.getItemFlags()) flagLore.add("&f" + f);
+                for (String f : kc.getItemFlags()) flagLore.add("<white>" + f);
             }
-            inventory.setItem(32, ItemBuilder.create("SHIELD", "&e&lItem Flags", flagLore));
+            inventory.setItem(32, ItemBuilder.create("SHIELD", "<yellow><bold>Item Flags", flagLore));
         }
 
-        inventory.setItem(45, ItemBuilder.create("ARROW", "&c&lBack", List.of("&7Return to crate editor")));
-        inventory.setItem(49, ItemBuilder.create("LIME_WOOL", "&a&lSave", List.of("&7Save crate to file")));
+        inventory.setItem(45, ItemBuilder.create("ARROW", "<red><bold>Back", List.of("<gray>Return to crate editor")));
+        inventory.setItem(49, ItemBuilder.create("LIME_WOOL", "<green><bold>Save", List.of("<gray>Save crate to file")));
         player.openInventory(inventory);
     }
 
@@ -384,7 +384,7 @@ public class AdminEditorGui implements ModernCratesGui {
             kcRaw.setRequired(true);
             kcRaw.setMaterial("TRIPWIRE_HOOK");
             kcRaw.setCount(1);
-            kcRaw.setName("&6&l" + editingCrate.getName() + " Key");
+            kcRaw.setName("<gold><bold>" + editingCrate.getName() + " Key");
             editingCrate.setKeyConfig(kcRaw);
             openKeyEditor(editingCrate);
             return;
@@ -397,7 +397,7 @@ public class AdminEditorGui implements ModernCratesGui {
             case 12 -> requestInput("Enter key material (e.g. TRIPWIRE_HOOK):", input -> {
                 Material m = Material.matchMaterial(input.toUpperCase());
                 if (m != null) kc.setMaterial(input.toUpperCase());
-                else player.sendMessage(TextUtil.parse("&cInvalid material: " + input));
+                else player.sendMessage(TextUtil.parse("<red>Invalid material: " + input));
                 openKeyEditor(editingCrate);
             });
             case 14 -> {
@@ -436,10 +436,10 @@ public class AdminEditorGui implements ModernCratesGui {
                                 enc.put(parts[0].toUpperCase(), Integer.parseInt(parts[1]));
                                 kc.setEnchantments(enc);
                             } catch (NumberFormatException ignored) {
-                                player.sendMessage(TextUtil.parse("&cInvalid format. Use: ENCHANTMENT LEVEL"));
+                                player.sendMessage(TextUtil.parse("<red>Invalid format. Use: ENCHANTMENT LEVEL"));
                             }
                         } else {
-                            player.sendMessage(TextUtil.parse("&cUse format: ENCHANTMENT LEVEL"));
+                            player.sendMessage(TextUtil.parse("<red>Use format: ENCHANTMENT LEVEL"));
                         }
                         openKeyEditor(editingCrate);
                     });
@@ -459,7 +459,7 @@ public class AdminEditorGui implements ModernCratesGui {
                 }
             }
             case 45 -> openCrateEditor(editingCrate);
-            case 49 -> { saveCrate(editingCrate); player.sendMessage(TextUtil.parse("&aCrate saved!")); }
+            case 49 -> { saveCrate(editingCrate); player.sendMessage(TextUtil.parse("<green>Crate saved!")); }
         }
     }
 
@@ -472,30 +472,30 @@ public class AdminEditorGui implements ModernCratesGui {
         editingCrate = crate;
         CrateItemConfig ic = crate.getItemConfig();
 
-        inventory = Bukkit.createInventory(this, 36, TextUtil.parse("&4&lItem Display: " + crate.getName()));
+        inventory = Bukkit.createInventory(this, 36, TextUtil.parse("<dark_red><bold>Item Display: " + crate.getName()));
         fillBlack();
 
         if (ic == null) {
-            inventory.setItem(13, ItemBuilder.create("BARRIER", "&cNo item config",
-                    List.of("&7Click to create default")));
+            inventory.setItem(13, ItemBuilder.create("BARRIER", "<red>No item config",
+                    List.of("<gray>Click to create default")));
         } else {
             inventory.setItem(11, ItemBuilder.create(ic.getMaterial() != null ? ic.getMaterial() : "CHEST",
-                    "&e&lMaterial: &f" + (ic.getMaterial() != null ? ic.getMaterial() : "CHEST"),
-                    List.of("&7Click to change")));
+                    "<yellow><bold>Material: <white>" + (ic.getMaterial() != null ? ic.getMaterial() : "CHEST"),
+                    List.of("<gray>Click to change")));
             inventory.setItem(13, ItemBuilder.create("NAME_TAG",
-                    "&e&lName: &f" + (ic.getName() != null ? ic.getName() : "none"),
-                    List.of("&7Click to set")));
+                    "<yellow><bold>Name: <white>" + (ic.getName() != null ? ic.getName() : "none"),
+                    List.of("<gray>Click to set")));
 
             List<String> loreLore = new ArrayList<>();
-            loreLore.add("&7Click to add line");
-            loreLore.add("&7Right-click to clear");
+            loreLore.add("<gray>Click to add line");
+            loreLore.add("<gray>Right-click to clear");
             loreLore.add("");
-            if (ic.getLore() != null) for (String l : ic.getLore()) loreLore.add("&f" + l);
-            inventory.setItem(15, ItemBuilder.create("WRITABLE_BOOK", "&e&lLore", loreLore));
+            if (ic.getLore() != null) for (String l : ic.getLore()) loreLore.add("<white>" + l);
+            inventory.setItem(15, ItemBuilder.create("WRITABLE_BOOK", "<yellow><bold>Lore", loreLore));
         }
 
-        inventory.setItem(27, ItemBuilder.create("ARROW", "&c&lBack", List.of("&7Return to crate editor")));
-        inventory.setItem(31, ItemBuilder.create("LIME_WOOL", "&a&lSave", List.of("&7Save crate")));
+        inventory.setItem(27, ItemBuilder.create("ARROW", "<red><bold>Back", List.of("<gray>Return to crate editor")));
+        inventory.setItem(31, ItemBuilder.create("LIME_WOOL", "<green><bold>Save", List.of("<gray>Save crate")));
         player.openInventory(inventory);
     }
 
@@ -506,7 +506,7 @@ public class AdminEditorGui implements ModernCratesGui {
         if (slot == 13 && ic == null) {
             ic = new CrateItemConfig();
             ic.setMaterial("CHEST");
-            ic.setName("&6&l" + editingCrate.getName());
+            ic.setName("<gold><bold>" + editingCrate.getName());
             editingCrate.setItemConfig(ic);
             openItemEditor(editingCrate);
             return;
@@ -518,7 +518,7 @@ public class AdminEditorGui implements ModernCratesGui {
             case 11 -> requestInput("Enter item material:", input -> {
                 Material m = Material.matchMaterial(input.toUpperCase());
                 if (m != null) finalIc.setMaterial(input.toUpperCase());
-                else player.sendMessage(TextUtil.parse("&cInvalid material: " + input));
+                else player.sendMessage(TextUtil.parse("<red>Invalid material: " + input));
                 openItemEditor(editingCrate);
             });
             case 13 -> requestInput("Enter item display name:", input -> {
@@ -536,7 +536,7 @@ public class AdminEditorGui implements ModernCratesGui {
                 openItemEditor(editingCrate);
             });
             case 27 -> openCrateEditor(editingCrate);
-            case 31 -> { saveCrate(editingCrate); player.sendMessage(TextUtil.parse("&aCrate saved!")); }
+            case 31 -> { saveCrate(editingCrate); player.sendMessage(TextUtil.parse("<green>Crate saved!")); }
         }
     }
 
@@ -549,29 +549,29 @@ public class AdminEditorGui implements ModernCratesGui {
         editingCrate = crate;
         HologramConfig hc = crate.getHologramConfig();
 
-        inventory = Bukkit.createInventory(this, 36, TextUtil.parse("&4&lHologram: " + crate.getName()));
+        inventory = Bukkit.createInventory(this, 36, TextUtil.parse("<dark_red><bold>Hologram: " + crate.getName()));
         fillBlack();
 
         if (hc == null) {
-            inventory.setItem(13, ItemBuilder.create("BARRIER", "&cNo hologram config",
-                    List.of("&7Click to create default")));
+            inventory.setItem(13, ItemBuilder.create("BARRIER", "<red>No hologram config",
+                    List.of("<gray>Click to create default")));
         } else {
             List<String> lineInfo = new ArrayList<>();
-            lineInfo.add("&7Click to add line");
-            lineInfo.add("&7Right-click to clear all");
+            lineInfo.add("<gray>Click to add line");
+            lineInfo.add("<gray>Right-click to clear all");
             lineInfo.add("");
             if (hc.getLines() != null) {
-                for (String l : hc.getLines()) lineInfo.add("&f" + l);
+                for (String l : hc.getLines()) lineInfo.add("<white>" + l);
             }
-            inventory.setItem(11, ItemBuilder.create("WRITABLE_BOOK", "&e&lLines", lineInfo));
+            inventory.setItem(11, ItemBuilder.create("WRITABLE_BOOK", "<yellow><bold>Lines", lineInfo));
 
             inventory.setItem(13, createNumberItemDouble("COMPASS", "Offset X", hc.getOffsetX()));
             inventory.setItem(14, createNumberItemDouble("COMPASS", "Offset Y", hc.getOffsetY()));
             inventory.setItem(15, createNumberItemDouble("COMPASS", "Offset Z", hc.getOffsetZ()));
         }
 
-        inventory.setItem(27, ItemBuilder.create("ARROW", "&c&lBack", List.of("&7Return to crate editor")));
-        inventory.setItem(31, ItemBuilder.create("LIME_WOOL", "&a&lSave", List.of("&7Save crate")));
+        inventory.setItem(27, ItemBuilder.create("ARROW", "<red><bold>Back", List.of("<gray>Return to crate editor")));
+        inventory.setItem(31, ItemBuilder.create("LIME_WOOL", "<green><bold>Save", List.of("<gray>Save crate")));
         player.openInventory(inventory);
     }
 
@@ -581,7 +581,7 @@ public class AdminEditorGui implements ModernCratesGui {
 
         if (slot == 13 && hc == null) {
             hc = new HologramConfig();
-            hc.setLines(new ArrayList<>(List.of("&6&l" + editingCrate.getName())));
+            hc.setLines(new ArrayList<>(List.of("<gold><bold>" + editingCrate.getName())));
             hc.setOffsetY(1.5);
             editingCrate.setHologramConfig(hc);
             openHologramEditor(editingCrate);
@@ -602,19 +602,19 @@ public class AdminEditorGui implements ModernCratesGui {
                 openHologramEditor(editingCrate);
             });
             case 13 -> requestInput("Enter offset X:", input -> {
-                try { finalHc.setOffsetX(Double.parseDouble(input)); } catch (NumberFormatException e) { player.sendMessage(TextUtil.parse("&cInvalid number")); }
+                try { finalHc.setOffsetX(Double.parseDouble(input)); } catch (NumberFormatException e) { player.sendMessage(TextUtil.parse("<red>Invalid number")); }
                 openHologramEditor(editingCrate);
             });
             case 14 -> requestInput("Enter offset Y:", input -> {
-                try { finalHc.setOffsetY(Double.parseDouble(input)); } catch (NumberFormatException e) { player.sendMessage(TextUtil.parse("&cInvalid number")); }
+                try { finalHc.setOffsetY(Double.parseDouble(input)); } catch (NumberFormatException e) { player.sendMessage(TextUtil.parse("<red>Invalid number")); }
                 openHologramEditor(editingCrate);
             });
             case 15 -> requestInput("Enter offset Z:", input -> {
-                try { finalHc.setOffsetZ(Double.parseDouble(input)); } catch (NumberFormatException e) { player.sendMessage(TextUtil.parse("&cInvalid number")); }
+                try { finalHc.setOffsetZ(Double.parseDouble(input)); } catch (NumberFormatException e) { player.sendMessage(TextUtil.parse("<red>Invalid number")); }
                 openHologramEditor(editingCrate);
             });
             case 27 -> openCrateEditor(editingCrate);
-            case 31 -> { saveCrate(editingCrate); player.sendMessage(TextUtil.parse("&aCrate saved!")); }
+            case 31 -> { saveCrate(editingCrate); player.sendMessage(TextUtil.parse("<green>Crate saved!")); }
         }
     }
 
@@ -627,21 +627,21 @@ public class AdminEditorGui implements ModernCratesGui {
         editingCrate = crate;
         PreviewConfig pc = crate.getPreviewConfig();
 
-        inventory = Bukkit.createInventory(this, 54, TextUtil.parse("&4&lPreview: " + crate.getName()));
+        inventory = Bukkit.createInventory(this, 54, TextUtil.parse("<dark_red><bold>Preview: " + crate.getName()));
         fillBlack();
 
         if (pc == null) {
-            inventory.setItem(22, ItemBuilder.create("BARRIER", "&cNo preview config",
-                    List.of("&7Click to create default")));
+            inventory.setItem(22, ItemBuilder.create("BARRIER", "<red>No preview config",
+                    List.of("<gray>Click to create default")));
         } else {
             inventory.setItem(10, ItemBuilder.create("NAME_TAG",
-                    "&e&lTitle: &f" + pc.getTitle(), List.of("&7Click to set")));
+                    "<yellow><bold>Title: <white>" + pc.getTitle(), List.of("<gray>Click to set")));
             inventory.setItem(12, createNumberItem("LADDER", "Rows", pc.getRows()));
 
             // Fill
             String fillMat = pc.getFill() != null ? pc.getFill().getMaterial() : "none";
             inventory.setItem(14, ItemBuilder.create(fillMat.equals("none") ? "BARRIER" : fillMat,
-                    "&e&lFill Material: &f" + fillMat, List.of("&7Click to set")));
+                    "<yellow><bold>Fill Material: <white>" + fillMat, List.of("<gray>Click to set")));
 
             // Nav buttons
             inventory.setItem(19, createSlotItemDisplay("Close Button", pc.getCloseButton()));
@@ -650,14 +650,14 @@ public class AdminEditorGui implements ModernCratesGui {
 
             // Sounds
             List<String> soundLore = new ArrayList<>();
-            soundLore.add("&7Click to add sound");
-            soundLore.add("&7Right-click to clear");
-            if (pc.getSounds() != null) for (String s : pc.getSounds()) soundLore.add("&f" + s);
-            inventory.setItem(25, ItemBuilder.create("NOTE_BLOCK", "&e&lSounds", soundLore));
+            soundLore.add("<gray>Click to add sound");
+            soundLore.add("<gray>Right-click to clear");
+            if (pc.getSounds() != null) for (String s : pc.getSounds()) soundLore.add("<white>" + s);
+            inventory.setItem(25, ItemBuilder.create("NOTE_BLOCK", "<yellow><bold>Sounds", soundLore));
         }
 
-        inventory.setItem(45, ItemBuilder.create("ARROW", "&c&lBack", List.of("&7Return to crate editor")));
-        inventory.setItem(49, ItemBuilder.create("LIME_WOOL", "&a&lSave", List.of("&7Save crate")));
+        inventory.setItem(45, ItemBuilder.create("ARROW", "<red><bold>Back", List.of("<gray>Return to crate editor")));
+        inventory.setItem(49, ItemBuilder.create("LIME_WOOL", "<green><bold>Save", List.of("<gray>Save crate")));
         player.openInventory(inventory);
     }
 
@@ -667,7 +667,7 @@ public class AdminEditorGui implements ModernCratesGui {
 
         if (slot == 22 && pc == null) {
             pc = new PreviewConfig();
-            pc.setTitle("&6Preview: " + editingCrate.getName());
+            pc.setTitle("<gold>Preview: " + editingCrate.getName());
             pc.setRows(6);
             PreviewConfig.GuiItem fill = new PreviewConfig.GuiItem();
             fill.setMaterial("BLACK_STAINED_GLASS_PANE");
@@ -689,7 +689,7 @@ public class AdminEditorGui implements ModernCratesGui {
                 try {
                     int r = Integer.parseInt(input);
                     finalPc.setRows(Math.max(1, Math.min(6, r)));
-                } catch (NumberFormatException e) { player.sendMessage(TextUtil.parse("&cInvalid number")); }
+                } catch (NumberFormatException e) { player.sendMessage(TextUtil.parse("<red>Invalid number")); }
                 openPreviewEditor(editingCrate);
             });
             case 14 -> requestInput("Enter fill material:", input -> {
@@ -726,7 +726,7 @@ public class AdminEditorGui implements ModernCratesGui {
                 openPreviewEditor(editingCrate);
             });
             case 45 -> openCrateEditor(editingCrate);
-            case 49 -> { saveCrate(editingCrate); player.sendMessage(TextUtil.parse("&aCrate saved!")); }
+            case 49 -> { saveCrate(editingCrate); player.sendMessage(TextUtil.parse("<green>Crate saved!")); }
         }
     }
 
@@ -739,25 +739,25 @@ public class AdminEditorGui implements ModernCratesGui {
         editingCrate = crate;
         AnnounceConfig ac = crate.getAnnounceConfig();
 
-        inventory = Bukkit.createInventory(this, 36, TextUtil.parse("&4&lAnnounce: " + crate.getName()));
+        inventory = Bukkit.createInventory(this, 36, TextUtil.parse("<dark_red><bold>Announce: " + crate.getName()));
         fillBlack();
 
         if (ac == null) {
-            inventory.setItem(13, ItemBuilder.create("BARRIER", "&cNo announce config",
-                    List.of("&7Click to create default")));
+            inventory.setItem(13, ItemBuilder.create("BARRIER", "<red>No announce config",
+                    List.of("<gray>Click to create default")));
         } else {
             inventory.setItem(10, ItemBuilder.create(ac.isToEveryone() ? "LIME_DYE" : "GRAY_DYE",
-                    "&e&lTo Everyone: &f" + ac.isToEveryone(), List.of("&7Click to toggle")));
-            inventory.setItem(12, ItemBuilder.create("PAPER", "&e&lSingle: &f" + orNone(ac.getSingle()),
-                    List.of("&7Click to set")));
-            inventory.setItem(14, ItemBuilder.create("PAPER", "&e&lMultiple: &f" + orNone(ac.getMultiple()),
-                    List.of("&7Click to set")));
-            inventory.setItem(16, ItemBuilder.create("PAPER", "&e&lMultiple Item: &f" + orNone(ac.getMultipleItem()),
-                    List.of("&7Click to set")));
+                    "<yellow><bold>To Everyone: <white>" + ac.isToEveryone(), List.of("<gray>Click to toggle")));
+            inventory.setItem(12, ItemBuilder.create("PAPER", "<yellow><bold>Single: <white>" + orNone(ac.getSingle()),
+                    List.of("<gray>Click to set")));
+            inventory.setItem(14, ItemBuilder.create("PAPER", "<yellow><bold>Multiple: <white>" + orNone(ac.getMultiple()),
+                    List.of("<gray>Click to set")));
+            inventory.setItem(16, ItemBuilder.create("PAPER", "<yellow><bold>Multiple Item: <white>" + orNone(ac.getMultipleItem()),
+                    List.of("<gray>Click to set")));
         }
 
-        inventory.setItem(27, ItemBuilder.create("ARROW", "&c&lBack", List.of("&7Return to crate editor")));
-        inventory.setItem(31, ItemBuilder.create("LIME_WOOL", "&a&lSave", List.of("&7Save crate")));
+        inventory.setItem(27, ItemBuilder.create("ARROW", "<red><bold>Back", List.of("<gray>Return to crate editor")));
+        inventory.setItem(31, ItemBuilder.create("LIME_WOOL", "<green><bold>Save", List.of("<gray>Save crate")));
         player.openInventory(inventory);
     }
 
@@ -768,7 +768,7 @@ public class AdminEditorGui implements ModernCratesGui {
         if (slot == 13 && ac == null) {
             ac = new AnnounceConfig();
             ac.setToEveryone(true);
-            ac.setSingle("&6<player> &7won &6<reward_name> &7from &6" + editingCrate.getName());
+            ac.setSingle("<gold><player> <gray>won <gold><reward_name> <gray>from <gold>" + editingCrate.getName());
             editingCrate.setAnnounceConfig(ac);
             openAnnounceEditor(editingCrate);
             return;
@@ -791,7 +791,7 @@ public class AdminEditorGui implements ModernCratesGui {
                 openAnnounceEditor(editingCrate);
             });
             case 27 -> openCrateEditor(editingCrate);
-            case 31 -> { saveCrate(editingCrate); player.sendMessage(TextUtil.parse("&aCrate saved!")); }
+            case 31 -> { saveCrate(editingCrate); player.sendMessage(TextUtil.parse("<green>Crate saved!")); }
         }
     }
 
@@ -806,12 +806,12 @@ public class AdminEditorGui implements ModernCratesGui {
         var rewardsList = new ArrayList<>(crate.getRewards().entrySet());
         int rows = Math.max(2, Math.min(6, (int) Math.ceil((rewardsList.size() + 2) / 9.0) + 1));
 
-        inventory = Bukkit.createInventory(this, rows * 9, TextUtil.parse("&4&lRewards: " + crate.getName()));
+        inventory = Bukkit.createInventory(this, rows * 9, TextUtil.parse("<dark_red><bold>Rewards: " + crate.getName()));
         fillBlack();
 
-        inventory.setItem(inventory.getSize() - 9, ItemBuilder.create("ARROW", "&c&lBack", List.of("&7Return to crate editor")));
-        inventory.setItem(inventory.getSize() - 1, ItemBuilder.create("EMERALD", "&a&lAdd New Reward",
-                List.of("&7Click to add a new reward")));
+        inventory.setItem(inventory.getSize() - 9, ItemBuilder.create("ARROW", "<red><bold>Back", List.of("<gray>Return to crate editor")));
+        inventory.setItem(inventory.getSize() - 1, ItemBuilder.create("EMERALD", "<green><bold>Add New Reward",
+                List.of("<gray>Click to add a new reward")));
 
         for (int i = 0; i < rewardsList.size() && i < inventory.getSize() - 9; i++) {
             var entry = rewardsList.get(i);
@@ -826,13 +826,13 @@ public class AdminEditorGui implements ModernCratesGui {
 
             ItemMeta meta = item.getItemMeta();
             List<net.kyori.adventure.text.Component> lore = new ArrayList<>();
-            lore.add(TextUtil.parse("&7ID: &f" + entry.getKey()));
-            lore.add(TextUtil.parse("&7Chance: &f" + reward.getChance()));
-            lore.add(TextUtil.parse("&7Commands: &f" + (reward.hasCommands() ? reward.getCommands().size() : 0)));
-            lore.add(TextUtil.parse("&7Items: &f" + (reward.hasItems() ? reward.getItems().size() : 0)));
+            lore.add(TextUtil.parse("<gray>ID: <white>" + entry.getKey()));
+            lore.add(TextUtil.parse("<gray>Chance: <white>" + reward.getChance()));
+            lore.add(TextUtil.parse("<gray>Commands: <white>" + (reward.hasCommands() ? reward.getCommands().size() : 0)));
+            lore.add(TextUtil.parse("<gray>Items: <white>" + (reward.hasItems() ? reward.getItems().size() : 0)));
             lore.add(TextUtil.parse(""));
-            lore.add(TextUtil.parse("&eLeft-click to edit"));
-            lore.add(TextUtil.parse("&cRight-click to delete"));
+            lore.add(TextUtil.parse("<yellow>Left-click to edit"));
+            lore.add(TextUtil.parse("<red>Right-click to delete"));
             meta.lore(lore);
 
             setEditorTagMeta(meta, "editor_reward", entry.getKey());
@@ -852,7 +852,7 @@ public class AdminEditorGui implements ModernCratesGui {
             reward.setChance(1.0);
             RewardDisplay display = new RewardDisplay();
             display.setMaterial("STONE");
-            display.setName("&7New Reward");
+            display.setName("<gray>New Reward");
             reward.setDisplay(display);
             editingCrate.getRewards().put(newId, reward);
             openRewardsList(editingCrate);
@@ -882,61 +882,61 @@ public class AdminEditorGui implements ModernCratesGui {
         Reward reward = crate.getRewards().get(rewardId);
         if (reward == null) return;
 
-        inventory = Bukkit.createInventory(this, 54, TextUtil.parse("&4&lReward: " + rewardId));
+        inventory = Bukkit.createInventory(this, 54, TextUtil.parse("<dark_red><bold>Reward: " + rewardId));
         fillBlack();
 
         // Display preview
         if (reward.getDisplay() != null) {
             inventory.setItem(4, ItemBuilder.fromDisplay(reward.getDisplay()));
         } else {
-            inventory.setItem(4, ItemBuilder.create("STONE", "&7No display item", null));
+            inventory.setItem(4, ItemBuilder.create("STONE", "<gray>No display item", null));
         }
 
         // Display material
         inventory.setItem(19, ItemBuilder.create("ITEM_FRAME",
-                "&e&lDisplay Material: &f" + (reward.getDisplay() != null ? reward.getDisplay().getMaterial() : "none"),
-                List.of("&7Click to change")));
+                "<yellow><bold>Display Material: <white>" + (reward.getDisplay() != null ? reward.getDisplay().getMaterial() : "none"),
+                List.of("<gray>Click to change")));
 
         // Display name
         inventory.setItem(20, ItemBuilder.create("NAME_TAG",
-                "&e&lDisplay Name: &f" + (reward.getDisplay() != null && reward.getDisplay().getName() != null ? reward.getDisplay().getName() : "none"),
-                List.of("&7Click to change")));
+                "<yellow><bold>Display Name: <white>" + (reward.getDisplay() != null && reward.getDisplay().getName() != null ? reward.getDisplay().getName() : "none"),
+                List.of("<gray>Click to change")));
 
         // Display lore
         List<String> dispLore = new ArrayList<>();
-        dispLore.add("&7Click to add line");
-        dispLore.add("&7Right-click to clear");
+        dispLore.add("<gray>Click to add line");
+        dispLore.add("<gray>Right-click to clear");
         dispLore.add("");
         if (reward.getDisplay() != null && reward.getDisplay().getLore() != null) {
-            for (String l : reward.getDisplay().getLore()) dispLore.add("&f" + l);
+            for (String l : reward.getDisplay().getLore()) dispLore.add("<white>" + l);
         }
-        inventory.setItem(21, ItemBuilder.create("WRITABLE_BOOK", "&e&lDisplay Lore", dispLore));
+        inventory.setItem(21, ItemBuilder.create("WRITABLE_BOOK", "<yellow><bold>Display Lore", dispLore));
 
         // Chance
         inventory.setItem(23, ItemBuilder.create("EXPERIENCE_BOTTLE",
-                "&e&lChance: &f" + reward.getChance(),
-                List.of("&7Left-click +1 | Right-click -1", "&7Shift for +/- 5")));
+                "<yellow><bold>Chance: <white>" + reward.getChance(),
+                List.of("<gray>Left-click +1 | Right-click -1", "<gray>Shift for +/- 5")));
 
         // Commands
         List<String> cmdLore = new ArrayList<>();
-        cmdLore.add("&7Click to add command");
-        cmdLore.add("&7Right-click to clear");
+        cmdLore.add("<gray>Click to add command");
+        cmdLore.add("<gray>Right-click to clear");
         cmdLore.add("");
-        if (reward.hasCommands()) for (String c : reward.getCommands()) cmdLore.add("&f" + c);
-        inventory.setItem(25, ItemBuilder.create("COMMAND_BLOCK", "&e&lCommands", cmdLore));
+        if (reward.hasCommands()) for (String c : reward.getCommands()) cmdLore.add("<white>" + c);
+        inventory.setItem(25, ItemBuilder.create("COMMAND_BLOCK", "<yellow><bold>Commands", cmdLore));
 
         // Announce
         inventory.setItem(37, ItemBuilder.create("GOAT_HORN",
-                "&e&lAnnounce: &f" + orNone(reward.getAnnounce()),
-                List.of("&7Click to set", "&7Right-click to clear")));
+                "<yellow><bold>Announce: <white>" + orNone(reward.getAnnounce()),
+                List.of("<gray>Click to set", "<gray>Right-click to clear")));
 
         // Items
         inventory.setItem(39, ItemBuilder.create("CHEST",
-                "&e&lItems: &f" + (reward.hasItems() ? reward.getItems().size() : 0),
-                List.of("&7Reward items are edited via YAML")));
+                "<yellow><bold>Items: <white>" + (reward.hasItems() ? reward.getItems().size() : 0),
+                List.of("<gray>Reward items are edited via YAML")));
 
-        inventory.setItem(45, ItemBuilder.create("ARROW", "&c&lBack", List.of("&7Return to rewards list")));
-        inventory.setItem(49, ItemBuilder.create("LIME_WOOL", "&a&lSave", List.of("&7Save crate")));
+        inventory.setItem(45, ItemBuilder.create("ARROW", "<red><bold>Back", List.of("<gray>Return to rewards list")));
+        inventory.setItem(49, ItemBuilder.create("LIME_WOOL", "<green><bold>Save", List.of("<gray>Save crate")));
         player.openInventory(inventory);
     }
 
@@ -999,7 +999,7 @@ public class AdminEditorGui implements ModernCratesGui {
                 }
             }
             case 45 -> openRewardsList(editingCrate);
-            case 49 -> { saveCrate(editingCrate); player.sendMessage(TextUtil.parse("&aCrate saved!")); }
+            case 49 -> { saveCrate(editingCrate); player.sendMessage(TextUtil.parse("<green>Crate saved!")); }
         }
     }
 
@@ -1012,21 +1012,21 @@ public class AdminEditorGui implements ModernCratesGui {
         var animations = new ArrayList<>(plugin.getAnimationRegistry().entrySet());
         int rows = Math.max(2, Math.min(6, (int) Math.ceil((animations.size() + 2) / 9.0) + 1));
 
-        inventory = Bukkit.createInventory(this, rows * 9, TextUtil.parse("&4&lAnimations"));
+        inventory = Bukkit.createInventory(this, rows * 9, TextUtil.parse("<dark_red><bold>Animations"));
         fillBlack();
 
-        inventory.setItem(inventory.getSize() - 9, ItemBuilder.create("ARROW", "&c&lBack", List.of("&7Return to main menu")));
-        inventory.setItem(inventory.getSize() - 1, ItemBuilder.create("EMERALD", "&a&lCreate New Animation",
-                List.of("&7Click to create a new animation")));
+        inventory.setItem(inventory.getSize() - 9, ItemBuilder.create("ARROW", "<red><bold>Back", List.of("<gray>Return to main menu")));
+        inventory.setItem(inventory.getSize() - 1, ItemBuilder.create("EMERALD", "<green><bold>Create New Animation",
+                List.of("<gray>Click to create a new animation")));
 
         for (int i = 0; i < animations.size() && i < inventory.getSize() - 9; i++) {
             var entry = animations.get(i);
             Animation anim = entry.getValue();
-            ItemStack item = ItemBuilder.create("CLOCK", "&b&l" + entry.getKey(), List.of(
-                    "&7Type: &f" + anim.getTypeId(),
-                    "&7Rows: &f" + anim.getGuiRows(),
-                    "&7Title: &f" + anim.getGuiTitle(),
-                    "", "&eLeft-click to edit", "&cRight-click to delete"
+            ItemStack item = ItemBuilder.create("CLOCK", "<aqua><bold>" + entry.getKey(), List.of(
+                    "<gray>Type: <white>" + anim.getTypeId(),
+                    "<gray>Rows: <white>" + anim.getGuiRows(),
+                    "<gray>Title: <white>" + anim.getGuiTitle(),
+                    "", "<yellow>Left-click to edit", "<red>Right-click to delete"
             ));
             setEditorTag(item, "editor_anim", entry.getKey());
             inventory.setItem(i, item);
@@ -1044,7 +1044,7 @@ public class AdminEditorGui implements ModernCratesGui {
             anim.setStayOpenAfterRewardTicks(50);
             anim.setStartTickRate(1);
             anim.setTickRateModifier(20);
-            anim.setGuiTitle("&c&l<crate>");
+            anim.setGuiTitle("<red><bold><crate>");
             anim.setGuiRows(3);
             anim.setRewardIndex(5);
             anim.setRewardSlots(List.of(9, 10, 11, 12, 13, 14, 15, 16, 17));
@@ -1081,20 +1081,20 @@ public class AdminEditorGui implements ModernCratesGui {
         mode = EditorMode.ANIMATION_EDIT;
         editingAnimation = anim;
 
-        inventory = Bukkit.createInventory(this, 54, TextUtil.parse("&4&lAnimation: " + anim.getId()));
+        inventory = Bukkit.createInventory(this, 54, TextUtil.parse("<dark_red><bold>Animation: " + anim.getId()));
         fillBlack();
 
         // Type
         List<String> typeLore = new ArrayList<>();
-        typeLore.add("&7Click to cycle type");
+        typeLore.add("<gray>Click to cycle type");
         for (String typeId : plugin.getAnimationTypeRegistry().keySet()) {
-            typeLore.add(typeId.equals(anim.getTypeId()) ? "&a> " + typeId : "&7  " + typeId);
+            typeLore.add(typeId.equals(anim.getTypeId()) ? "<green>> " + typeId : "<gray>  " + typeId);
         }
-        inventory.setItem(10, ItemBuilder.create("REDSTONE", "&e&lType: &f" + anim.getTypeId(), typeLore));
+        inventory.setItem(10, ItemBuilder.create("REDSTONE", "<yellow><bold>Type: <white>" + anim.getTypeId(), typeLore));
 
         // GUI Title
-        inventory.setItem(12, ItemBuilder.create("NAME_TAG", "&e&lGUI Title: &f" + anim.getGuiTitle(),
-                List.of("&7Click to set")));
+        inventory.setItem(12, ItemBuilder.create("NAME_TAG", "<yellow><bold>GUI Title: <white>" + anim.getGuiTitle(),
+                List.of("<gray>Click to set")));
 
         // GUI Rows
         inventory.setItem(14, createNumberItem("LADDER", "GUI Rows", anim.getGuiRows()));
@@ -1102,7 +1102,7 @@ public class AdminEditorGui implements ModernCratesGui {
         // GUI Fill
         String fillMat = anim.getGuiFill() != null ? anim.getGuiFill().getMaterial() : "none";
         inventory.setItem(16, ItemBuilder.create(fillMat.equals("none") ? "BARRIER" : fillMat,
-                "&e&lGUI Fill: &f" + fillMat, List.of("&7Click to set material")));
+                "<yellow><bold>GUI Fill: <white>" + fillMat, List.of("<gray>Click to set material")));
 
         // CSGO-type fields
         inventory.setItem(19, createNumberItem("REPEATER", "Total Ticks", anim.getTotalTicks()));
@@ -1121,41 +1121,41 @@ public class AdminEditorGui implements ModernCratesGui {
 
         // Reward slots
         List<String> slotLore = new ArrayList<>();
-        slotLore.add("&7Click to set via chat");
-        slotLore.add("&7Current: &f" + (anim.getRewardSlots() != null ? anim.getRewardSlots().toString() : "[]"));
-        inventory.setItem(31, ItemBuilder.create("CHEST_MINECART", "&e&lReward Slots", slotLore));
+        slotLore.add("<gray>Click to set via chat");
+        slotLore.add("<gray>Current: <white>" + (anim.getRewardSlots() != null ? anim.getRewardSlots().toString() : "[]"));
+        inventory.setItem(31, ItemBuilder.create("CHEST_MINECART", "<yellow><bold>Reward Slots", slotLore));
 
         // Filler slots
         List<String> fillerLore = new ArrayList<>();
-        fillerLore.add("&7Click to set via chat");
-        fillerLore.add("&7Current: &f" + (anim.getFillerSlots() != null ? anim.getFillerSlots().toString() : "[]"));
-        inventory.setItem(33, ItemBuilder.create("HOPPER_MINECART", "&e&lFiller Slots", fillerLore));
+        fillerLore.add("<gray>Click to set via chat");
+        fillerLore.add("<gray>Current: <white>" + (anim.getFillerSlots() != null ? anim.getFillerSlots().toString() : "[]"));
+        inventory.setItem(33, ItemBuilder.create("HOPPER_MINECART", "<yellow><bold>Filler Slots", fillerLore));
 
         // Pointers
-        inventory.setItem(37, ItemBuilder.create("ARROW", "&e&lDown Pointer",
-                List.of("&7Slot: &f" + (anim.getDownPointer() != null ? anim.getDownPointer().getSlot() : "none"),
-                        "&7Click to configure")));
-        inventory.setItem(38, ItemBuilder.create("ARROW", "&e&lUp Pointer",
-                List.of("&7Slot: &f" + (anim.getUpPointer() != null ? anim.getUpPointer().getSlot() : "none"),
-                        "&7Click to configure")));
+        inventory.setItem(37, ItemBuilder.create("ARROW", "<yellow><bold>Down Pointer",
+                List.of("<gray>Slot: <white>" + (anim.getDownPointer() != null ? anim.getDownPointer().getSlot() : "none"),
+                        "<gray>Click to configure")));
+        inventory.setItem(38, ItemBuilder.create("ARROW", "<yellow><bold>Up Pointer",
+                List.of("<gray>Slot: <white>" + (anim.getUpPointer() != null ? anim.getUpPointer().getSlot() : "none"),
+                        "<gray>Click to configure")));
 
         // Sounds sub-menu
-        inventory.setItem(40, ItemBuilder.create("NOTE_BLOCK", "&e&lSounds",
-                List.of("&7Click to edit all sounds")));
+        inventory.setItem(40, ItemBuilder.create("NOTE_BLOCK", "<yellow><bold>Sounds",
+                List.of("<gray>Click to edit all sounds")));
 
         // Reward hide item
         String hideItemMat = anim.getRewardHideItem() != null ? anim.getRewardHideItem().getMaterial() : "none";
         inventory.setItem(42, ItemBuilder.create(hideItemMat.equals("none") ? "YELLOW_STAINED_GLASS_PANE" : hideItemMat,
-                "&e&lReward Hide Item: &f" + hideItemMat,
-                List.of("&7Click to set material", "&7Right-click to set name")));
+                "<yellow><bold>Reward Hide Item: <white>" + hideItemMat,
+                List.of("<gray>Click to set material", "<gray>Right-click to set name")));
 
         // Shuffling title
-        inventory.setItem(43, ItemBuilder.create("NAME_TAG", "&e&lShuffling Title: &f" + orNone(anim.getGuiTitleShuffling()),
-                List.of("&7Click to set")));
+        inventory.setItem(43, ItemBuilder.create("NAME_TAG", "<yellow><bold>Shuffling Title: <white>" + orNone(anim.getGuiTitleShuffling()),
+                List.of("<gray>Click to set")));
 
         // Bottom
-        inventory.setItem(45, ItemBuilder.create("ARROW", "&c&lBack", List.of("&7Return to animation list")));
-        inventory.setItem(49, ItemBuilder.create("LIME_WOOL", "&a&lSave", List.of("&7Save animation to file")));
+        inventory.setItem(45, ItemBuilder.create("ARROW", "<red><bold>Back", List.of("<gray>Return to animation list")));
+        inventory.setItem(49, ItemBuilder.create("LIME_WOOL", "<green><bold>Save", List.of("<gray>Save animation to file")));
         player.openInventory(inventory);
     }
 
@@ -1198,12 +1198,12 @@ public class AdminEditorGui implements ModernCratesGui {
                 a.setFillerSlots(parseIntList(input));
                 openAnimationEditor(a);
             });
-            case 37 -> requestInput("Enter down pointer slot,material,name (e.g. 4,ARROW,&c▼):", input -> {
+            case 37 -> requestInput("Enter down pointer slot,material,name (e.g. 4,ARROW,<red>Γû╝):", input -> {
                 PointerConfig p = parsePointerInput(input);
                 a.setDownPointer(p);
                 openAnimationEditor(a);
             });
-            case 38 -> requestInput("Enter up pointer slot,material,name (e.g. 22,ARROW,&c▲):", input -> {
+            case 38 -> requestInput("Enter up pointer slot,material,name (e.g. 22,ARROW,<red>Γû▓):", input -> {
                 PointerConfig p = parsePointerInput(input);
                 a.setUpPointer(p);
                 openAnimationEditor(a);
@@ -1228,7 +1228,7 @@ public class AdminEditorGui implements ModernCratesGui {
             }
             case 43 -> requestInput("Enter shuffling title:", input -> { a.setGuiTitleShuffling(input); openAnimationEditor(a); });
             case 45 -> openAnimationList();
-            case 49 -> { saveAnimation(a); player.sendMessage(TextUtil.parse("&aAnimation saved!")); }
+            case 49 -> { saveAnimation(a); player.sendMessage(TextUtil.parse("<green>Animation saved!")); }
         }
     }
 
@@ -1240,7 +1240,7 @@ public class AdminEditorGui implements ModernCratesGui {
         mode = EditorMode.ANIMATION_SOUNDS_EDIT;
         editingAnimation = anim;
 
-        inventory = Bukkit.createInventory(this, 36, TextUtil.parse("&4&lSounds: " + anim.getId()));
+        inventory = Bukkit.createInventory(this, 36, TextUtil.parse("<dark_red><bold>Sounds: " + anim.getId()));
         fillBlack();
 
         inventory.setItem(10, createSoundItem("Tick Sound", anim.getTickSounds()));
@@ -1249,7 +1249,7 @@ public class AdminEditorGui implements ModernCratesGui {
         inventory.setItem(16, createSoundItem("Hide Sound", anim.getHideSounds()));
         inventory.setItem(19, createSoundItem("Reveal Sound", anim.getRevealSounds()));
 
-        inventory.setItem(27, ItemBuilder.create("ARROW", "&c&lBack", List.of("&7Return to animation editor")));
+        inventory.setItem(27, ItemBuilder.create("ARROW", "<red><bold>Back", List.of("<gray>Return to animation editor")));
         player.openInventory(inventory);
     }
 
@@ -1285,8 +1285,8 @@ public class AdminEditorGui implements ModernCratesGui {
 
     private void requestInput(String prompt, java.util.function.Consumer<String> callback) {
         player.closeInventory();
-        player.sendMessage(TextUtil.parse("&e" + prompt));
-        player.sendMessage(TextUtil.parse("&7Type 'cancel' to cancel."));
+        player.sendMessage(TextUtil.parse("<yellow>" + prompt));
+        player.sendMessage(TextUtil.parse("<gray>Type 'cancel' to cancel."));
         plugin.getChatInputManager().awaitInput(player, input -> {
             if (!input.equalsIgnoreCase("cancel")) {
                 callback.accept(input);
@@ -1316,7 +1316,7 @@ public class AdminEditorGui implements ModernCratesGui {
     }
 
     private void editSlotItem(String label, PreviewConfig.SlotItem current, java.util.function.Consumer<PreviewConfig.SlotItem> setter) {
-        requestInput("Enter " + label + " as slot,material,name (e.g. 49,BARRIER,&cClose):", input -> {
+        requestInput("Enter " + label + " as slot,material,name (e.g. 49,BARRIER,<red>Close):", input -> {
             String[] parts = input.split(",", 3);
             if (parts.length >= 3) {
                 PreviewConfig.SlotItem item = new PreviewConfig.SlotItem();
@@ -1325,7 +1325,7 @@ public class AdminEditorGui implements ModernCratesGui {
                 item.setName(parts[2].trim());
                 setter.accept(item);
             } else {
-                player.sendMessage(TextUtil.parse("&cInvalid format. Use: slot,material,name"));
+                player.sendMessage(TextUtil.parse("<red>Invalid format. Use: slot,material,name"));
                 reopenCurrentScreen();
             }
         });
@@ -1335,7 +1335,7 @@ public class AdminEditorGui implements ModernCratesGui {
         try {
             plugin.getCrateConfigParser().save(crate, new File(plugin.getDataFolder(), "crates"));
         } catch (IOException e) {
-            player.sendMessage(TextUtil.parse("&cFailed to save: " + e.getMessage()));
+            player.sendMessage(TextUtil.parse("<red>Failed to save: " + e.getMessage()));
         }
     }
 
@@ -1343,7 +1343,7 @@ public class AdminEditorGui implements ModernCratesGui {
         try {
             plugin.getAnimationConfigParser().save(anim, new File(plugin.getDataFolder(), "animations"));
         } catch (IOException e) {
-            player.sendMessage(TextUtil.parse("&cFailed to save: " + e.getMessage()));
+            player.sendMessage(TextUtil.parse("<red>Failed to save: " + e.getMessage()));
         }
     }
 
@@ -1358,35 +1358,35 @@ public class AdminEditorGui implements ModernCratesGui {
     }
 
     private ItemStack createNumberItem(String material, String label, int value) {
-        return ItemBuilder.create(material, "&e&l" + label + ": &f" + value,
-                List.of("&7Left-click +1 | Right-click -1", "&7Shift for +/- 5"));
+        return ItemBuilder.create(material, "<yellow><bold>" + label + ": <white>" + value,
+                List.of("<gray>Left-click +1 | Right-click -1", "<gray>Shift for +/- 5"));
     }
 
     private ItemStack createNumberItemDouble(String material, String label, double value) {
-        return ItemBuilder.create(material, "&e&l" + label + ": &f" + String.format("%.2f", value),
-                List.of("&7Click to set value"));
+        return ItemBuilder.create(material, "<yellow><bold>" + label + ": <white>" + String.format("%.2f", value),
+                List.of("<gray>Click to set value"));
     }
 
     private ItemStack createSlotItemDisplay(String label, PreviewConfig.SlotItem item) {
         if (item == null) {
-            return ItemBuilder.create("BARRIER", "&e&l" + label + ": &cnone",
-                    List.of("&7Click to configure"));
+            return ItemBuilder.create("BARRIER", "<yellow><bold>" + label + ": <red>none",
+                    List.of("<gray>Click to configure"));
         }
         return ItemBuilder.create(item.getMaterial() != null ? item.getMaterial() : "BARRIER",
-                "&e&l" + label + ": &fslot " + item.getSlot(),
-                List.of("&7Material: &f" + item.getMaterial(),
-                        "&7Name: &f" + item.getName(),
-                        "&7Click to reconfigure"));
+                "<yellow><bold>" + label + ": <white>slot " + item.getSlot(),
+                List.of("<gray>Material: <white>" + item.getMaterial(),
+                        "<gray>Name: <white>" + item.getName(),
+                        "<gray>Click to reconfigure"));
     }
 
     private ItemStack createSoundItem(String label, List<String> sounds) {
         List<String> lore = new ArrayList<>();
-        lore.add("&7Click to set sounds");
-        lore.add("&7Right-click to clear");
+        lore.add("<gray>Click to set sounds");
+        lore.add("<gray>Right-click to clear");
         lore.add("");
-        if (sounds != null) for (String s : sounds) lore.add("&f" + s);
-        else lore.add("&cnone");
-        return ItemBuilder.create("NOTE_BLOCK", "&e&l" + label, lore);
+        if (sounds != null) for (String s : sounds) lore.add("<white>" + s);
+        else lore.add("<red>none");
+        return ItemBuilder.create("NOTE_BLOCK", "<yellow><bold>" + label, lore);
     }
 
     private void setEditorTag(ItemStack item, String key, String value) {
@@ -1460,3 +1460,4 @@ public class AdminEditorGui implements ModernCratesGui {
     public EditorMode getMode() { return mode; }
     public Crate getEditingCrate() { return editingCrate; }
 }
+

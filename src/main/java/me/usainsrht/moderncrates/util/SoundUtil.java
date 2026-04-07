@@ -16,11 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class SoundUtil {
 
-    private static final Map<String, String> LEGACY_ALIASES = Map.of(
-            "CLICK", "UI_BUTTON_CLICK",
-            "VILLAGER_NO", "ENTITY_VILLAGER_NO",
-            "VILLAGER_YES", "ENTITY_VILLAGER_YES"
-    );
+    private static final Map<String, String> LEGACY_ALIASES = Map.of();
     private static final Set<String> WARNED_INVALID_SOUNDS = ConcurrentHashMap.newKeySet();
 
     private SoundUtil() {}
@@ -72,3 +68,4 @@ public final class SoundUtil {
         return new ArrayList<>(candidates);
     }
 }
+

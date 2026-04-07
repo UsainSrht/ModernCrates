@@ -35,7 +35,7 @@ public class PlayerMenuGui implements ModernCratesGui {
         int rows = Math.max(1, (int) Math.ceil(crates.size() / 9.0) + 1);
         rows = Math.min(6, rows);
 
-        inventory = Bukkit.createInventory(this, rows * 9, TextUtil.parse("&6&lCrates Menu"));
+        inventory = Bukkit.createInventory(this, rows * 9, TextUtil.parse("<gold><bold>Crates Menu"));
 
         // Fill background
         ItemStack fill = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
@@ -54,7 +54,7 @@ public class PlayerMenuGui implements ModernCratesGui {
             if (itemConfig != null) {
                 item = ItemBuilder.create(itemConfig.getMaterial(), itemConfig.getName(), itemConfig.getLore());
             } else {
-                item = ItemBuilder.create("CHEST", "&6" + crate.getName(), null);
+                item = ItemBuilder.create("CHEST", "<gold>" + crate.getName(), null);
             }
 
             // Add virtual key count to lore
@@ -63,9 +63,9 @@ public class PlayerMenuGui implements ModernCratesGui {
             List<net.kyori.adventure.text.Component> lore = meta.lore();
             if (lore == null) lore = new ArrayList<>();
             lore.add(TextUtil.parse(""));
-            lore.add(TextUtil.parse("&7Virtual Keys: &a" + virtualKeys));
-            lore.add(TextUtil.parse("&eClick to preview"));
-            lore.add(TextUtil.parse("&eShift-click to open"));
+            lore.add(TextUtil.parse("<gray>Virtual Keys: <green>" + virtualKeys));
+            lore.add(TextUtil.parse("<yellow>Click to preview"));
+            lore.add(TextUtil.parse("<yellow>Shift-click to open"));
             meta.lore(lore);
 
             // Store crate ID in PDC
