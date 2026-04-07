@@ -1,14 +1,14 @@
-type: CSGO
-gui_title: "&6&lCrate Opening"
+type: csgo
+gui_title: "<gold><bold>Crate Opening"
 gui_rows: 3
 gui_fill:
   material: "BLACK_STAINED_GLASS_PANE"
   name: " "
-total_ticks: 60
+total_ticks: 45
 stay_open_after_reward_ticks: 60
 start_tick_rate: 1
-tick_rate_modifier: 1
-reward_index: 13
+tick_rate_modifier: 20
+reward_index: 5
 reward_slots:
   - 9
   - 10
@@ -38,15 +38,15 @@ filler_slots:
   - 24
   - 25
   - 26
-pointers:
-  down:
-    slot: 4
-    material: "YELLOW_STAINED_GLASS_PANE"
-    name: "&e&l▼"
-  up:
-    slot: 22
-    material: "YELLOW_STAINED_GLASS_PANE"
-    name: "&e&l▲"
-sounds:
-  tick: "BLOCK_NOTE_BLOCK_HAT"
-  reward: "ENTITY_PLAYER_LEVELUP"
+down_pointer:
+  slot: 4
+  material: "YELLOW_STAINED_GLASS_PANE"
+  name: "<yellow><bold>▼"
+up_pointer:
+  slot: 22
+  material: "YELLOW_STAINED_GLASS_PANE"
+  name: "<yellow><bold>▲"
+tick_sound:
+  - "block.note_block.hat"
+reward_sound:
+  - "entity.player.levelup"

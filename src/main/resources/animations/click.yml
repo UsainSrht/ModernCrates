@@ -1,13 +1,10 @@
 type: CLICK
-gui_title: "&6&lClick to Reveal"
+gui_title: "<gold><bold>Click to Reveal"
+gui_title_shuffling: "<yellow><bold>Shuffling..."
 gui_rows: 3
 gui_fill:
   material: "BLACK_STAINED_GLASS_PANE"
   name: " "
-total_ticks: 5
-stay_open_after_reward_ticks: 40
-start_tick_rate: 2
-tick_rate_modifier: 1
 reward_slots:
   - 10
   - 11
@@ -39,14 +36,16 @@ filler_slots:
   - 26
 reward_hide_item:
   material: "GRAY_STAINED_GLASS_PANE"
-  name: "&7&lClick to Reveal"
+  name: "<gray><bold>Click to Reveal"
 shuffle_amount: 3
 shuffle_ticks: 5
 reward_amount: 3
 show_revealed_items_for: 20
-shuffling_title: "&e&lShuffling..."
-sounds:
-  shuffle: "BLOCK_NOTE_BLOCK_PLING"
-  reward: "ENTITY_PLAYER_LEVELUP"
-  hide: "BLOCK_NOTE_BLOCK_BASS"
-  reveal: "ENTITY_EXPERIENCE_ORB_PICKUP"
+shuffle_sound:
+  - "block.note_block.pling"
+reward_sound:
+  - "entity.player.levelup"
+hide_sound:
+  - "block.note_block.bass"
+reveal_sound:
+  - "entity.experience_orb.pickup"

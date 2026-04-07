@@ -61,14 +61,11 @@ public class AnimationConfigParser {
         // Click-type fields
         anim.setShuffleAmount(yaml.getInt("shuffle_amount", 5));
         anim.setShuffleTicks(yaml.getInt("shuffle_ticks", 10));
-        anim.setShuffleSounds(yaml.getStringList("shuffle_sound"));
         anim.setRewardAmount(yaml.getInt("reward_amount", 1));
         anim.setShowRevealedItemsFor(yaml.getInt("show_revealed_items_for", 20));
-        anim.setHideSounds(yaml.getStringList("hide_sound"));
-        anim.setRevealSounds(yaml.getStringList("reveal_sound"));
 
         // GUI
-        anim.setGuiTitle(yaml.getString("gui_title", "&c&l<crate>"));
+        anim.setGuiTitle(yaml.getString("gui_title", "<red><bold><crate>"));
         anim.setGuiTitleShuffling(yaml.getString("gui_title_shuffling"));
         anim.setGuiRows(yaml.getInt("gui_rows", 3));
         anim.setGuiType(yaml.getString("gui_type"));
@@ -89,13 +86,32 @@ public class AnimationConfigParser {
         anim.setEndOfAnimationItem(parseGuiItemConfig(yaml.getConfigurationSection("end_of_the_animation_item")));
         anim.setEndOfAnimationSlots(yaml.getIntegerList("end_of_the_animation_slots"));
 
-        // Pointers
-        anim.setDownPointer(parsePointerConfig(yaml.getConfigurationSection("down_pointer")));
-        anim.setUpPointer(parsePointerConfig(yaml.getConfigurationSection("up_pointer")));
+        // Pointers - support flat (down_pointer:) and nested (pointers.down:)
+        PointerConfig downPointer = parsePointerConfig(yaml.getConfigurationSection("down_pointer"));
+        if (downPointer == null) {
+            downPointer = parsePointerConfig(yaml.getConfigurationSection("pointers.down"));
+        }
+        anim.setDownPointer(downPointer);
 
-        // Sounds
-        anim.setTickSounds(yaml.getStringList("tick_sound"));
-        anim.setRewardSounds(yaml.getStringList("reward_sound"));
+        PointerConfig upPointer = parsePointerConfig(yaml.getConfigurationSection("up_pointer"));
+        if (upPointer == null) {
+            upPointer = parsePointerConfig(yaml.getConfigurationSection("pointers.up"));
+        }
+        anim.setUpPointer(upPointer);
+
+        // Sounds - support flat (tick_sound:) and nested (sounds.tick:), string or list
+        anim.setTickSounds(parseSoundList(yaml, "tick_sound", "sounds.tick"));
+        anim.setRewardSounds(parseSoundList(yaml, "reward_sound", "sounds.reward"));
+
+        // Click-type sounds - also support nested
+        anim.setShuffleSounds(parseSoundList(yaml, "shuffle_sound", "sounds.shuffle"));
+        anim.setHideSounds(parseSoundList(yaml, "hide_sound", "sounds.hide"));
+        anim.setRevealSounds(parseSoundList(yaml, "reveal_sound", "sounds.reveal"));
+
+        // Shuffling title - support both key names
+        if (anim.getGuiTitleShuffling() == null) {
+            anim.setGuiTitleShuffling(yaml.getString("shuffling_title"));
+        }
 
         return anim;
     }
@@ -110,6 +126,32 @@ public class AnimationConfigParser {
             config.setNbt(sectionToMap(section.getConfigurationSection("nbt")));
         }
         return config;
+    }
+
+    /**
+     * Reads a sound config that might be a single string or a list,
+     * from a primary key or a fallback nested key.
+     */
+    private List<String> parseSoundList(YamlConfiguration yaml, String primaryKey, String nestedKey) {
+        // Try primary key first (e.g. "tick_sound")
+        if (yaml.isList(primaryKey)) {
+            return yaml.getStringList(primaryKey);
+        }
+        if (yaml.isString(primaryKey)) {
+            String val = yaml.getString(primaryKey);
+            return val != null && !val.isEmpty() ? List.of(val) : List.of();
+        }
+        // Try nested key (e.g. "sounds.tick")
+        if (nestedKey != null) {
+            if (yaml.isList(nestedKey)) {
+                return yaml.getStringList(nestedKey);
+            }
+            if (yaml.isString(nestedKey)) {
+                String val = yaml.getString(nestedKey);
+                return val != null && !val.isEmpty() ? List.of(val) : List.of();
+            }
+        }
+        return List.of();
     }
 
     private PointerConfig parsePointerConfig(ConfigurationSection section) {

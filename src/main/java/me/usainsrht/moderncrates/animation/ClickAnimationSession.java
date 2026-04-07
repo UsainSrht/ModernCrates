@@ -11,6 +11,7 @@ import me.usainsrht.moderncrates.util.TextUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -44,6 +45,7 @@ public class ClickAnimationSession implements AnimationSession, ModernCratesGui 
     private List<Reward> selectedRewards;
     private final Map<Integer, Reward> slotRewardMap = new HashMap<>();
     private final Set<Integer> revealedSlots = new HashSet<>();
+    private Reward fallbackReward; // Used when player closes early without revealing any slots
 
     public ClickAnimationSession(Player player, Crate crate, Animation animation, ClickAnimationType type) {
         this.player = player;
@@ -231,11 +233,12 @@ public class ClickAnimationSession implements AnimationSession, ModernCratesGui 
 
     @Override
     public Reward getSelectedReward() {
-        // For click type, return all revealed rewards' first one (primary)
+        // For click type, return first revealed reward
         if (!revealedSlots.isEmpty()) {
             return slotRewardMap.get(revealedSlots.iterator().next());
         }
-        return null;
+        // Player closed early without revealing anything
+        return fallbackReward;
     }
 
     /**
@@ -246,6 +249,21 @@ public class ClickAnimationSession implements AnimationSession, ModernCratesGui 
                 .map(slotRewardMap::get)
                 .filter(Objects::nonNull)
                 .toList();
+    }
+
+    @Override
+    public void handleClose(InventoryCloseEvent event) {
+        if (event.getReason() == InventoryCloseEvent.Reason.OPEN_NEW) {
+            return; // Inventory is transitioning (e.g. title update)
+        }
+        if (!finished.get()) {
+            // Player closed early — stop everything, ensure a reward is granted
+            cleanup();
+            if (revealedSlots.isEmpty()) {
+                fallbackReward = RewardSelector.selectWeighted(crate);
+            }
+            finished.set(true);
+        }
     }
 
     @Override

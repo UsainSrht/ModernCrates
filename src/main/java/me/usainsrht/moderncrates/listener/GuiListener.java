@@ -47,15 +47,14 @@ public class GuiListener implements Listener {
         }
 
         // Handle animation session close
-        if (holder instanceof AnimationSession session) {
-            if (session.isFinished()) {
-                // Find the crate for this session to grant rewards
-                var crate = plugin.getAnimationManager().getCrateForSession(player);
-                plugin.getAnimationManager().endSession(player, crate);
-            } else if (event.getReason() != InventoryCloseEvent.Reason.OPEN_NEW) {
-                // Player manually closed — cancel the animation
-                plugin.getAnimationManager().cancelSession(player);
+        if (holder instanceof AnimationSession) {
+            if (event.getReason() == InventoryCloseEvent.Reason.OPEN_NEW) {
+                return; // Session is transitioning (e.g. click animation title update)
             }
+            // Always end session and grant reward.
+            // handleClose (called above) already determined the reward for early closes.
+            var crate = plugin.getAnimationManager().getCrateForSession(player);
+            plugin.getAnimationManager().endSession(player, crate);
         }
     }
 }

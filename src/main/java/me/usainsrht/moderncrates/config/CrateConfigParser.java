@@ -146,7 +146,7 @@ public class CrateConfigParser {
 
     private PreviewConfig parsePreviewConfig(ConfigurationSection section) {
         PreviewConfig config = new PreviewConfig();
-        config.setTitle(section.getString("title", "&6Preview"));
+        config.setTitle(section.getString("title", "<gold>Preview"));
         config.setRows(section.getInt("rows", 6));
 
         ConfigurationSection fillSection = section.getConfigurationSection("fill");

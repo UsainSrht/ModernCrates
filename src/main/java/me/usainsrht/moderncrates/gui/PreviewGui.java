@@ -92,7 +92,7 @@ public class PreviewGui implements ModernCratesGui {
 
     private void render() {
         PreviewConfig config = crate.getPreviewConfig();
-        String title = config != null ? config.getTitle() : "&6Preview";
+        String title = config != null ? config.getTitle() : "<gold>Preview";
         int rows = config != null ? config.getRows() : 6;
 
         inventory = Bukkit.createInventory(this, rows * 9, TextUtil.parse(title));

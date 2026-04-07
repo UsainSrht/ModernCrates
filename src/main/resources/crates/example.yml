@@ -5,10 +5,10 @@ key:
   required: true
   material: "TRIPWIRE_HOOK"
   count: 1
-  name: "&6&lExample Key"
+  name: "<gold><bold>Example Key"
   lore:
-    - "&7Use this key to open the"
-    - "&6Example Crate"
+    - "<gray>Use this key to open the"
+    - "<gold>Example Crate"
   enchantments:
     UNBREAKING: 1
   item_flags:
@@ -16,24 +16,24 @@ key:
 
 item:
   material: "CHEST"
-  name: "&6&lExample Crate"
+  name: "<gold><bold>Example Crate"
   lore:
-    - "&7Right-click to place"
-    - "&7or use in your inventory"
+    - "<gray>Right-click to place"
+    - "<gray>or use in your inventory"
 
 bounce_back: true
 
 hologram:
   lines:
-    - "&6&lExample Crate"
-    - "&7Right-click to open"
+    - "<gold><bold>Example Crate"
+    - "<gray>Right-click to open"
   offset:
     - 0.5
     - 1.5
     - 0.5
 
 preview:
-  title: "&6Preview - Example Crate"
+  title: "<gold>Preview - Example Crate"
   rows: 6
   fill:
     material: "BLACK_STAINED_GLASS_PANE"
@@ -41,34 +41,34 @@ preview:
   close:
     slot: 49
     material: "BARRIER"
-    name: "&c&lClose"
+    name: "<red><bold>Close"
   next:
     slot: 50
     material: "ARROW"
-    name: "&a&lNext Page"
+    name: "<green><bold>Next Page"
   previous:
     slot: 48
     material: "ARROW"
-    name: "&a&lPrevious Page"
+    name: "<green><bold>Previous Page"
   sound:
-    - "BLOCK_CHEST_OPEN"
+    - "block.chest.open"
 
 announce:
   to_everyone: true
-  single: "&6<player> &7won &6<reward_name> &7from the &6Example Crate&7!"
-  multiple: "&6<player> &7won multiple rewards from the &6Example Crate&7!"
-  multiple_item: " &8- &6<reward_name>"
+  single: "<gold><player> <gray>won <gold><reward_name> <gray>from the <gold>Example Crate<gray>!"
+  multiple: "<gold><player> <gray>won multiple rewards from the <gold>Example Crate<gray>!"
+  multiple_item: " <dark_gray>- <gold><reward_name>"
 
 rewards:
   diamond_sword:
     chance: 5.0
     display:
       material: "DIAMOND_SWORD"
-      name: "&b&lDiamond Sword"
+      name: "<aqua><bold>Diamond Sword"
       lore:
-        - "&7A powerful diamond sword!"
+        - "<gray>A powerful diamond sword!"
         - ""
-        - "&eChance: &65%"
+        - "<yellow>Chance: <gold>5%"
       enchantments:
         SHARPNESS: 3
         UNBREAKING: 2
@@ -76,34 +76,34 @@ rewards:
       sword:
         material: "DIAMOND_SWORD"
         amount: 1
-        name: "&b&lDiamond Sword"
+        name: "<aqua><bold>Diamond Sword"
         enchantments:
           SHARPNESS: 3
           UNBREAKING: 2
-    announce: "&6<player> &7won a &b&lDiamond Sword &7from the &6Example Crate&7!"
+    announce: "<gold><player> <gray>won a <aqua><bold>Diamond Sword <gray>from the <gold>Example Crate<gray>!"
   golden_apple:
     chance: 15.0
     display:
       material: "GOLDEN_APPLE"
-      name: "&6Golden Apples"
+      name: "<gold>Golden Apples"
       lore:
-        - "&7A stack of golden apples"
+        - "<gray>A stack of golden apples"
         - ""
-        - "&eChance: &615%"
+        - "<yellow>Chance: <gold>15%"
     items:
       apples:
         material: "GOLDEN_APPLE"
         amount: 8
-        name: "&6Golden Apple"
+        name: "<gold>Golden Apple"
   iron_set:
     chance: 25.0
     display:
       material: "IRON_CHESTPLATE"
-      name: "&f&lIron Armor Set"
+      name: "<white><bold>Iron Armor Set"
       lore:
-        - "&7A full set of iron armor"
+        - "<gray>A full set of iron armor"
         - ""
-        - "&eChance: &625%"
+        - "<yellow>Chance: <gold>25%"
     items:
       helmet:
         material: "IRON_HELMET"
@@ -121,22 +121,22 @@ rewards:
     chance: 30.0
     display:
       material: "GOLD_INGOT"
-      name: "&e$1000"
+      name: "<yellow>$1000"
       lore:
-        - "&7A nice sum of money"
+        - "<gray>A nice sum of money"
         - ""
-        - "&eChance: &630%"
+        - "<yellow>Chance: <gold>30%"
     commands:
       - "eco give <player> 1000"
   common_reward:
     chance: 25.0
     display:
       material: "COAL"
-      name: "&7Coal"
+      name: "<gray>Coal"
       lore:
-        - "&7Better luck next time!"
+        - "<gray>Better luck next time!"
         - ""
-        - "&eChance: &625%"
+        - "<yellow>Chance: <gold>25%"
     items:
       coal:
         material: "COAL"

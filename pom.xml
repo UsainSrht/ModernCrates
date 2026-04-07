@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>dev.aito</groupId>
+    <groupId>me.usainsrht</groupId>
     <artifactId>moderncrates</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
@@ -99,7 +99,7 @@
                             <relocations>
                                 <relocation>
                                     <pattern>space.arim.morepaperlib</pattern>
-                                    <shadedPattern>dev.aito.moderncrates.lib.morepaperlib</shadedPattern>
+                                    <shadedPattern>me.usainsrht.moderncrates.lib.morepaperlib</shadedPattern>
                                 </relocation>
                             </relocations>
                             <filters>

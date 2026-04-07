@@ -28,7 +28,7 @@ public class PluginConfig {
     public void load() {
         yaml = YamlConfiguration.loadConfiguration(file);
 
-        prefix = yaml.getString("prefix", "&6AC &8> ");
+        prefix = yaml.getString("prefix", "<gold>MC <gray>> ");
 
         messages = new java.util.HashMap<>();
         var msgSection = yaml.getConfigurationSection("messages");
@@ -80,22 +80,22 @@ public class PluginConfig {
         if (!file.exists()) {
             file.getParentFile().mkdirs();
             yaml = new YamlConfiguration();
-            prefix = "&6MC &8> ";
+            prefix = "<gold>MC <dark_gray>> ";
             messages = Map.of(
-                    "reload", "&areloaded!",
-                    "no_key", "&cYou don't have a &4<crate> &ckey to open this crate!",
-                    "no_crate", "&cNo crate named &4<crate>&c!",
-                    "no_player", "&cNo player named &4<player>&c!",
-                    "crate_given", "&aCrate &2<crate> &agiven to &2<player>&a!",
-                    "key_given", "&aCrate &2<crate> &akey given to &2<player>&a!"
+                    "reload", "<green>reloaded!",
+                    "no_key", "<red>You don't have a <dark_red><crate> <red>key to open this crate!",
+                    "no_crate", "<red>No crate named <dark_red><crate><red>!",
+                    "no_player", "<red>No player named <dark_red><player><red>!",
+                    "crate_given", "<green>Crate <dark_green><crate> <green>given to <dark_green><player><green>!",
+                    "key_given", "<green>Crate <dark_green><crate> <green>key given to <dark_green><player><green>!"
             );
             sounds = Map.of(
-                    "reload", "CLICK",
-                    "no_key", "VILLAGER_NO",
-                    "no_crate", "VILLAGER_NO",
-                    "no_player", "VILLAGER_NO",
-                    "crate_given", "VILLAGER_YES",
-                    "key_given", "VILLAGER_YES"
+                    "reload", "ui.button.click",
+                    "no_key", "entity.villager.no",
+                    "no_crate", "entity.villager.no",
+                    "no_player", "entity.villager.no",
+                    "crate_given", "entity.villager.yes",
+                    "key_given", "entity.villager.yes"
             );
             commandConfig = new CommandConfig();
             commandConfig.setName("moderncrates");
