@@ -1,0 +1,208 @@
+name: "Roulette Crate"
+animation: "roulette"
+
+# Demonstrates: virtual-key compatible key, bounce_back, rich hologram,
+# custom filler items in the animation, end-of-animation beacons,
+# per-reward announce overrides, command rewards (economy), multi-item rewards.
+bounce_back: true
+
+key:
+  required: true
+  material: "CLOCK"
+  count: 1
+  name: "<aqua><bold>⚡ Roulette Token"
+  lore:
+    - "<gray>Insert into the"
+    - "<aqua>Roulette Crate"
+    - "<gray>to spin the wheel!"
+  item_flags:
+    - HIDE_ATTRIBUTES
+
+item:
+  material: "CONDUIT"
+  name: "<aqua><bold>⚡ Roulette Crate"
+  lore:
+    - "<gray>Watch items fly past the pointer."
+    - "<gray>Whatever lands at the win zone — you win!"
+
+hologram:
+  lines:
+    - "<aqua><bold>⚡ Roulette Crate ⚡"
+    - "<gray>Watch the wheel spin!"
+    - "<gray>Right-click to open"
+  offset:
+    - 0.5
+    - 1.5
+    - 0.5
+
+preview:
+  title: "<aqua>⚡ Preview — Roulette Crate"
+  rows: 6
+  fill:
+    material: "CYAN_STAINED_GLASS_PANE"
+    name: " "
+  close:
+    slot: 49
+    material: "BARRIER"
+    name: "<red><bold>Close"
+  next:
+    slot: 50
+    material: "ARROW"
+    name: "<green><bold>Next Page"
+  previous:
+    slot: 48
+    material: "ARROW"
+    name: "<green><bold>Previous Page"
+  sound:
+    - "block.chest.open"
+  custom_slots:
+    4:
+      material: "CONDUIT"
+      name: "<aqua><bold>⚡ Roulette Crate"
+      lore:
+        - "<gray>Items scroll past the green pointer."
+        - "<aqua>Whatever lands at the WIN ZONE is yours."
+        - ""
+        - "<yellow>Required Key: <aqua>Roulette Token"
+
+announce:
+  to_everyone: true
+  single: "<aqua>⚡ <player> <gray>spun the wheel and won <aqua><reward_name><gray>!"
+  multiple: "<aqua>⚡ <player> <gray>hit the roulette jackpot!"
+  multiple_item: "  <dark_aqua>• <aqua><reward_name>"
+
+rewards:
+  emerald_pack:
+    chance: 35.0
+    display:
+      material: "EMERALD"
+      name: "<green>Emerald Pack"
+      lore:
+        - "<gray>Some shiny emeralds."
+        - ""
+        - "<yellow>Chance: <gold>35%"
+    items:
+      emeralds:
+        material: "EMERALD"
+        amount: 8
+
+  diamond_pickaxe:
+    chance: 25.0
+    display:
+      material: "DIAMOND_PICKAXE"
+      name: "<aqua><bold>Diamond Pickaxe"
+      lore:
+        - "<gray>Efficiency IV + Unbreaking III."
+        - ""
+        - "<yellow>Chance: <gold>25%"
+      enchantments:
+        EFFICIENCY: 4
+        UNBREAKING: 3
+      item_flags:
+        - HIDE_ENCHANTS
+    items:
+      pickaxe:
+        material: "DIAMOND_PICKAXE"
+        amount: 1
+        name: "<aqua><bold>Diamond Pickaxe"
+        enchantments:
+          EFFICIENCY: 4
+          UNBREAKING: 3
+
+  money_500:
+    chance: 20.0
+    display:
+      material: "GOLD_INGOT"
+      name: "<yellow>$500"
+      lore:
+        - "<gray>A decent sum of money."
+        - ""
+        - "<yellow>Chance: <gold>20%"
+    commands:
+      - "eco give <player> 500"
+    announce: "<yellow>💰 <player> <gray>won <yellow>$500 <gray>from the <aqua>Roulette Crate<gray>!"
+
+  netherite_sword:
+    chance: 10.0
+    display:
+      material: "NETHERITE_SWORD"
+      name: "<dark_red><bold>Netherite Sword"
+      lore:
+        - "<gray>The mightiest blade on the server."
+        - ""
+        - "<yellow>Chance: <gold>10%"
+      enchantments:
+        SHARPNESS: 5
+        UNBREAKING: 3
+        FIRE_ASPECT: 2
+      item_flags:
+        - HIDE_ENCHANTS
+    items:
+      sword:
+        material: "NETHERITE_SWORD"
+        amount: 1
+        name: "<dark_red><bold>Netherite Sword"
+        enchantments:
+          SHARPNESS: 5
+          UNBREAKING: 3
+          FIRE_ASPECT: 2
+
+  money_2000:
+    chance: 7.0
+    display:
+      material: "EMERALD_BLOCK"
+      name: "<green><bold>$2,000"
+      lore:
+        - "<gray>Big money is in your future!"
+        - ""
+        - "<yellow>Chance: <gold>7%"
+    commands:
+      - "eco give <player> 2000"
+    announce: "<green>💰 <player> <gray>struck it rich — <green>$2,000 <gray>from the <aqua>Roulette Crate<gray>!"
+
+  jackpot:
+    chance: 3.0
+    display:
+      material: "NETHER_STAR"
+      name: "<light_purple><bold>✦ JACKPOT! ✦"
+      lore:
+        - "<dark_purple>Full Netherite Armor + $5,000!"
+        - ""
+        - "<yellow>Chance: <gold>3%"
+      enchantments:
+        UNBREAKING: 1
+      item_flags:
+        - HIDE_ENCHANTS
+    items:
+      helmet:
+        material: "NETHERITE_HELMET"
+        amount: 1
+        name: "<light_purple>Jackpot Helmet"
+        enchantments:
+          PROTECTION: 4
+          UNBREAKING: 3
+      chestplate:
+        material: "NETHERITE_CHESTPLATE"
+        amount: 1
+        name: "<light_purple>Jackpot Chestplate"
+        enchantments:
+          PROTECTION: 4
+          UNBREAKING: 3
+      leggings:
+        material: "NETHERITE_LEGGINGS"
+        amount: 1
+        name: "<light_purple>Jackpot Leggings"
+        enchantments:
+          PROTECTION: 4
+          UNBREAKING: 3
+      boots:
+        material: "NETHERITE_BOOTS"
+        amount: 1
+        name: "<light_purple>Jackpot Boots"
+        enchantments:
+          PROTECTION: 4
+          UNBREAKING: 3
+          FEATHER_FALLING: 4
+    commands:
+      - "eco give <player> 5000"
+    announce: "<light_purple>✦ <player> <gray>hit the <light_purple><bold>JACKPOT <gray>on the <aqua>Roulette Crate<gray>! <light_purple>+$5,000 + Full Netherite! ✦"

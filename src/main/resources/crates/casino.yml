@@ -1,0 +1,141 @@
+name: "Casino Roulette"
+animation: "casino_roulette"
+
+# Real casino roulette: black (47%), red (48%), green (5%).
+# The reward display items ARE the colored segments that scroll across the
+# animation wheel — no extra filler config needed. The white pointer marks
+# where the ball lands. Green pays out the jackpot; black and red give a
+# small consolation prize so nobody walks away empty-handed.
+#
+# Demonstrates: pure command rewards, per-reward announce, themed key (Casino Chip),
+# preview custom_slots showing the odds table.
+bounce_back: true
+
+key:
+  required: true
+  material: "SUNFLOWER"
+  count: 1
+  name: "<yellow><bold>Casino Chip"
+  lore:
+    - "<gray>Place your bet at the"
+    - "<yellow>Casino Roulette"
+    - ""
+    - "<red>House always wins... mostly."
+  item_flags:
+    - HIDE_ATTRIBUTES
+
+item:
+  material: "RED_CONCRETE"
+  name: "<dark_red><bold>Casino Roulette"
+  lore:
+    - "<gray>Red, Black, or Green?"
+    - "<dark_red>Spin to find out!"
+
+hologram:
+  lines:
+    - "<dark_red><bold>Casino Roulette"
+    - "<dark_gray>◼ Black  <red>◼ Red  <green>◼ Green"
+    - "<gray>Right-click to spin!"
+  offset:
+    - 0.5
+    - 1.5
+    - 0.5
+
+preview:
+  title: "<dark_red>Casino Roulette — Odds"
+  rows: 6
+  fill:
+    material: "GREEN_STAINED_GLASS_PANE"
+    name: " "
+  close:
+    slot: 49
+    material: "BARRIER"
+    name: "<red><bold>Close"
+  next:
+    slot: 50
+    material: "ARROW"
+    name: "<green><bold>Next Page"
+  previous:
+    slot: 48
+    material: "ARROW"
+    name: "<green><bold>Previous Page"
+  sound:
+    - "block.chest.open"
+  custom_slots:
+    4:
+      material: "RED_CONCRETE"
+      name: "<dark_red><bold>Casino Roulette"
+      lore:
+        - "<gray>The wheel spins with three outcomes:"
+        - ""
+        - "<dark_gray>◼ Black — <red>47% <gray>chance — <yellow>$100"
+        - "<red>◼ Red   — <red>48% <gray>chance — <yellow>$100"
+        - "<green>◼ Green  — <green>5% <gray>chance — <yellow>$2,500"
+        - ""
+        - "<yellow>Required Key: <gold>Casino Chip"
+    13:
+      material: "BLACK_CONCRETE"
+      name: "<dark_gray><bold>◼ Black — 47%"
+      lore:
+        - "<yellow>Payout: <gold>$100"
+    22:
+      material: "RED_CONCRETE"
+      name: "<red><bold>◼ Red — 48%"
+      lore:
+        - "<yellow>Payout: <gold>$100"
+    40:
+      material: "GREEN_CONCRETE"
+      name: "<green><bold>◼ Green — 5%"
+      lore:
+        - "<yellow>Payout: <gold>$2,500"
+        - "<green>Jackpot!"
+
+announce:
+  to_everyone: true
+  single: "<dark_red>  <player> <gray>spun the wheel and landed on <dark_red><reward_name><gray>!"
+  multiple: "<dark_red>  <player> <gray>had an incredible run at the casino!"
+  multiple_item: "  <dark_gray>• <dark_red><reward_name>"
+
+rewards:
+  black:
+    chance: 47.0
+    display:
+      material: "BLACK_CONCRETE"
+      name: "<dark_gray><bold>◼ Black"
+      lore:
+        - "<gray>So close — try again!"
+        - ""
+        - "<yellow>Payout: <gold>$100"
+        - "<red>Chance: <gold>47%"
+    commands:
+      - "eco give <player> 100"
+    announce: "<dark_gray>● <player> <gray>landed on <dark_gray><bold>Black<gray>. Wins <yellow>$100<gray>."
+
+  red:
+    chance: 48.0
+    display:
+      material: "RED_CONCRETE"
+      name: "<red><bold>◼ Red"
+      lore:
+        - "<gray>Almost! Give it another spin."
+        - ""
+        - "<yellow>Payout: <gold>$100"
+        - "<red>Chance: <gold>48%"
+    commands:
+      - "eco give <player> 100"
+    announce: "<red>● <player> <gray>landed on <red><bold>Red<gray>. Wins <yellow>$100<gray>."
+
+  green:
+    chance: 5.0
+    display:
+      material: "GREEN_CONCRETE"
+      name: "<green><bold>◼ GREEN — JACKPOT!"
+      lore:
+        - "<yellow>YOU HIT GREEN!"
+        - "<green>The rarest outcome on the board!"
+        - ""
+        - "<yellow>Payout: <gold>$2,500"
+        - "<green>Chance: <gold>5%"
+    commands:
+      - "eco give <player> 2500"
+    announce: "<green>  <player> <gray>landed on <green><bold>GREEN<gray>! <green>JACKPOT — $2,500!  "

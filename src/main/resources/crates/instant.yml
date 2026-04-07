@@ -1,0 +1,167 @@
+name: "Instant Crate"
+animation: "instant_click"
+
+# No key required — anyone can open this crate at any time.
+# Demonstrates: key.required: false, bounce_back: false,
+# custom_slots in preview, per-reward announce override.
+bounce_back: false
+
+key:
+  required: false
+
+item:
+  material: "GOLD_BLOCK"
+  name: "<gold><bold>⭐ Instant Crate"
+  lore:
+    - "<gray>Right-click to open instantly!"
+    - "<yellow>No key required!"
+
+hologram:
+  lines:
+    - "<gold><bold>⭐ Instant Crate"
+    - "<yellow>Free to open!"
+    - "<gray>Right-click to claim your reward"
+  offset:
+    - 0.5
+    - 1.5
+    - 0.5
+
+preview:
+  title: "<gold>⭐ Preview — Instant Crate"
+  rows: 6
+  fill:
+    material: "YELLOW_STAINED_GLASS_PANE"
+    name: " "
+  close:
+    slot: 49
+    material: "BARRIER"
+    name: "<red><bold>Close"
+  next:
+    slot: 50
+    material: "ARROW"
+    name: "<green><bold>Next Page"
+  previous:
+    slot: 48
+    material: "ARROW"
+    name: "<green><bold>Previous Page"
+  sound:
+    - "block.chest.open"
+  custom_slots:
+    4:
+      material: "GOLD_BLOCK"
+      name: "<gold><bold>⭐ Instant Crate"
+      lore:
+        - "<gray>Open for an instant reward!"
+        - "<yellow>No key required!"
+        - ""
+        - "<green>One click — reward appears immediately."
+
+announce:
+  to_everyone: true
+  single: "<gold>⭐ <player> <gray>just claimed <gold><reward_name> <gray>from the <gold>Instant Crate<gray>!"
+  multiple: "<gold>⭐ <player> <gray>opened the <gold>Instant Crate <gray>and won:"
+  multiple_item: "  <dark_gray>→ <gold><reward_name>"
+
+rewards:
+  starter_pack:
+    chance: 40.0
+    display:
+      material: "BREAD"
+      name: "<white>Starter Pack"
+      lore:
+        - "<gray>A little something to get you started."
+        - ""
+        - "<yellow>Chance: <gold>40%"
+    items:
+      bread:
+        material: "BREAD"
+        amount: 16
+      apple:
+        material: "APPLE"
+        amount: 8
+      cooked_beef:
+        material: "COOKED_BEEF"
+        amount: 8
+
+  experience_pack:
+    chance: 30.0
+    display:
+      material: "EXPERIENCE_BOTTLE"
+      name: "<green>Experience Pack"
+      lore:
+        - "<gray>Bottled experience, just for you."
+        - ""
+        - "<yellow>Chance: <gold>30%"
+    items:
+      xp:
+        material: "EXPERIENCE_BOTTLE"
+        amount: 16
+
+  enchanted_tools:
+    chance: 20.0
+    display:
+      material: "IRON_PICKAXE"
+      name: "<aqua>Enchanted Tools"
+      lore:
+        - "<gray>Efficiency and Fortune — a miner's dream."
+        - ""
+        - "<yellow>Chance: <gold>20%"
+      enchantments:
+        EFFICIENCY: 3
+        FORTUNE: 1
+      item_flags:
+        - HIDE_ENCHANTS
+    items:
+      pickaxe:
+        material: "IRON_PICKAXE"
+        amount: 1
+        name: "<aqua>Enchanted Pickaxe"
+        enchantments:
+          EFFICIENCY: 3
+          FORTUNE: 1
+      axe:
+        material: "IRON_AXE"
+        amount: 1
+        name: "<aqua>Enchanted Axe"
+        enchantments:
+          EFFICIENCY: 3
+          UNBREAKING: 2
+
+  rare_diamonds:
+    chance: 8.0
+    display:
+      material: "DIAMOND"
+      name: "<aqua><bold>Rare Gems"
+      lore:
+        - "<gray>A sparkling rare find!"
+        - ""
+        - "<yellow>Chance: <gold>8%"
+    items:
+      diamonds:
+        material: "DIAMOND"
+        amount: 5
+
+  legendary_elytra:
+    chance: 2.0
+    display:
+      material: "ELYTRA"
+      name: "<light_purple><bold>✦ Legendary Elytra ✦"
+      lore:
+        - "<gray>Spread your wings and soar!"
+        - "<dark_purple>Ultra rare!"
+        - ""
+        - "<yellow>Chance: <gold>2%"
+      enchantments:
+        UNBREAKING: 3
+        MENDING: 1
+      item_flags:
+        - HIDE_ENCHANTS
+    items:
+      elytra:
+        material: "ELYTRA"
+        amount: 1
+        name: "<light_purple><bold>✦ Legendary Elytra ✦"
+        enchantments:
+          UNBREAKING: 3
+          MENDING: 1
+    announce: "<light_purple>✦ <player> <gray>won a <light_purple><bold>Legendary Elytra <gray>from the <gold>Instant Crate<gray>! Lucky!"

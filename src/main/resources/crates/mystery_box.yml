@@ -1,0 +1,203 @@
+name: "Mystery Box"
+animation: "click"
+
+# Classic click-to-reveal: 7 hidden panels, player picks 3 of them.
+# Every panel hides a different reward — the choice is yours.
+#
+# Demonstrates: multi-reward click animation (reward_amount: 3),
+# enchanted items, NBT-aware display, to_everyone: false (personal win message),
+# multi-item reward payouts, commands-only rewards, per-reward announce override.
+bounce_back: true
+
+key:
+  required: true
+  material: "ENDER_PEARL"
+  count: 1
+  name: "<dark_purple><bold>Mystery Key"
+  lore:
+    - "<gray>Reveals <light_purple>3 <gray>mystery prizes"
+    - "<gray>from the <dark_purple>Mystery Box<gray>."
+    - ""
+    - "<light_purple>Choose your panels wisely..."
+  enchantments:
+    UNBREAKING: 1
+  item_flags:
+    - HIDE_ENCHANTS
+
+item:
+  material: "ENDER_CHEST"
+  name: "<dark_purple><bold>Mystery Box"
+  lore:
+    - "<gray>Contains secrets beyond imagination."
+    - "<gray>Sneak + right-click to preview."
+
+hologram:
+  lines:
+    - "<dark_purple><bold>✦ Mystery Box ✦"
+    - "<light_purple>Click 3 panels to reveal prizes!"
+    - "<gray>Right-click to open"
+  offset:
+    - 0.5
+    - 1.5
+    - 0.5
+
+preview:
+  title: "<dark_purple>✦ Preview — Mystery Box"
+  rows: 6
+  fill:
+    material: "PURPLE_STAINED_GLASS_PANE"
+    name: " "
+  close:
+    slot: 49
+    material: "BARRIER"
+    name: "<red><bold>Close"
+  next:
+    slot: 50
+    material: "ARROW"
+    name: "<green><bold>Next Page"
+  previous:
+    slot: 48
+    material: "ARROW"
+    name: "<green><bold>Previous Page"
+  sound:
+    - "block.chest.open"
+  custom_slots:
+    4:
+      material: "ENDER_CHEST"
+      name: "<dark_purple><bold>✦ Mystery Box"
+      lore:
+        - "<gray>7 hidden panels. You pick 3."
+        - "<light_purple>Click any 3 panels to uncover your prizes!"
+        - ""
+        - "<yellow>Required Key: <dark_purple>Mystery Key"
+
+announce:
+  to_everyone: false
+  single: "<dark_purple>✦ You discovered <dark_purple><reward_name> <gray>in the <dark_purple>Mystery Box<gray>!"
+  multiple: "<dark_purple>✦ You unlocked 3 mysteries from the <dark_purple>Mystery Box<gray>!"
+  multiple_item: "  <dark_gray>◈ <light_purple><reward_name>"
+
+rewards:
+  cobblestone_joke:
+    chance: 25.0
+    display:
+      material: "COBBLESTONE"
+      name: "<gray>A Rock"
+      lore:
+        - "<dark_gray>Just a rock. Totally worthless."
+        - "<gray>...or is it?"
+        - ""
+        - "<yellow>Chance: <gold>25%"
+    items:
+      cobble:
+        material: "COBBLESTONE"
+        amount: 64
+
+  golden_feast:
+    chance: 20.0
+    display:
+      material: "GOLDEN_CARROT"
+      name: "<gold>Golden Feast"
+      lore:
+        - "<gray>The finest food in the land."
+        - ""
+        - "<yellow>Chance: <gold>20%"
+    items:
+      carrots:
+        material: "GOLDEN_CARROT"
+        amount: 16
+      steak:
+        material: "COOKED_BEEF"
+        amount: 16
+
+  diamond_treasure:
+    chance: 20.0
+    display:
+      material: "DIAMOND_BLOCK"
+      name: "<aqua><bold>Diamond Treasure"
+      lore:
+        - "<gray>A gleaming cache of diamonds."
+        - ""
+        - "<yellow>Chance: <gold>20%"
+    items:
+      diamonds:
+        material: "DIAMOND"
+        amount: 16
+
+  mysterious_fortune:
+    chance: 15.0
+    display:
+      material: "EMERALD_BLOCK"
+      name: "<green><bold>Mysterious Fortune"
+      lore:
+        - "<gray>Money appears from thin air."
+        - ""
+        - "<yellow>Chance: <gold>15%"
+    commands:
+      - "eco give <player> 750"
+    announce: "<green>✦ <player> <gray>found <green><bold>$750 <gray>in the <dark_purple>Mystery Box<gray>!"
+
+  void_fragment:
+    chance: 13.0
+    display:
+      material: "CRYING_OBSIDIAN"
+      name: "<dark_purple><bold>Void Fragment"
+      lore:
+        - "<gray>A fragment from another dimension."
+        - "<dark_purple>Quite rare!"
+        - ""
+        - "<yellow>Chance: <gold>13%"
+    items:
+      crying_obs:
+        material: "CRYING_OBSIDIAN"
+        amount: 8
+      netherite_ingot:
+        material: "NETHERITE_INGOT"
+        amount: 2
+
+  experience_surge:
+    chance: 5.0
+    display:
+      material: "NETHER_STAR"
+      name: "<light_purple><bold>Experience Surge"
+      lore:
+        - "<gray>A massive burst of experience."
+        - ""
+        - "<yellow>Chance: <gold>5%"
+    items:
+      xp:
+        material: "EXPERIENCE_BOTTLE"
+        amount: 64
+    commands:
+      - "xp add <player> 50 levels"
+
+  void_reaper:
+    chance: 2.0
+    display:
+      material: "NETHERITE_SWORD"
+      name: "<light_purple><bold>✦ Void Reaper ✦"
+      lore:
+        - "<dark_purple>A weapon forged in the void."
+        - "<light_purple>Swings with divine fury."
+        - ""
+        - "<yellow>Chance: <gold>2%"
+      enchantments:
+        SHARPNESS: 5
+        UNBREAKING: 3
+        LOOTING: 3
+        FIRE_ASPECT: 2
+      item_flags:
+        - HIDE_ENCHANTS
+    items:
+      sword:
+        material: "NETHERITE_SWORD"
+        amount: 1
+        name: "<light_purple><bold>✦ Void Reaper ✦"
+        lore:
+          - "<dark_purple>Forged in the void."
+        enchantments:
+          SHARPNESS: 5
+          UNBREAKING: 3
+          LOOTING: 3
+          FIRE_ASPECT: 2
+    announce: "<light_purple>✦✦✦ <player> <gray>discovered the <light_purple><bold>VOID REAPER <gray>in the <dark_purple>Mystery Box<gray>! ✦✦✦"

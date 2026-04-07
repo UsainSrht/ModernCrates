@@ -1,0 +1,74 @@
+type: CLICK
+
+# No shuffle phase — transitions immediately to clicking.
+# One center slot means the player clicks once and the reward is instantly revealed.
+gui_title: "<gold><bold>⭐ Instant Crate ⭐"
+gui_title_shuffling: "<yellow><bold>Opening..."
+gui_rows: 3
+gui_fill:
+  material: "YELLOW_STAINED_GLASS_PANE"
+  name: " "
+
+reward_slots:
+  - 13
+
+filler_slots:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  - 14
+  - 15
+  - 16
+  - 17
+  - 18
+  - 19
+  - 20
+  - 21
+  - 22
+  - 23
+  - 24
+  - 25
+  - 26
+
+filler_items:
+  star_1:
+    material: "GOLD_NUGGET"
+    name: "<gold>✦"
+  star_2:
+    material: "SUNFLOWER"
+    name: "<yellow>★"
+  star_3:
+    material: "GLOWSTONE_DUST"
+    name: "<yellow>✧"
+
+reward_hide_item:
+  material: "CHEST"
+  name: "<gold><bold>Click to Open!"
+  lore:
+    - "<gray>Your reward is waiting inside!"
+    - "<yellow>Click to reveal."
+
+shuffle_amount: 1
+shuffle_ticks: 1
+reward_amount: 1
+show_revealed_items_for: 60
+
+sounds:
+  reward:
+    - "entity.player.levelup"
+  shuffle:
+    - "block.chest.open"
+  hide:
+    - "block.chest.open"
+  reveal:
+    - "entity.experience_orb.pickup"

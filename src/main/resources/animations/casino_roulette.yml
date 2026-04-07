@@ -1,0 +1,83 @@
+type: CSGO
+
+# Casino roulette wheel animation. The crate's reward display items (black concrete,
+# red concrete, green concrete) scroll across the middle row, exactly like a real
+# roulette wheel. White pointers mark the landing position. The slower tick_rate_modifier
+# makes the wheel noticeably decelerate before stopping — heightening the suspense.
+gui_title: "<dark_red><bold>  Casino Roulette  "
+gui_rows: 3
+gui_fill:
+  material: "GREEN_STAINED_GLASS_PANE"
+  name: " "
+
+total_ticks: 55
+stay_open_after_reward_ticks: 80
+start_tick_rate: 1
+tick_rate_modifier: 10
+reward_index: 5
+
+reward_slots:
+  - 9
+  - 10
+  - 11
+  - 12
+  - 13
+  - 14
+  - 15
+  - 16
+  - 17
+
+filler_slots:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 18
+  - 19
+  - 20
+  - 21
+  - 22
+  - 23
+  - 24
+  - 25
+  - 26
+
+filler_items:
+  felt_dark:
+    material: "BLACK_STAINED_GLASS_PANE"
+    name: " "
+  felt_green:
+    material: "GREEN_STAINED_GLASS_PANE"
+    name: " "
+
+pointers:
+  down:
+    slot: 4
+    material: "WHITE_STAINED_GLASS_PANE"
+    name: "<white><bold>   ▼   "
+  up:
+    slot: 22
+    material: "WHITE_STAINED_GLASS_PANE"
+    name: "<white><bold>   ▲   "
+
+end_of_the_animation_item:
+  material: "SUNFLOWER"
+  name: "<yellow><bold>★ Result ★"
+  lore:
+    - "<gray>The ball has landed!"
+end_of_the_animation_slots:
+  - 0
+  - 8
+  - 18
+  - 26
+
+sounds:
+  tick:
+    - "block.note_block.bass"
+  reward:
+    - "entity.player.levelup"
