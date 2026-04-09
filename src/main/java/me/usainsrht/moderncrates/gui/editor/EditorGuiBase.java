@@ -1,5 +1,11 @@
 package me.usainsrht.moderncrates.gui.editor;
 
+import io.papermc.paper.dialog.Dialog;
+import io.papermc.paper.registry.data.dialog.ActionButton;
+import io.papermc.paper.registry.data.dialog.DialogBase;
+import io.papermc.paper.registry.data.dialog.action.DialogAction;
+import io.papermc.paper.registry.data.dialog.input.DialogInput;
+import io.papermc.paper.registry.data.dialog.type.DialogType;
 import me.usainsrht.moderncrates.ModernCratesPlugin;
 import me.usainsrht.moderncrates.api.animation.Animation;
 import me.usainsrht.moderncrates.api.animation.GuiItemConfig;
@@ -10,13 +16,9 @@ import me.usainsrht.moderncrates.gui.ModernCratesGui;
 import me.usainsrht.moderncrates.util.ItemBuilder;
 import me.usainsrht.moderncrates.util.TextUtil;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import net.kyori.adventure.text.event.ClickCallback;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
-import org.bukkit.block.Sign;
-import org.bukkit.block.sign.Side;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
@@ -34,7 +36,7 @@ import java.util.function.IntSupplier;
 
 /**
  * Abstract base for all editor GUI screens.
- * Provides common utilities like fill, number items, sign-based text input, and save helpers.
+ * Provides common utilities like fill, number items, dialog-based text input, and save helpers.
  */
 public abstract class EditorGuiBase implements ModernCratesGui {
 
@@ -61,64 +63,92 @@ public abstract class EditorGuiBase implements ModernCratesGui {
     }
 
     // ========================
-    // Sign-based Text Input
+    // Dialog-based Text Input
     // ========================
 
     /**
-     * Opens a sign editor for the player to input text.
-     * After submission, the callback is invoked on the main thread with the text from line 0.
+     * Opens a dialog for the player to input text.
+     * After submission, the callback is invoked on the main thread with the entered text.
      */
     protected void requestSignInput(String promptLine, Consumer<String> callback) {
         player.closeInventory();
 
-        Location signLoc = player.getLocation().clone();
-        signLoc.setY(Math.max(signLoc.getBlockY() - 5, signLoc.getWorld().getMinHeight()));
-
-        Block block = signLoc.getBlock();
-        Material previousType = block.getType();
-
-        block.setType(Material.OAK_SIGN);
-        Sign sign = (Sign) block.getState();
-        sign.getSide(Side.FRONT).line(1, TextUtil.parse("<dark_gray>^^^^^^^^"));
-        sign.getSide(Side.FRONT).line(2, TextUtil.parse("<dark_gray>" + promptLine));
-        sign.update(true, false);
-
-        player.openSign(sign, Side.FRONT);
-
-        plugin.getSignInputManager().awaitInput(player, lines -> {
-            block.setType(previousType);
-            String text = lines[0] != null ? lines[0].trim() : "";
-            if (text.isEmpty() || text.equalsIgnoreCase("cancel")) {
-                open();
-            } else {
-                callback.accept(text);
-            }
+        Dialog dialog = Dialog.create(factory -> {
+            factory.empty()
+                .base(
+                    DialogBase.builder(TextUtil.parse("<gold>" + promptLine))
+                        .inputs(List.of(
+                            DialogInput.text("input", Component.text(promptLine))
+                                .width(200)
+                                .maxLength(256)
+                                .build()
+                        ))
+                        .canCloseWithEscape(true)
+                        .build()
+                )
+                .type(
+                    DialogType.confirmation(
+                        ActionButton.builder(Component.text("Submit"))
+                            .action(DialogAction.customClick((response, audience) -> {
+                                String text = response.getText("input");
+                                plugin.getScheduling().globalRegionalScheduler().run(() -> {
+                                    if (text == null || text.trim().isEmpty()) {
+                                        open();
+                                    } else {
+                                        callback.accept(text.trim());
+                                    }
+                                });
+                            }, ClickCallback.Options.builder().uses(1).build()))
+                            .build(),
+                        ActionButton.builder(Component.text("Cancel"))
+                            .build()
+                    )
+                );
         });
+
+        player.showDialog(dialog);
     }
 
     /**
-     * Opens a sign editor for multi-line text input.
+     * Opens a dialog for multi-line text input.
      */
     protected void requestSignInputMultiLine(String promptLine, Consumer<String[]> callback) {
         player.closeInventory();
 
-        Location signLoc = player.getLocation().clone();
-        signLoc.setY(Math.max(signLoc.getBlockY() - 5, signLoc.getWorld().getMinHeight()));
-
-        Block block = signLoc.getBlock();
-        Material previousType = block.getType();
-
-        block.setType(Material.OAK_SIGN);
-        Sign sign = (Sign) block.getState();
-        sign.getSide(Side.FRONT).line(3, TextUtil.parse("<dark_gray>" + promptLine));
-        sign.update(true, false);
-
-        player.openSign(sign, Side.FRONT);
-
-        plugin.getSignInputManager().awaitInput(player, lines -> {
-            block.setType(previousType);
-            callback.accept(lines);
+        Dialog dialog = Dialog.create(factory -> {
+            factory.empty()
+                .base(
+                    DialogBase.builder(TextUtil.parse("<gold>" + promptLine))
+                        .inputs(List.of(
+                            DialogInput.text("line0", Component.text("Line 1")).width(200).maxLength(256).build(),
+                            DialogInput.text("line1", Component.text("Line 2")).width(200).maxLength(256).build(),
+                            DialogInput.text("line2", Component.text("Line 3")).width(200).maxLength(256).build(),
+                            DialogInput.text("line3", Component.text("Line 4")).width(200).maxLength(256).build()
+                        ))
+                        .canCloseWithEscape(true)
+                        .build()
+                )
+                .type(
+                    DialogType.confirmation(
+                        ActionButton.builder(Component.text("Submit"))
+                            .action(DialogAction.customClick((response, audience) -> {
+                                String[] lines = new String[4];
+                                for (int i = 0; i < 4; i++) {
+                                    String val = response.getText("line" + i);
+                                    lines[i] = val != null ? val : "";
+                                }
+                                plugin.getScheduling().globalRegionalScheduler().run(() -> {
+                                    callback.accept(lines);
+                                });
+                            }, ClickCallback.Options.builder().uses(1).build()))
+                            .build(),
+                        ActionButton.builder(Component.text("Cancel"))
+                            .build()
+                    )
+                );
         });
+
+        player.showDialog(dialog);
     }
 
     // ========================

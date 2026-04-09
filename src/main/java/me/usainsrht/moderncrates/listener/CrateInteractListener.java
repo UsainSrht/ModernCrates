@@ -13,13 +13,16 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
+import java.io.File;
+
 /**
- * Handles physical crate interaction and crate item usage.
+ * Handles physical crate interaction, crate item usage, and crate placement.
  */
 public class CrateInteractListener implements Listener {
 
@@ -37,6 +40,13 @@ public class CrateInteractListener implements Listener {
         // Check for crate item in hand (right-click in air or on block)
         if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
             ItemStack mainHand = player.getInventory().getItemInMainHand();
+
+            // Block crate-item usage if it is actually a placement item
+            if (plugin.getKeyManager().getCrateIdFromPlacerItem(mainHand) != null) {
+                // Let BlockPlaceEvent handle it; do nothing here
+                return;
+            }
+
             String crateIdFromItem = plugin.getKeyManager().getCrateIdFromItem(mainHand);
             if (crateIdFromItem != null) {
                 event.setCancelled(true);
@@ -86,15 +96,52 @@ public class CrateInteractListener implements Listener {
         }
     }
 
+    /**
+     * Handles placement of a crate placement item.
+     * The placed block's location is registered as a new location for that crate.
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onBlockPlace(BlockPlaceEvent event) {
+        ItemStack item = event.getItemInHand();
+        String crateId = plugin.getKeyManager().getCrateIdFromPlacerItem(item);
+        if (crateId == null) return;
+
+        Crate crate = plugin.getCrateRegistry().get(crateId);
+        if (crate == null) return;
+
+        Block block = event.getBlock();
+        CrateLocation loc = new CrateLocation(
+                block.getWorld().getName(),
+                block.getX(),
+                block.getY(),
+                block.getZ()
+        );
+        crate.addCrateLocation(loc);
+
+        // Auto-save and refresh holograms
+        try {
+            plugin.getCrateConfigParser().save(crate, new File(plugin.getDataFolder(), "crates"));
+        } catch (Exception e) {
+            plugin.getLogger().warning("Failed to auto-save crate after placement: " + e.getMessage());
+        }
+        plugin.getHologramManager().removeHologram(crateId);
+        plugin.getHologramManager().createHologram(crate);
+
+        event.getPlayer().sendMessage(TextUtil.parse(
+                "<green>Location added to crate <white>" + crate.getName()
+                + "<green>! (" + crate.getCrateLocations().size() + " total)"
+        ));
+    }
+
     private Crate getCrateAtBlock(Block block) {
         for (Crate crate : plugin.getCrateRegistry().values()) {
-            CrateLocation loc = crate.getCrateLocation();
-            if (loc == null) continue;
-            if (loc.getWorldName().equals(block.getWorld().getName())
-                    && (int) loc.getX() == block.getX()
-                    && (int) loc.getY() == block.getY()
-                    && (int) loc.getZ() == block.getZ()) {
-                return crate;
+            for (CrateLocation loc : crate.getCrateLocations()) {
+                if (loc.getWorldName().equals(block.getWorld().getName())
+                        && (int) loc.getX() == block.getX()
+                        && (int) loc.getY() == block.getY()
+                        && (int) loc.getZ() == block.getZ()) {
+                    return crate;
+                }
             }
         }
         return null;
@@ -112,6 +159,6 @@ public class CrateInteractListener implements Listener {
         Location blockCenter = block.getLocation().add(0.5, 0.5, 0.5);
         Vector direction = player.getLocation().toVector().subtract(blockCenter.toVector()).normalize();
         direction.setY(0.3);
-        player.setVelocity(direction.multiply(0.5));
+        player.setVelocity(direction.multiply(1.5));
     }
 }

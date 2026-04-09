@@ -2,6 +2,8 @@ package me.usainsrht.moderncrates.api.crate;
 
 import me.usainsrht.moderncrates.api.reward.Reward;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -14,7 +16,7 @@ public class Crate {
     private String animationId;
     private CrateKeyConfig keyConfig;
     private CrateItemConfig itemConfig;
-    private CrateLocation crateLocation;
+    private List<CrateLocation> crateLocations = new ArrayList<>();
     private boolean bounceBack;
     private HologramConfig hologramConfig;
     private PreviewConfig previewConfig;
@@ -61,12 +63,31 @@ public class Crate {
         this.itemConfig = itemConfig;
     }
 
-    public CrateLocation getCrateLocation() {
-        return crateLocation;
+    public List<CrateLocation> getCrateLocations() {
+        return crateLocations;
     }
 
+    public void setCrateLocations(List<CrateLocation> crateLocations) {
+        this.crateLocations = crateLocations != null ? crateLocations : new ArrayList<>();
+    }
+
+    public void addCrateLocation(CrateLocation loc) {
+        if (loc != null) crateLocations.add(loc);
+    }
+
+    public void clearCrateLocations() {
+        crateLocations.clear();
+    }
+
+    /** Returns the first registered location, or null if none. */
+    public CrateLocation getCrateLocation() {
+        return crateLocations.isEmpty() ? null : crateLocations.get(0);
+    }
+
+    /** Backward-compat: sets list to a single location (or clears if null). */
     public void setCrateLocation(CrateLocation crateLocation) {
-        this.crateLocation = crateLocation;
+        crateLocations.clear();
+        if (crateLocation != null) crateLocations.add(crateLocation);
     }
 
     public boolean isBounceBack() {
@@ -110,7 +131,7 @@ public class Crate {
     }
 
     public boolean isPhysical() {
-        return crateLocation != null;
+        return !crateLocations.isEmpty();
     }
 
     public boolean requiresKey() {

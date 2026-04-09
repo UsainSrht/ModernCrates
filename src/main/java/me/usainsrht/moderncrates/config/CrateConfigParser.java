@@ -89,15 +89,32 @@ public class CrateConfigParser {
             crate.setItemConfig(itemConfig);
         }
 
-        // Location
-        ConfigurationSection locSection = yaml.getConfigurationSection("location");
-        if (locSection != null) {
-            CrateLocation loc = new CrateLocation();
-            loc.setWorldName(locSection.getString("world", "world"));
-            loc.setX(locSection.getDouble("x"));
-            loc.setY(locSection.getDouble("y"));
-            loc.setZ(locSection.getDouble("z"));
-            crate.setCrateLocation(loc);
+        // Locations (list) – with backward compat for old single 'location' section
+        List<Map<?, ?>> locationsList = yaml.getMapList("locations");
+        if (!locationsList.isEmpty()) {
+            List<CrateLocation> locs = new ArrayList<>();
+            for (Map<?, ?> map : locationsList) {
+                if (map == null) continue;
+                CrateLocation loc = new CrateLocation();
+                loc.setWorldName(String.valueOf(map.get("world")));
+                Object xv = map.get("x"), yv = map.get("y"), zv = map.get("z");
+                loc.setX(xv instanceof Number ? ((Number) xv).doubleValue() : 0.0);
+                loc.setY(yv instanceof Number ? ((Number) yv).doubleValue() : 0.0);
+                loc.setZ(zv instanceof Number ? ((Number) zv).doubleValue() : 0.0);
+                locs.add(loc);
+            }
+            crate.setCrateLocations(locs);
+        } else {
+            // Backward compat: single 'location' section
+            ConfigurationSection locSection = yaml.getConfigurationSection("location");
+            if (locSection != null) {
+                CrateLocation loc = new CrateLocation();
+                loc.setWorldName(locSection.getString("world", "world"));
+                loc.setX(locSection.getDouble("x"));
+                loc.setY(locSection.getDouble("y"));
+                loc.setZ(locSection.getDouble("z"));
+                crate.addCrateLocation(loc);
+            }
         }
 
         crate.setBounceBack(yaml.getBoolean("bounce_back", false));
@@ -296,13 +313,19 @@ public class CrateConfigParser {
             if (item.getLore() != null) yaml.set("item.lore", item.getLore());
         }
 
-        // Location
-        CrateLocation loc = crate.getCrateLocation();
-        if (loc != null) {
-            yaml.set("location.world", loc.getWorldName());
-            yaml.set("location.x", loc.getX());
-            yaml.set("location.y", loc.getY());
-            yaml.set("location.z", loc.getZ());
+        // Locations
+        List<CrateLocation> locs = crate.getCrateLocations();
+        if (!locs.isEmpty()) {
+            List<Map<String, Object>> locMapList = new ArrayList<>();
+            for (CrateLocation loc : locs) {
+                Map<String, Object> locMap = new LinkedHashMap<>();
+                locMap.put("world", loc.getWorldName());
+                locMap.put("x", loc.getX());
+                locMap.put("y", loc.getY());
+                locMap.put("z", loc.getZ());
+                locMapList.add(locMap);
+            }
+            yaml.set("locations", locMapList);
         }
 
         yaml.set("bounce_back", crate.isBounceBack());

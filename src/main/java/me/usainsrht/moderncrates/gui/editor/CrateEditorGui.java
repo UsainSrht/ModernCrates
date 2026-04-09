@@ -58,14 +58,22 @@ public class CrateEditorGui extends EditorGuiBase {
                 List.of("<gray>Click to manage rewards")));
 
         // Location
-        String locStr = crate.isPhysical()
-                ? crate.getCrateLocation().getWorldName() + " "
-                + (int) crate.getCrateLocation().getX() + " "
-                + (int) crate.getCrateLocation().getY() + " "
-                + (int) crate.getCrateLocation().getZ()
-                : "None (Virtual)";
-        inventory.setItem(32, ItemBuilder.create("COMPASS", "<yellow><bold>Location: <white>" + locStr,
-                List.of("<gray>Click to set to your position", "<gray>Shift-click to clear (virtual)")));
+        List<String> locLore = new ArrayList<>();
+        locLore.add("<gray>Left-click: <white>get placement item (place to add location)");
+        locLore.add("<gray>Right-click: <white>add your target block as location");
+        locLore.add("<gray>Shift-click: <white>clear all locations");
+        locLore.add("");
+        List<CrateLocation> locs = crate.getCrateLocations();
+        if (locs.isEmpty()) {
+            locLore.add("<red>No locations (virtual)");
+        } else {
+            locLore.add("<yellow>" + locs.size() + " location(s):");
+            for (CrateLocation l : locs) {
+                locLore.add("<white>  " + l.getWorldName() + " " + (int) l.getX() + " " + (int) l.getY() + " " + (int) l.getZ());
+            }
+        }
+        inventory.setItem(32, ItemBuilder.create("COMPASS",
+                "<yellow><bold>Locations <white>(" + locs.size() + ")", locLore));
 
         // Bottom: Save, Back
         inventory.setItem(45, ItemBuilder.create("ARROW", "<red><bold>Back", List.of("<gray>Return to crate list")));
@@ -132,17 +140,35 @@ public class CrateEditorGui extends EditorGuiBase {
             case 30 -> new RewardsListGui(player, plugin, crate).open();
             case 32 -> {
                 if (shiftClick) {
-                    crate.setCrateLocation(null);
+                    crate.clearCrateLocations();
+                    plugin.getHologramManager().removeHologram(crate.getId());
+                    open();
+                } else if (event.isRightClick()) {
+                    // Add player's target block as a new crate location
+                    org.bukkit.block.Block target = player.getTargetBlockExact(10);
+                    if (target != null) {
+                    crate.addCrateLocation(new CrateLocation(
+                                target.getWorld().getName(),
+                                target.getX(), target.getY(), target.getZ()
+                        ));
+                        plugin.getHologramManager().removeHologram(crate.getId());
+                        plugin.getHologramManager().createHologram(crate);
+                        player.sendMessage(TextUtil.parse("<green>Target block added as crate location."));
+                    } else {
+                        player.sendMessage(TextUtil.parse("<red>No block in sight (max 10 blocks)."));
+                    }
+                    open();
                 } else {
-                    CrateLocation loc = new CrateLocation(
-                            player.getWorld().getName(),
-                            player.getLocation().getBlockX(),
-                            player.getLocation().getBlockY(),
-                            player.getLocation().getBlockZ()
-                    );
-                    crate.setCrateLocation(loc);
+                    // Left-click: give the crate placement item and close
+                    player.closeInventory();
+                    ItemStack placerItem = plugin.getKeyManager().createCratePlacerItem(crate);
+                    if (placerItem != null) {
+                        player.getInventory().addItem(placerItem);
+                        player.sendMessage(TextUtil.parse(
+                                "<green>Place the item to register that block as a crate location."
+                        ));
+                    }
                 }
-                open();
             }
             case 45 -> new CrateListGui(player, plugin).open();
             case 49 -> {

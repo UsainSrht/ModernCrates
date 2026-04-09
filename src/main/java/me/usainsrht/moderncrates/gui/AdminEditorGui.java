@@ -75,7 +75,7 @@ public class AdminEditorGui implements ModernCratesGui {
         switch (mode) {
             case MAIN_MENU -> handleMainMenu(slot);
             case CRATE_LIST -> handleCrateList(slot, rightClick);
-            case CRATE_EDIT -> handleCrateEdit(slot, shiftClick);
+            case CRATE_EDIT -> handleCrateEdit(slot, shiftClick, rightClick);
             case KEY_EDIT -> handleKeyEdit(slot, rightClick, shiftClick);
             case ITEM_EDIT -> handleItemEdit(slot);
             case HOLOGRAM_EDIT -> handleHologramEdit(slot);
@@ -219,14 +219,22 @@ public class AdminEditorGui implements ModernCratesGui {
                 List.of("<gray>Click to manage rewards")));
 
         // Location
-        String locStr = crate.isPhysical()
-                ? crate.getCrateLocation().getWorldName() + " "
-                + (int) crate.getCrateLocation().getX() + " "
-                + (int) crate.getCrateLocation().getY() + " "
-                + (int) crate.getCrateLocation().getZ()
-                : "None (Virtual)";
-        inventory.setItem(32, ItemBuilder.create("COMPASS", "<yellow><bold>Location: <white>" + locStr,
-                List.of("<gray>Click to set to your position", "<gray>Shift-click to clear (virtual)")));
+        List<CrateLocation> locs = crate.getCrateLocations();
+        List<String> locLore = new ArrayList<>();
+        locLore.add("<gray>Left-click: <white>get placement item");
+        locLore.add("<gray>Right-click: <white>add target block as location");
+        locLore.add("<gray>Shift-click: <white>clear all locations");
+        locLore.add("");
+        if (locs.isEmpty()) {
+            locLore.add("<red>No locations (virtual)");
+        } else {
+            locLore.add("<yellow>" + locs.size() + " location(s):");
+            for (CrateLocation l : locs) {
+                locLore.add("<white>  " + l.getWorldName() + " " + (int) l.getX() + " " + (int) l.getY() + " " + (int) l.getZ());
+            }
+        }
+        inventory.setItem(32, ItemBuilder.create("COMPASS",
+                "<yellow><bold>Locations <white>(" + locs.size() + ")", locLore));
 
         // Bottom: Save, Back
         inventory.setItem(45, ItemBuilder.create("ARROW", "<red><bold>Back", List.of("<gray>Return to crate list")));
@@ -250,7 +258,7 @@ public class AdminEditorGui implements ModernCratesGui {
         return ItemBuilder.create("CLOCK", "<yellow><bold>Animation: <white>" + crate.getAnimationId(), lore);
     }
 
-    private void handleCrateEdit(int slot, boolean shiftClick) {
+    private void handleCrateEdit(int slot, boolean shiftClick, boolean rightClick) {
         if (editingCrate == null) return;
         switch (slot) {
             case 10 -> requestInput("Enter new crate name:", input -> {
@@ -291,17 +299,31 @@ public class AdminEditorGui implements ModernCratesGui {
             case 30 -> openRewardsList(editingCrate);
             case 32 -> {
                 if (shiftClick) {
-                    editingCrate.setCrateLocation(null);
+                    editingCrate.clearCrateLocations();
+                    plugin.getHologramManager().removeHologram(editingCrate.getId());
+                    openCrateEditor(editingCrate);
+                } else if (rightClick) {
+                    org.bukkit.block.Block target = player.getTargetBlockExact(10);
+                    if (target != null) {
+                        editingCrate.addCrateLocation(new CrateLocation(
+                                target.getWorld().getName(),
+                                target.getX(), target.getY(), target.getZ()
+                        ));
+                        plugin.getHologramManager().removeHologram(editingCrate.getId());
+                        plugin.getHologramManager().createHologram(editingCrate);
+                        player.sendMessage(TextUtil.parse("<green>Target block added as crate location."));
+                    } else {
+                        player.sendMessage(TextUtil.parse("<red>No block in sight (max 10 blocks)."));
+                    }
+                    openCrateEditor(editingCrate);
                 } else {
-                    CrateLocation loc = new CrateLocation(
-                            player.getWorld().getName(),
-                            player.getLocation().getBlockX(),
-                            player.getLocation().getBlockY(),
-                            player.getLocation().getBlockZ()
-                    );
-                    editingCrate.setCrateLocation(loc);
+                    player.closeInventory();
+                    ItemStack placerItem = plugin.getKeyManager().createCratePlacerItem(editingCrate);
+                    if (placerItem != null) {
+                        player.getInventory().addItem(placerItem);
+                        player.sendMessage(TextUtil.parse("<green>Place the item to register that block as a crate location."));
+                    }
                 }
-                openCrateEditor(editingCrate);
             }
             case 45 -> openCrateList();
             case 49 -> {
@@ -1285,16 +1307,41 @@ public class AdminEditorGui implements ModernCratesGui {
 
     private void requestInput(String prompt, java.util.function.Consumer<String> callback) {
         player.closeInventory();
-        player.sendMessage(TextUtil.parse("<yellow>" + prompt));
-        player.sendMessage(TextUtil.parse("<gray>Type 'cancel' to cancel."));
-        plugin.getChatInputManager().awaitInput(player, input -> {
-            if (!input.equalsIgnoreCase("cancel")) {
-                callback.accept(input);
-            } else {
-                // Re-open the current screen
-                reopenCurrentScreen();
-            }
+
+        io.papermc.paper.dialog.Dialog dialog = io.papermc.paper.dialog.Dialog.create(factory -> {
+            factory.empty()
+                .base(
+                    io.papermc.paper.registry.data.dialog.DialogBase.builder(TextUtil.parse("<gold>" + prompt))
+                        .inputs(java.util.List.of(
+                            io.papermc.paper.registry.data.dialog.input.DialogInput.text("input", net.kyori.adventure.text.Component.text(prompt))
+                                .width(200)
+                                .maxLength(256)
+                                .build()
+                        ))
+                        .canCloseWithEscape(true)
+                        .build()
+                )
+                .type(
+                    io.papermc.paper.registry.data.dialog.type.DialogType.confirmation(
+                        io.papermc.paper.registry.data.dialog.ActionButton.builder(net.kyori.adventure.text.Component.text("Submit"))
+                            .action(io.papermc.paper.registry.data.dialog.action.DialogAction.customClick((response, audience) -> {
+                                String text = response.getText("input");
+                                plugin.getScheduling().globalRegionalScheduler().run(() -> {
+                                    if (text != null && !text.equalsIgnoreCase("cancel")) {
+                                        callback.accept(text);
+                                    } else {
+                                        reopenCurrentScreen();
+                                    }
+                                });
+                            }, net.kyori.adventure.text.event.ClickCallback.Options.builder().uses(1).build()))
+                            .build(),
+                        io.papermc.paper.registry.data.dialog.ActionButton.builder(net.kyori.adventure.text.Component.text("Cancel"))
+                            .build()
+                    )
+                );
         });
+
+        player.showDialog(dialog);
     }
 
     private void reopenCurrentScreen() {

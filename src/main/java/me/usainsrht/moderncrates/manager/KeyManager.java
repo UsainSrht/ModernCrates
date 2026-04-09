@@ -143,6 +143,48 @@ public class KeyManager {
     }
 
     /**
+     * Creates a placement item for setting physical crate locations.
+     * The item uses the crate's configured item material and is tagged with
+     * {@code moderncrates:crate_placer} so BlockPlaceEvent can identify it.
+     */
+    public ItemStack createCratePlacerItem(Crate crate) {
+        var config = crate.getItemConfig();
+        Material mat = config != null ? Material.matchMaterial(config.getMaterial().toUpperCase()) : null;
+        if (mat == null) mat = Material.CHEST;
+
+        ItemStack item = new ItemStack(mat, 1);
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return item;
+
+        String displayName = config != null && config.getName() != null ? config.getName() : crate.getName();
+        meta.displayName(TextUtil.parse(displayName));
+        meta.lore(java.util.List.of(
+                TextUtil.parse("<gray>Place this block to register a crate location"),
+                TextUtil.parse("<gray>Crate: <white>" + crate.getName())
+        ));
+
+        meta.getPersistentDataContainer().set(
+                org.bukkit.NamespacedKey.fromString("moderncrates:crate_placer"),
+                org.bukkit.persistence.PersistentDataType.STRING,
+                crate.getId()
+        );
+
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    /**
+     * Returns the crate ID if the item is a crate placement item, otherwise null.
+     */
+    public String getCrateIdFromPlacerItem(ItemStack item) {
+        if (item == null || !item.hasItemMeta()) return null;
+        var pdc = item.getItemMeta().getPersistentDataContainer();
+        var key = org.bukkit.NamespacedKey.fromString("moderncrates:crate_placer");
+        if (!pdc.has(key, org.bukkit.persistence.PersistentDataType.STRING)) return null;
+        return pdc.get(key, org.bukkit.persistence.PersistentDataType.STRING);
+    }
+
+    /**
      * Gets the crate ID from a crate item.
      */
     public String getCrateIdFromItem(ItemStack item) {

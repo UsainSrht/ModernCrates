@@ -14,8 +14,6 @@ import me.usainsrht.moderncrates.command.ModernCratesCommand;
 import me.usainsrht.moderncrates.config.AnimationConfigParser;
 import me.usainsrht.moderncrates.config.CrateConfigParser;
 import me.usainsrht.moderncrates.config.PluginConfig;
-import me.usainsrht.moderncrates.gui.ChatInputManager;
-import me.usainsrht.moderncrates.gui.SignInputManager;
 import me.usainsrht.moderncrates.listener.CrateInteractListener;
 import me.usainsrht.moderncrates.listener.GuiListener;
 import me.usainsrht.moderncrates.listener.PlayerListener;
@@ -60,8 +58,7 @@ public class ModernCratesPlugin extends JavaPlugin {
     private KeyManager keyManager;
     private VirtualKeyManager virtualKeyManager;
     private HologramManager hologramManager;
-    private ChatInputManager chatInputManager;
-    private SignInputManager signInputManager;
+
 
     // API
     private ModernCratesAPIImpl apiImpl;
@@ -77,8 +74,7 @@ public class ModernCratesPlugin extends JavaPlugin {
         keyManager = new KeyManager();
         virtualKeyManager = new VirtualKeyManager(getDataFolder(), getLogger());
         hologramManager = new HologramManager();
-        chatInputManager = new ChatInputManager();
-        signInputManager = new SignInputManager();
+
 
         // Config parsers
         animationConfigParser = new AnimationConfigParser(getLogger());
@@ -172,8 +168,6 @@ public class ModernCratesPlugin extends JavaPlugin {
         // Unset API
         ModernCratesProvider.unset();
 
-        chatInputManager.clear();
-        signInputManager.clear();
         getLogger().info("ModernCrates disabled.");
     }
 
@@ -209,7 +203,7 @@ public class ModernCratesPlugin extends JavaPlugin {
             }
         }
         getLogger().info("Using vanilla TextDisplay holograms.");
-        return new VanillaHologramProvider();
+        return new VanillaHologramProvider(scheduling);
     }
 
     private void registerBuiltinAnimationTypes() {
@@ -322,8 +316,7 @@ public class ModernCratesPlugin extends JavaPlugin {
     public KeyManager getKeyManager() { return keyManager; }
     public VirtualKeyManager getVirtualKeyManager() { return virtualKeyManager; }
     public HologramManager getHologramManager() { return hologramManager; }
-    public ChatInputManager getChatInputManager() { return chatInputManager; }
-    public SignInputManager getSignInputManager() { return signInputManager; }
+
 
     // --- API Implementation ---
 
