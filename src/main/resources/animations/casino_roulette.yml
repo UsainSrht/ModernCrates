@@ -1,11 +1,21 @@
 type: CSGO
 
-# Casino roulette wheel animation. The crate's reward display items (black concrete,
-# red concrete, green concrete) scroll across the middle row, exactly like a real
-# roulette wheel. White pointers mark the landing position. The slower tick_rate_modifier
-# makes the wheel noticeably decelerate before stopping — heightening the suspense.
+# Casino roulette wheel animation using a 6-row GUI.
+# Reward slots trace a clockwise oval so items visually spin around the wheel.
+# The winning position sits at the top-centre (slot 4). Pointers inside the
+# circle mark the landing axis. The slower tick_rate_modifier makes the wheel
+# noticeably decelerate before stopping — heightening the suspense.
+#
+# Circle layout (● = reward slot, ▲/▼ = pointers):
+#   Row 0:  _   _   ●   ●   ●   ●   ●   _   _
+#   Row 1:  _   ●   _   _  [▲]  _   _   ●   _
+#   Row 2:  ●   _   _   _   _   _   _   _   ●
+#   Row 3:  ●   _   _   _   _   _   _   _   ●
+#   Row 4:  _   ●   _   _  [▼]  _   _   ●   _
+#   Row 5:  _   _   ●   ●   ●   ●   ●   _   _
+
 gui_title: "<dark_red><bold>  Casino Roulette  "
-gui_rows: 3
+gui_rows: 6
 gui_fill:
   material: "GREEN_STAINED_GLASS_PANE"
   name: " "
@@ -14,30 +24,44 @@ total_ticks: 55
 stay_open_after_reward_ticks: 80
 start_tick_rate: 1
 tick_rate_modifier: 10
-reward_index: 5
 
+# 1-based index into reward_slots — position 3 = slot 4 (top centre)
+reward_index: 3
+
+# Clockwise circle: top row L→R, right side ↓, bottom row R→L, left side ↑
 reward_slots:
-  - 9
-  - 10
-  - 11
-  - 12
-  - 13
-  - 14
-  - 15
-  - 16
-  - 17
-
-filler_slots:
-  - 0
-  - 1
   - 2
   - 3
   - 4
   - 5
   - 6
+  - 16
+  - 26
+  - 35
+  - 43
+  - 51
+  - 50
+  - 49
+  - 48
+  - 47
+  - 37
+  - 27
+  - 18
+  - 10
+
+# Every slot that is NOT part of the circle (corners + interior)
+filler_slots:
+  - 0
+  - 1
   - 7
   - 8
-  - 18
+  - 9
+  - 11
+  - 12
+  - 13
+  - 14
+  - 15
+  - 17
   - 19
   - 20
   - 21
@@ -45,7 +69,24 @@ filler_slots:
   - 23
   - 24
   - 25
-  - 26
+  - 28
+  - 29
+  - 30
+  - 31
+  - 32
+  - 33
+  - 34
+  - 36
+  - 38
+  - 39
+  - 40
+  - 41
+  - 42
+  - 44
+  - 45
+  - 46
+  - 52
+  - 53
 
 filler_items:
   felt_dark:
@@ -57,13 +98,13 @@ filler_items:
 
 pointers:
   down:
-    slot: 4
-    material: "WHITE_STAINED_GLASS_PANE"
-    name: "<white><bold>   ▼   "
-  up:
-    slot: 22
+    slot: 13
     material: "WHITE_STAINED_GLASS_PANE"
     name: "<white><bold>   ▲   "
+  up:
+    slot: 40
+    material: "WHITE_STAINED_GLASS_PANE"
+    name: "<white><bold>   ▼   "
 
 end_of_the_animation_item:
   material: "SUNFLOWER"
@@ -73,8 +114,8 @@ end_of_the_animation_item:
 end_of_the_animation_slots:
   - 0
   - 8
-  - 18
-  - 26
+  - 45
+  - 53
 
 sounds:
   tick:

@@ -53,6 +53,9 @@ public class CsgoAnimationSession implements AnimationSession, ModernCratesGui {
     // Pre-built filler items
     private List<ItemStack> fillerItemStacks;
 
+    // Pointer slots to exclude from filler updates
+    private final Set<Integer> pointerSlots = new HashSet<>();
+
     private static final int HARDCODED_STOP_THRESHOLD = 1200;
 
     public CsgoAnimationSession(Player player, Crate crate, Animation animation, CsgoAnimationType type) {
@@ -85,11 +88,19 @@ public class CsgoAnimationSession implements AnimationSession, ModernCratesGui {
         // Fill background with gui_fill
         fillBackground();
 
-        // Place pointer items
-        placePointers();
+        // Record pointer slots so fillers never overwrite them
+        if (animation.getDownPointer() != null) {
+            pointerSlots.add(animation.getDownPointer().getSlot());
+        }
+        if (animation.getUpPointer() != null) {
+            pointerSlots.add(animation.getUpPointer().getSlot());
+        }
 
-        // Fill filler slots with initial random items
+        // Fill filler slots with initial random items (skips pointer slots)
         fillFillerSlots();
+
+        // Place pointer items after fillers so they are never overwritten
+        placePointers();
 
         // Initialize reward slots with random rewards
         for (int i = 0; i < rewardSlots.size(); i++) {
@@ -238,7 +249,7 @@ public class CsgoAnimationSession implements AnimationSession, ModernCratesGui {
                 || fillerItemStacks == null || fillerItemStacks.isEmpty()) return;
 
         for (int slot : fillerSlots) {
-            if (slot >= 0 && slot < inventory.getSize()) {
+            if (slot >= 0 && slot < inventory.getSize() && !pointerSlots.contains(slot)) {
                 inventory.setItem(slot, fillerItemStacks.get(random.nextInt(fillerItemStacks.size())));
             }
         }
