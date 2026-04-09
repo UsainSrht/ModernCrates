@@ -1,8 +1,8 @@
 type: slot
 
-# Slot Machine: multiple columns of rewards spin vertically.
-# Columns stop one by one. If the winner row shows matching rewards, jackpot!
-# The match_chance controls how often the reels align.
+# Slot Machine: each column is an independent reel with its own circular reward strip.
+# Reels spin at full speed, decelerate independently, and stop one by one (left to right).
+# If the winner row shows matching rewards across all reels, jackpot!
 
 gui_title: "<gold><bold>Slot Machine"
 gui_rows: 5
@@ -18,7 +18,7 @@ slot_columns:
   middle: [13, 22, 31]
   right:  [16, 25, 34]
 
-# Which columns are checked for a matching win (order matters for stop sequence)
+# Which columns are checked for a matching win (order determines stop sequence)
 reward_winner_columns:
   - left
   - middle
@@ -28,21 +28,26 @@ reward_winner_columns:
 # 0 = top, 1 = middle, 2 = bottom
 reward_winner_index: 1
 
-# Ticks (shifts) between each column stopping
-column_stop_delay_ticks: 15
+# Additional shifts between each reel stopping (also used as deceleration window)
+# Higher = longer delay between reels locking + smoother slowdown
+column_stop_delay_ticks: 12
 
 # Percentage chance that all reels align for a win (0.0 - 100.0)
 match_chance: 25.0
 
-# Total item shifts before the first column stops
-total_ticks: 35
+# Total item shifts before the FIRST reel stops (later reels add column_stop_delay_ticks each)
+total_ticks: 40
 
 # How long (ticks) the GUI stays open after the result
 stay_open_after_reward_ticks: 60
 
-# Scroll speed control (same as CSGO type)
+# Initial scroll speed: 1 = every tick (fastest), 2 = every other tick, etc.
 start_tick_rate: 1
-tick_rate_modifier: 15
+
+# Deceleration rate: during slowdown, tick rate increases by 1 every N shifts
+# Lower = faster deceleration, higher = more gradual
+# Example: 2 means rate goes 1->1->2->2->3->3->4... per shift during decel phase
+tick_rate_modifier: 2
 
 # Filler slots (everything not occupied by columns or pointers)
 filler_slots:

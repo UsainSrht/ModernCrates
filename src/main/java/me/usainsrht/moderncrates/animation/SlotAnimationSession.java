@@ -24,8 +24,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Animation session for the Slot-type animation.
- * Multiple columns of rewards spin vertically like a slot machine.
- * Columns stop sequentially; if the winner row matches, the player wins.
+ * Each column is an independent reel with its own circular reward strip.
+ * Reels spin at full speed, decelerate independently, and stop sequentially
+ * (left-to-right) to simulate real slot machine mechanics.
  */
 public class SlotAnimationSession implements AnimationSession, ModernCratesGui {
 
@@ -42,15 +43,10 @@ public class SlotAnimationSession implements AnimationSession, ModernCratesGui {
     private final AtomicBoolean finished = new AtomicBoolean(false);
     private final AtomicBoolean cancelled = new AtomicBoolean(false);
 
-    private int ticksPassed = 0;
-    private int shiftsDone = 0;
-    private int tickRate;
     private final Random random = new Random();
-
-    // Column state
-    private final Map<String, Reward[]> columnRewards = new LinkedHashMap<>();
-    private final Set<String> stoppedColumns = new LinkedHashSet<>();
-    private final Map<String, Integer> columnStopThresholds = new LinkedHashMap<>();
+    private final List<ReelState> reels = new ArrayList<>();
+    private int reelsStoppedCount = 0;
+    private int globalTickCounter = 0;
 
     // Pre-determined outcome
     private boolean willMatch;
@@ -59,14 +55,49 @@ public class SlotAnimationSession implements AnimationSession, ModernCratesGui {
     // Filler
     private List<ItemStack> fillerItemStacks;
 
-    private static final int HARDCODED_STOP_THRESHOLD = 1200;
+    private static final int REEL_STRIP_SIZE = 40;
+    private static final int HARDCODED_TICK_LIMIT = 2000;
 
     public SlotAnimationSession(Player player, Crate crate, Animation animation, SlotAnimationType type) {
         this.player = player;
         this.crate = crate;
         this.animation = animation;
         this.type = type;
-        this.tickRate = Math.max(1, animation.getStartTickRate());
+    }
+
+    /**
+     * Tracks the independent state of a single slot machine reel (column).
+     * Each reel has its own circular strip of rewards, speed, and deceleration.
+     */
+    private static class ReelState {
+        final String name;
+        final List<Integer> guiSlots;
+        final Reward[] strip;
+        int offset;
+        int tickRate;
+        int tickCounter;
+        int shiftsDone;
+        final int targetShifts;
+        final int decelerationStart;
+        boolean stopped;
+
+        ReelState(String name, List<Integer> guiSlots, Reward[] strip,
+                  int startTickRate, int targetShifts, int decelerationStart) {
+            this.name = name;
+            this.guiSlots = guiSlots;
+            this.strip = strip;
+            this.offset = 0;
+            this.tickRate = startTickRate;
+            this.tickCounter = 0;
+            this.shiftsDone = 0;
+            this.targetShifts = targetShifts;
+            this.decelerationStart = decelerationStart;
+            this.stopped = false;
+        }
+
+        Reward getVisible(int i) {
+            return strip[((offset + i) % strip.length + strip.length) % strip.length];
+        }
     }
 
     @Override
@@ -84,22 +115,11 @@ public class SlotAnimationSession implements AnimationSession, ModernCratesGui {
         }
 
         buildFillerItems();
+        buildReels();
 
-        // Calculate stop thresholds for each column
-        List<String> allColumnNames = new ArrayList<>(animation.getSlotColumns().keySet());
-        for (int i = 0; i < allColumnNames.size(); i++) {
-            columnStopThresholds.put(allColumnNames.get(i),
-                    animation.getTotalTicks() + i * animation.getColumnStopDelayTicks());
-        }
-
-        // Initialize column rewards
-        for (var entry : animation.getSlotColumns().entrySet()) {
-            int size = entry.getValue().size();
-            Reward[] rewards = new Reward[size];
-            for (int i = 0; i < size; i++) {
-                rewards[i] = RewardSelector.selectWeighted(crate);
-            }
-            columnRewards.put(entry.getKey(), rewards);
+        // If NOT a match, ensure winner row rewards don't accidentally all match
+        if (!willMatch && reels.size() > 1) {
+            ensureNoAccidentalMatch();
         }
 
         // Create inventory
@@ -109,78 +129,153 @@ public class SlotAnimationSession implements AnimationSession, ModernCratesGui {
         fillBackground();
         placePointers();
         fillFillerSlots();
-        updateAllColumnDisplays();
+        updateAllReelDisplays();
 
         player.openInventory(inventory);
 
-        // Start scrolling
+        // Start the master tick loop (runs every server tick)
         scrollTask = type.getScheduler().entitySpecificScheduler(player)
                 .runAtFixedRate(this::tick, null, 1L, 1L);
     }
 
+    private void buildReels() {
+        List<String> columnNames = new ArrayList<>(animation.getSlotColumns().keySet());
+        int winnerIdx = animation.getRewardWinnerIndex();
+        int baseTargetShifts = animation.getTotalTicks();
+        int startRate = Math.max(1, animation.getStartTickRate());
+        int stopDelay = animation.getColumnStopDelayTicks();
+        // Deceleration window: each reel slows down over the last N shifts before stopping
+        int decelWindow = Math.max(5, stopDelay);
+
+        for (int col = 0; col < columnNames.size(); col++) {
+            String colName = columnNames.get(col);
+            List<Integer> guiSlots = animation.getSlotColumns().get(colName);
+
+            // Later reels spin longer before stopping
+            int targetShifts = baseTargetShifts + col * stopDelay;
+            int decelerationStart = Math.max(0, targetShifts - decelWindow);
+
+            // Generate the circular reel strip with random weighted rewards
+            Reward[] strip = new Reward[REEL_STRIP_SIZE];
+            for (int i = 0; i < REEL_STRIP_SIZE; i++) {
+                strip[i] = RewardSelector.selectWeighted(crate);
+            }
+
+            // Plant the winning reward at the exact landing position for winner columns
+            // After targetShifts shifts, visible window starts at offset=targetShifts.
+            // Winner row is at guiSlots[winnerIdx], which reads strip[(offset + winnerIdx) % SIZE].
+            if (willMatch && animation.getRewardWinnerColumns().contains(colName)) {
+                int landingPos = (targetShifts + winnerIdx) % REEL_STRIP_SIZE;
+                strip[landingPos] = matchReward;
+            }
+
+            reels.add(new ReelState(colName, guiSlots, strip, startRate, targetShifts, decelerationStart));
+        }
+    }
+
+    private void ensureNoAccidentalMatch() {
+        int winnerIdx = animation.getRewardWinnerIndex();
+        List<String> winnerCols = animation.getRewardWinnerColumns();
+        if (winnerCols.size() < 2) return;
+
+        // Find which reels correspond to the first and last winner columns
+        ReelState firstWinnerReel = null;
+        ReelState lastWinnerReel = null;
+        for (ReelState reel : reels) {
+            if (winnerCols.contains(reel.name)) {
+                if (firstWinnerReel == null) firstWinnerReel = reel;
+                lastWinnerReel = reel;
+            }
+        }
+        if (firstWinnerReel == null || lastWinnerReel == null || firstWinnerReel == lastWinnerReel) return;
+
+        int firstLandingPos = (firstWinnerReel.targetShifts + winnerIdx) % REEL_STRIP_SIZE;
+        Reward firstReward = firstWinnerReel.strip[firstLandingPos];
+
+        int lastLandingPos = (lastWinnerReel.targetShifts + winnerIdx) % REEL_STRIP_SIZE;
+        Reward lastReward = lastWinnerReel.strip[lastLandingPos];
+
+        if (firstReward != null && lastReward != null && firstReward.getId().equals(lastReward.getId())) {
+            Reward different = findDifferentReward(firstReward);
+            if (different != null) {
+                lastWinnerReel.strip[lastLandingPos] = different;
+            }
+        }
+    }
+
+    /**
+     * Master tick - called every server tick. Each reel advances independently
+     * based on its own tick rate, decelerates on its own schedule, and stops
+     * at its own target threshold.
+     */
     private void tick() {
         if (cancelled.get()) {
             cancelAllTasks();
             return;
         }
 
-        if (ticksPassed % tickRate == 0) {
-            // Shift all active columns downward
-            for (var entry : animation.getSlotColumns().entrySet()) {
-                String colName = entry.getKey();
-                if (stoppedColumns.contains(colName)) continue;
+        globalTickCounter++;
+        boolean anyShifted = false;
 
-                List<Integer> slots = entry.getValue();
-                Reward[] rewards = columnRewards.get(colName);
+        for (ReelState reel : reels) {
+            if (reel.stopped) continue;
 
-                // Shift down: bottom discarded, each gets previous, top gets new
-                for (int i = rewards.length - 1; i > 0; i--) {
-                    rewards[i] = rewards[i - 1];
-                }
-                rewards[0] = RewardSelector.selectWeighted(crate);
+            reel.tickCounter++;
 
-                // Update inventory
-                for (int i = 0; i < slots.size() && i < rewards.length; i++) {
-                    int slot = slots.get(i);
-                    if (slot >= 0 && slot < inventory.getSize()) {
-                        inventory.setItem(slot, buildRewardDisplay(rewards[i]));
+            if (reel.tickCounter % reel.tickRate == 0) {
+                // Advance this reel by one position (items scroll downward)
+                reel.offset++;
+                reel.shiftsDone++;
+                anyShifted = true;
+
+                // Update the visible inventory slots for this reel
+                updateReelDisplay(reel);
+
+                // Deceleration: once past the decel start, increase tick rate periodically
+                if (reel.shiftsDone >= reel.decelerationStart) {
+                    int shiftsIntoDecel = reel.shiftsDone - reel.decelerationStart;
+                    int decelMod = Math.max(1, animation.getTickRateModifier() > 0
+                            ? animation.getTickRateModifier() : 2);
+                    if (shiftsIntoDecel > 0 && shiftsIntoDecel % decelMod == 0) {
+                        reel.tickRate++;
                     }
                 }
-            }
 
-            fillFillerSlots();
+                // Check if this reel has reached its stop target
+                if (reel.shiftsDone >= reel.targetShifts) {
+                    reel.stopped = true;
+                    reelsStoppedCount++;
+                    SoundUtil.play(player, animation.getRewardSounds());
+                }
+            }
+        }
+
+        if (anyShifted) {
             SoundUtil.play(player, animation.getTickSounds());
-            shiftsDone++;
-
-            // Check for column stops
-            for (var entry : columnStopThresholds.entrySet()) {
-                if (!stoppedColumns.contains(entry.getKey()) && shiftsDone >= entry.getValue()) {
-                    stopColumn(entry.getKey());
-                }
-            }
-
-            // Check if all stopped
-            if (stoppedColumns.size() >= animation.getSlotColumns().size()) {
-                if (scrollTask != null) {
-                    scrollTask.cancel();
-                    scrollTask = null;
-                }
-                type.getScheduler().entitySpecificScheduler(player)
-                        .runDelayed(() -> {
-                            if (!cancelled.get()) finishAnimation();
-                        }, null, Math.max(1, tickRate));
-                return;
-            }
+            fillFillerSlots();
         }
 
-        ticksPassed++;
-        if (animation.getTickRateModifier() > 0 && ticksPassed % animation.getTickRateModifier() == 0) {
-            tickRate++;
-        }
-        if (ticksPassed > HARDCODED_STOP_THRESHOLD) {
+        // All reels have stopped - finish after a brief pause
+        if (reelsStoppedCount >= reels.size()) {
             if (scrollTask != null) {
                 scrollTask.cancel();
                 scrollTask = null;
+            }
+            type.getScheduler().entitySpecificScheduler(player)
+                    .runDelayed(() -> {
+                        if (!cancelled.get()) finishAnimation();
+                    }, null, 5L);
+            return;
+        }
+
+        // Emergency timeout
+        if (globalTickCounter > HARDCODED_TICK_LIMIT) {
+            if (scrollTask != null) {
+                scrollTask.cancel();
+                scrollTask = null;
+            }
+            for (ReelState reel : reels) {
+                reel.stopped = true;
             }
             if (!finished.get()) {
                 finishAnimation();
@@ -188,40 +283,31 @@ public class SlotAnimationSession implements AnimationSession, ModernCratesGui {
         }
     }
 
-    private void stopColumn(String columnName) {
-        stoppedColumns.add(columnName);
-
-        if (willMatch && animation.getRewardWinnerColumns().contains(columnName)) {
-            // Force winner position to matchReward
-            Reward[] rewards = columnRewards.get(columnName);
-            int winnerIdx = animation.getRewardWinnerIndex();
-            if (rewards != null && winnerIdx >= 0 && winnerIdx < rewards.length) {
-                rewards[winnerIdx] = matchReward;
-                List<Integer> slots = animation.getSlotColumns().get(columnName);
-                if (winnerIdx < slots.size()) {
-                    int slot = slots.get(winnerIdx);
-                    if (slot >= 0 && slot < inventory.getSize()) {
-                        inventory.setItem(slot, buildRewardDisplay(matchReward));
-                    }
-                }
+    private void updateReelDisplay(ReelState reel) {
+        for (int i = 0; i < reel.guiSlots.size(); i++) {
+            int slot = reel.guiSlots.get(i);
+            if (slot >= 0 && slot < inventory.getSize()) {
+                inventory.setItem(slot, buildRewardDisplay(reel.getVisible(i)));
             }
         }
+    }
 
-        SoundUtil.play(player, animation.getRewardSounds());
+    private void updateAllReelDisplays() {
+        for (ReelState reel : reels) {
+            updateReelDisplay(reel);
+        }
     }
 
     private void finishAnimation() {
-        // Check if all winner columns match
-        List<String> winnerCols = animation.getRewardWinnerColumns();
         int winnerIdx = animation.getRewardWinnerIndex();
+        List<String> winnerCols = animation.getRewardWinnerColumns();
 
         Set<String> winnerRewardIds = new HashSet<>();
         Reward firstWinnerReward = null;
 
-        for (String colName : winnerCols) {
-            Reward[] rewards = columnRewards.get(colName);
-            if (rewards != null && winnerIdx >= 0 && winnerIdx < rewards.length) {
-                Reward r = rewards[winnerIdx];
+        for (ReelState reel : reels) {
+            if (winnerCols.contains(reel.name)) {
+                Reward r = reel.getVisible(winnerIdx);
                 if (r != null) {
                     winnerRewardIds.add(r.getId());
                     if (firstWinnerReward == null) firstWinnerReward = r;
@@ -234,27 +320,7 @@ public class SlotAnimationSession implements AnimationSession, ModernCratesGui {
         if (allMatch) {
             selectedReward = firstWinnerReward;
             SoundUtil.play(player, animation.getWinSounds());
-            SoundUtil.play(player, animation.getRewardSounds());
         } else {
-            // Ensure winner positions actually differ (avoid accidental match on a loss)
-            if (!willMatch && winnerRewardIds.size() <= 1 && winnerCols.size() > 1 && firstWinnerReward != null) {
-                // Force last column's winner to differ
-                String lastCol = winnerCols.get(winnerCols.size() - 1);
-                Reward[] lastRewards = columnRewards.get(lastCol);
-                if (lastRewards != null && winnerIdx >= 0 && winnerIdx < lastRewards.length) {
-                    Reward different = findDifferentReward(firstWinnerReward);
-                    if (different != null) {
-                        lastRewards[winnerIdx] = different;
-                        List<Integer> slots = animation.getSlotColumns().get(lastCol);
-                        if (winnerIdx < slots.size()) {
-                            int slot = slots.get(winnerIdx);
-                            if (slot >= 0 && slot < inventory.getSize()) {
-                                inventory.setItem(slot, buildRewardDisplay(different));
-                            }
-                        }
-                    }
-                }
-            }
             selectedReward = RewardSelector.selectWeighted(crate);
             SoundUtil.play(player, animation.getLoseSounds());
         }
@@ -295,19 +361,6 @@ public class SlotAnimationSession implements AnimationSession, ModernCratesGui {
                     finished.set(true);
                     player.closeInventory();
                 }, null, Math.max(1, stayTicks));
-    }
-
-    private void updateAllColumnDisplays() {
-        for (var entry : animation.getSlotColumns().entrySet()) {
-            List<Integer> slots = entry.getValue();
-            Reward[] rewards = columnRewards.get(entry.getKey());
-            for (int i = 0; i < slots.size() && i < rewards.length; i++) {
-                int slot = slots.get(i);
-                if (slot >= 0 && slot < inventory.getSize()) {
-                    inventory.setItem(slot, buildRewardDisplay(rewards[i]));
-                }
-            }
-        }
     }
 
     private void fillFillerSlots() {
