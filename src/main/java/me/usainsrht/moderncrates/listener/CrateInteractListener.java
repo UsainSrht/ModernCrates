@@ -66,6 +66,18 @@ public class CrateInteractListener implements Listener {
             }
         }
 
+        // Left-click on a physical crate opens the preview GUI
+        if (event.getAction() == Action.LEFT_CLICK_BLOCK && event.getClickedBlock() != null) {
+            Block block = event.getClickedBlock();
+            Crate crate = getCrateAtBlock(block);
+            if (crate == null) return;
+
+            event.setCancelled(true);
+            var previewGui = new PreviewGui(player, crate);
+            previewGui.open();
+            return;
+        }
+
         // Check for physical crate block interaction
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getClickedBlock() != null) {
             Block block = event.getClickedBlock();

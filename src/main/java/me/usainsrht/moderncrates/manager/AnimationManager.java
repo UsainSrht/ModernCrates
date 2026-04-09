@@ -12,6 +12,7 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import space.arim.morepaperlib.scheduling.GracefulScheduling;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,8 +22,14 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class AnimationManager {
 
+    private final GracefulScheduling scheduling;
+
     private final Map<UUID, AnimationSession> activeSessions = new ConcurrentHashMap<>();
     private final Map<UUID, Crate> sessionCrates = new ConcurrentHashMap<>();
+
+    public AnimationManager(GracefulScheduling scheduling) {
+        this.scheduling = scheduling;
+    }
 
     public boolean hasActiveSession(Player player) {
         return activeSessions.containsKey(player.getUniqueId());
@@ -90,7 +97,8 @@ public class AnimationManager {
         if (reward.hasCommands()) {
             for (String command : reward.getCommands()) {
                 String parsed = command.replace("<player>", player.getName());
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), parsed);
+                scheduling.globalRegionalScheduler().run(() ->
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), parsed));
             }
         }
 

@@ -70,7 +70,7 @@ public class ModernCratesPlugin extends JavaPlugin {
         scheduling = morePaperLib.scheduling();
 
         // Managers
-        animationManager = new AnimationManager();
+        animationManager = new AnimationManager(scheduling);
         keyManager = new KeyManager();
         virtualKeyManager = new VirtualKeyManager(getDataFolder(), getLogger());
         hologramManager = new HologramManager();
