@@ -22,6 +22,8 @@ import me.usainsrht.moderncrates.manager.AnimationManager;
 import me.usainsrht.moderncrates.manager.HologramManager;
 import me.usainsrht.moderncrates.manager.KeyManager;
 import me.usainsrht.moderncrates.manager.VirtualKeyManager;
+import me.usainsrht.moderncrates.hologram.HologramProvider;
+import me.usainsrht.moderncrates.hologram.VanillaHologramProvider;
 import me.usainsrht.moderncrates.util.SoundUtil;
 import me.usainsrht.moderncrates.util.TextUtil;
 import org.bukkit.entity.Player;
@@ -88,23 +90,33 @@ public class ModernCratesPlugin extends JavaPlugin {
         }
         pluginConfig.load();
 
+        // Resolve hologram provider from config
+        hologramManager.setProvider(resolveHologramProvider());
+
         // Create directories and default files
         File cratesDir = new File(getDataFolder(), "crates");
         File animationsDir = new File(getDataFolder(), "animations");
         if (!cratesDir.exists()) {
             cratesDir.mkdirs();
             saveResource("crates/example.yml", false);
+            saveResource("crates/casino.yml", false);
+            saveResource("crates/instant.yml", false);
+            saveResource("crates/mystery_box.yml", false);
+            saveResource("crates/roulette.yml", false);
+            saveResource("crates/scratchcard_crate.yml", false);
+            saveResource("crates/slot_machine.yml", false);
+            saveResource("crates/treasure_chest.yml", false);
         }
         if (!animationsDir.exists()) {
             animationsDir.mkdirs();
-            saveResource("animations/csgo.yml", false);
             saveResource("animations/casino_roulette.yml", false);
-            saveResource("animations/casino_roulette.yml", false);
-            saveResource("animations/csgo.yml", false);
             saveResource("animations/click.yml", false);
+            saveResource("animations/csgo.yml", false);
+            saveResource("animations/instant_click.yml", false);
+            saveResource("animations/item_rise.yml", false);
+            saveResource("animations/roulette.yml", false);
             saveResource("animations/scratchcard.yml", false);
             saveResource("animations/slot.yml", false);
-            saveResource("animations/item_rise.yml", false);
         }
 
         // Register built-in animation types
@@ -161,6 +173,41 @@ public class ModernCratesPlugin extends JavaPlugin {
         getLogger().info("ModernCrates disabled.");
     }
 
+    private HologramProvider resolveHologramProvider() {
+        String system = pluginConfig.getHologramSystem().toUpperCase();
+        switch (system) {
+            case "DECENT_HOLOGRAMS", "DECENTHOLOGRAMS" -> {
+                if (getServer().getPluginManager().getPlugin("DecentHolograms") != null) {
+                    getLogger().info("Using DecentHolograms for holograms.");
+                    return new me.usainsrht.moderncrates.hologram.DecentHologramsProvider();
+                }
+                getLogger().warning("DecentHolograms not found! Falling back to VANILLA holograms.");
+            }
+            case "HOLOGRAPHIC_DISPLAYS", "HOLOGRAPHICDISPLAYS" -> {
+                if (getServer().getPluginManager().getPlugin("HolographicDisplays") != null) {
+                    getLogger().info("Using HolographicDisplays for holograms.");
+                    return new me.usainsrht.moderncrates.hologram.HolographicDisplaysProvider(this);
+                }
+                getLogger().warning("HolographicDisplays not found! Falling back to VANILLA holograms.");
+            }
+            case "FANCY_HOLOGRAMS", "FANCYHOLOGRAMS" -> {
+                if (getServer().getPluginManager().getPlugin("FancyHolograms") != null) {
+                    getLogger().info("Using FancyHolograms for holograms.");
+                    return new me.usainsrht.moderncrates.hologram.FancyHologramsProvider();
+                }
+                getLogger().warning("FancyHolograms not found! Falling back to VANILLA holograms.");
+            }
+            default -> {
+                if (!"VANILLA".equals(system)) {
+                    getLogger().warning("Unknown hologram system '" + pluginConfig.getHologramSystem()
+                            + "'! Using VANILLA. Valid: VANILLA, DECENT_HOLOGRAMS, HOLOGRAPHIC_DISPLAYS, FANCY_HOLOGRAMS");
+                }
+            }
+        }
+        getLogger().info("Using vanilla TextDisplay holograms.");
+        return new VanillaHologramProvider();
+    }
+
     private void registerBuiltinAnimationTypes() {
         animationTypeRegistry.put("csgo", new CsgoAnimationType(scheduling));
         animationTypeRegistry.put("click", new ClickAnimationType(scheduling));
@@ -188,6 +235,9 @@ public class ModernCratesPlugin extends JavaPlugin {
 
         // Reload config
         pluginConfig.load();
+
+        // Resolve hologram provider (may have changed)
+        hologramManager.setProvider(resolveHologramProvider());
 
         // Reload animations and crates
         loadAnimations();

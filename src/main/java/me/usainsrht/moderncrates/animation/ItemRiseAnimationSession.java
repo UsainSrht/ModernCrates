@@ -177,10 +177,10 @@ public class ItemRiseAnimationSession implements AnimationSession {
         World world = blockLocation.getWorld();
         if (world != null) {
             if (itemDisplay != null && !itemDisplay.isDead()) {
-                itemDisplay.teleport(new Location(world, baseX, currentY, baseZ));
+                itemDisplay.teleportAsync(new Location(world, baseX, currentY, baseZ));
             }
             if (textDisplay != null && !textDisplay.isDead()) {
-                textDisplay.teleport(new Location(world, baseX, currentY + 0.6, baseZ));
+                textDisplay.teleportAsync(new Location(world, baseX, currentY + 0.6, baseZ));
             }
         }
 

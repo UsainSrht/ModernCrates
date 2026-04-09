@@ -17,6 +17,7 @@ public class PluginConfig {
     private YamlConfiguration yaml;
 
     private String prefix;
+    private String hologramSystem;
     private Map<String, String> messages;
     private Map<String, String> sounds;
     private CommandConfig commandConfig;
@@ -29,6 +30,7 @@ public class PluginConfig {
         yaml = YamlConfiguration.loadConfiguration(file);
 
         prefix = yaml.getString("prefix", "<gold>MC <gray>> ");
+        hologramSystem = yaml.getString("hologram-system", "VANILLA");
 
         messages = new java.util.HashMap<>();
         var msgSection = yaml.getConfigurationSection("messages");
@@ -59,6 +61,7 @@ public class PluginConfig {
 
     public void save() throws IOException {
         yaml.set("prefix", prefix);
+        yaml.set("hologram-system", hologramSystem);
 
         for (var entry : messages.entrySet()) {
             yaml.set("messages." + entry.getKey(), entry.getValue());
@@ -81,6 +84,7 @@ public class PluginConfig {
             file.getParentFile().mkdirs();
             yaml = new YamlConfiguration();
             prefix = "<gold>MC <dark_gray>> ";
+            hologramSystem = "VANILLA";
             messages = Map.of(
                     "reload", "<green>reloaded!",
                     "no_key", "<red>You don't have a <dark_red><crate> <red>key to open this crate!",
@@ -108,6 +112,7 @@ public class PluginConfig {
     }
 
     public String getPrefix() { return prefix; }
+    public String getHologramSystem() { return hologramSystem; }
     public String getMessage(String key) { return messages.getOrDefault(key, ""); }
     public String getSound(String key) { return sounds.getOrDefault(key, ""); }
     public CommandConfig getCommandConfig() { return commandConfig; }

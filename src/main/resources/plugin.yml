@@ -6,3 +6,7 @@ folia-supported: true
 description: API-first crate lootbox plugin for Paper/Folia
 authors:
   - UsainSrht
+softdepend:
+  - DecentHolograms
+  - HolographicDisplays
+  - FancyHolograms

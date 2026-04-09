@@ -3,7 +3,18 @@ version: '${project.version}'
 main: me.usainsrht.moderncrates.ModernCratesPlugin
 api-version: '1.21'
 folia-supported: true
-description: API-first crate lootbox plugin for Paper/Folia
+description: Modern crate plugin for latest version Paper/Folia
 authors:
   - UsainSrht
-website: ''
+website: 'https://usainsrht.com'
+dependencies:
+  server:
+    FancyHolograms:
+      required: false
+      join-classpath: true
+    DecentHolograms:
+      required: false
+      join-classpath: true
+    HolographicDisplays:
+      required: false
+      join-classpath: true
