@@ -107,10 +107,10 @@ public class ItemRiseAnimationSession implements AnimationSession {
         // Generate reward cycle list
         cycleRewards = generateCycleList();
 
-        // Schedule block opening
+        // Schedule block opening on the region thread that owns the crate location
         int openDelay = Math.max(1, animation.getBlockOpenDelayTicks());
-        openDelayTask = type.getScheduler().entitySpecificScheduler(player)
-                .runDelayed(this::openBlock, null, openDelay);
+        openDelayTask = type.getScheduler().regionSpecificScheduler(blockLocation)
+                .runDelayed(this::openBlock, openDelay);
     }
 
     private void openBlock() {
@@ -119,10 +119,10 @@ public class ItemRiseAnimationSession implements AnimationSession {
         liddedBlock.open();
         SoundUtil.play(player, animation.getRiseSounds());
 
-        // Schedule rise start
+        // Schedule rise start on the region thread
         int riseDelay = Math.max(1, animation.getRiseStartDelayTicks());
-        riseDelayTask = type.getScheduler().entitySpecificScheduler(player)
-                .runDelayed(this::spawnAndRise, null, riseDelay);
+        riseDelayTask = type.getScheduler().regionSpecificScheduler(blockLocation)
+                .runDelayed(this::spawnAndRise, riseDelay);
     }
 
     private void spawnAndRise() {
@@ -159,9 +159,9 @@ public class ItemRiseAnimationSession implements AnimationSession {
             entity.setBackgroundColor(Color.fromARGB(0, 0, 0, 0));
         });
 
-        // Start rise animation loop
-        riseTask = type.getScheduler().entitySpecificScheduler(player)
-                .runAtFixedRate(this::riseTick, null, 1L, 1L);
+        // Start rise animation loop on the region thread
+        riseTask = type.getScheduler().regionSpecificScheduler(blockLocation)
+                .runAtFixedRate(this::riseTick, 1L, 1L);
     }
 
     private void riseTick() {
@@ -249,9 +249,9 @@ public class ItemRiseAnimationSession implements AnimationSession {
         SoundUtil.play(player, animation.getSettleSounds());
         SoundUtil.play(player, animation.getRewardSounds());
 
-        // Wait, then cleanup and complete
+        // Wait, then cleanup on the region thread and complete on the player thread
         int settleTicks = Math.max(1, animation.getSettleDisplayTicks());
-        settleTask = type.getScheduler().entitySpecificScheduler(player)
+        settleTask = type.getScheduler().regionSpecificScheduler(blockLocation)
                 .runDelayed(() -> {
                     cleanupEntities();
                     if (liddedBlock != null) {
@@ -260,8 +260,9 @@ public class ItemRiseAnimationSession implements AnimationSession {
                         } catch (Exception ignored) {}
                     }
                     finished.set(true);
-                    onComplete.run();
-                }, null, settleTicks);
+                    type.getScheduler().entitySpecificScheduler(player)
+                            .run(() -> onComplete.run(), null);
+                }, settleTicks);
     }
 
     private void fallbackFinish() {
@@ -312,11 +313,19 @@ public class ItemRiseAnimationSession implements AnimationSession {
         if (riseDelayTask != null) { riseDelayTask.cancel(); riseDelayTask = null; }
         if (riseTask != null) { riseTask.cancel(); riseTask = null; }
         if (settleTask != null) { settleTask.cancel(); settleTask = null; }
-        cleanupEntities();
-        if (liddedBlock != null) {
-            try {
-                liddedBlock.close();
-            } catch (Exception ignored) {}
+        // Run entity/block cleanup on the region thread for Folia compatibility
+        if (blockLocation != null) {
+            type.getScheduler().regionSpecificScheduler(blockLocation)
+                    .run(() -> {
+                        cleanupEntities();
+                        if (liddedBlock != null) {
+                            try {
+                                liddedBlock.close();
+                            } catch (Exception ignored) {}
+                        }
+                    });
+        } else {
+            cleanupEntities();
         }
         if (selectedReward == null) {
             selectedReward = RewardSelector.selectWeighted(crate);
