@@ -2,6 +2,9 @@ package me.usainsrht.moderncrates;
 
 import me.usainsrht.moderncrates.animation.ClickAnimationType;
 import me.usainsrht.moderncrates.animation.CsgoAnimationType;
+import me.usainsrht.moderncrates.animation.ItemRiseAnimationType;
+import me.usainsrht.moderncrates.animation.ScratchcardAnimationType;
+import me.usainsrht.moderncrates.animation.SlotAnimationType;
 import me.usainsrht.moderncrates.api.ModernCratesAPI;
 import me.usainsrht.moderncrates.api.ModernCratesProvider;
 import me.usainsrht.moderncrates.api.animation.Animation;
@@ -95,7 +98,13 @@ public class ModernCratesPlugin extends JavaPlugin {
         if (!animationsDir.exists()) {
             animationsDir.mkdirs();
             saveResource("animations/csgo.yml", false);
+            saveResource("animations/casino_roulette.yml", false);
+            saveResource("animations/casino_roulette.yml", false);
+            saveResource("animations/csgo.yml", false);
             saveResource("animations/click.yml", false);
+            saveResource("animations/scratchcard.yml", false);
+            saveResource("animations/slot.yml", false);
+            saveResource("animations/item_rise.yml", false);
         }
 
         // Register built-in animation types
@@ -155,6 +164,9 @@ public class ModernCratesPlugin extends JavaPlugin {
     private void registerBuiltinAnimationTypes() {
         animationTypeRegistry.put("csgo", new CsgoAnimationType(scheduling));
         animationTypeRegistry.put("click", new ClickAnimationType(scheduling));
+        animationTypeRegistry.put("scratchcard", new ScratchcardAnimationType(scheduling));
+        animationTypeRegistry.put("slot", new SlotAnimationType(scheduling));
+        animationTypeRegistry.put("item_rise", new ItemRiseAnimationType(scheduling, this));
     }
 
     private void loadAnimations() {

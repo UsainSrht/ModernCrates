@@ -64,6 +64,13 @@
           </dependency>
         </dependencies>
       </plugin>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.2.0</version>
+        <configuration>
+          <outputDirectory>${env.PLUGINS_DIR}</outputDirectory>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
   <repositories>

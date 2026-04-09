@@ -58,6 +58,36 @@ public class Animation {
     private List<String> tickSounds;
     private List<String> rewardSounds;
 
+    // Scratchcard-type fields
+    private int matchRequired;
+
+    // Slot-type fields
+    private Map<String, List<Integer>> slotColumns;
+    private List<String> rewardWinnerColumns;
+    private int rewardWinnerIndex;
+    private int columnStopDelayTicks;
+    private double matchChance;
+
+    // Shared win/lose fields (used by scratchcard and slot)
+    private String winTitle;
+    private String loseTitle;
+    private List<String> winSounds;
+    private List<String> loseSounds;
+
+    // ItemRise-type fields
+    private double riseHeight;
+    private int riseTicks;
+    private int cycleTicks;
+    private String particleType;
+    private int particleCount;
+    private double particleSpiralRadius;
+    private double particleSpiralSpeed;
+    private int blockOpenDelayTicks;
+    private int riseStartDelayTicks;
+    private int settleDisplayTicks;
+    private List<String> riseSounds;
+    private List<String> settleSounds;
+
     public Animation(String id) {
         this.id = id;
     }
@@ -147,4 +177,74 @@ public class Animation {
 
     public List<String> getRewardSounds() { return rewardSounds; }
     public void setRewardSounds(List<String> rewardSounds) { this.rewardSounds = rewardSounds; }
+
+    // Scratchcard
+    public int getMatchRequired() { return matchRequired; }
+    public void setMatchRequired(int matchRequired) { this.matchRequired = matchRequired; }
+
+    // Slot
+    public Map<String, List<Integer>> getSlotColumns() { return slotColumns; }
+    public void setSlotColumns(Map<String, List<Integer>> slotColumns) { this.slotColumns = slotColumns; }
+
+    public List<String> getRewardWinnerColumns() { return rewardWinnerColumns; }
+    public void setRewardWinnerColumns(List<String> rewardWinnerColumns) { this.rewardWinnerColumns = rewardWinnerColumns; }
+
+    public int getRewardWinnerIndex() { return rewardWinnerIndex; }
+    public void setRewardWinnerIndex(int rewardWinnerIndex) { this.rewardWinnerIndex = rewardWinnerIndex; }
+
+    public int getColumnStopDelayTicks() { return columnStopDelayTicks; }
+    public void setColumnStopDelayTicks(int columnStopDelayTicks) { this.columnStopDelayTicks = columnStopDelayTicks; }
+
+    public double getMatchChance() { return matchChance; }
+    public void setMatchChance(double matchChance) { this.matchChance = matchChance; }
+
+    // Shared win/lose
+    public String getWinTitle() { return winTitle; }
+    public void setWinTitle(String winTitle) { this.winTitle = winTitle; }
+
+    public String getLoseTitle() { return loseTitle; }
+    public void setLoseTitle(String loseTitle) { this.loseTitle = loseTitle; }
+
+    public List<String> getWinSounds() { return winSounds; }
+    public void setWinSounds(List<String> winSounds) { this.winSounds = winSounds; }
+
+    public List<String> getLoseSounds() { return loseSounds; }
+    public void setLoseSounds(List<String> loseSounds) { this.loseSounds = loseSounds; }
+
+    // ItemRise
+    public double getRiseHeight() { return riseHeight; }
+    public void setRiseHeight(double riseHeight) { this.riseHeight = riseHeight; }
+
+    public int getRiseTicks() { return riseTicks; }
+    public void setRiseTicks(int riseTicks) { this.riseTicks = riseTicks; }
+
+    public int getCycleTicks() { return cycleTicks; }
+    public void setCycleTicks(int cycleTicks) { this.cycleTicks = cycleTicks; }
+
+    public String getParticleType() { return particleType; }
+    public void setParticleType(String particleType) { this.particleType = particleType; }
+
+    public int getParticleCount() { return particleCount; }
+    public void setParticleCount(int particleCount) { this.particleCount = particleCount; }
+
+    public double getParticleSpiralRadius() { return particleSpiralRadius; }
+    public void setParticleSpiralRadius(double particleSpiralRadius) { this.particleSpiralRadius = particleSpiralRadius; }
+
+    public double getParticleSpiralSpeed() { return particleSpiralSpeed; }
+    public void setParticleSpiralSpeed(double particleSpiralSpeed) { this.particleSpiralSpeed = particleSpiralSpeed; }
+
+    public int getBlockOpenDelayTicks() { return blockOpenDelayTicks; }
+    public void setBlockOpenDelayTicks(int blockOpenDelayTicks) { this.blockOpenDelayTicks = blockOpenDelayTicks; }
+
+    public int getRiseStartDelayTicks() { return riseStartDelayTicks; }
+    public void setRiseStartDelayTicks(int riseStartDelayTicks) { this.riseStartDelayTicks = riseStartDelayTicks; }
+
+    public int getSettleDisplayTicks() { return settleDisplayTicks; }
+    public void setSettleDisplayTicks(int settleDisplayTicks) { this.settleDisplayTicks = settleDisplayTicks; }
+
+    public List<String> getRiseSounds() { return riseSounds; }
+    public void setRiseSounds(List<String> riseSounds) { this.riseSounds = riseSounds; }
+
+    public List<String> getSettleSounds() { return settleSounds; }
+    public void setSettleSounds(List<String> settleSounds) { this.settleSounds = settleSounds; }
 }

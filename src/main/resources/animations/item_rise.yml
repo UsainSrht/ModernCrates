@@ -1,0 +1,46 @@
+type: item_rise
+
+# Item Rise: a physical-crate-only animation.
+# The container block (chest/barrel/shulker) opens its lid, then an item
+# display entity rises from inside while cycling through rewards.
+# A text display above it shows the current reward name.
+# Particles spiral around the item as it rises.
+# When it reaches the top, the last item becomes the player's prize.
+#
+# NOTE: This animation requires the crate to be a physical crate assigned
+# to a lidded container block. If used on a non-physical crate, it falls
+# back to an instant reward grant.
+
+# How high (in blocks) the item rises above the container
+rise_height: 2.5
+
+# Total ticks for the rise animation
+rise_ticks: 100
+
+# Ticks between each reward item cycle during the rise
+cycle_ticks: 5
+
+# Particle configuration
+particle_type: "FLAME"
+particle_count: 3
+particle_spiral_radius: 0.5
+particle_spiral_speed: 0.3
+
+# Delay (ticks) before the container lid opens
+block_open_delay_ticks: 5
+
+# Delay (ticks) after lid opens before the item starts rising
+rise_start_delay_ticks: 10
+
+# How long (ticks) the final reward item is displayed at the top before cleanup
+settle_display_ticks: 60
+
+# Sounds
+tick_sound:
+  - "block.note_block.chime"
+rise_sound:
+  - "block.beacon.activate"
+settle_sound:
+  - "entity.player.levelup"
+reward_sound:
+  - "entity.firework_rocket.blast"

@@ -1,0 +1,197 @@
+name: "Treasure Chest"
+animation: "item_rise"
+
+# Treasure Chest: uses the Item Rise animation.
+# Must be placed as a physical crate on a chest, barrel, or shulker box.
+# The container lid opens, a reward item rises from inside with particles,
+# and the final item at the top is the player's prize.
+#
+# NOTE: This animation only works with physical crates on lidded blocks.
+# If placed on a non-lidded block or used as a virtual crate, the reward
+# is granted instantly.
+bounce_back: true
+
+key:
+  required: true
+  material: "TRIPWIRE_HOOK"
+  count: 1
+  name: "<dark_green><bold>Treasure Key"
+  lore:
+    - "<gray>Unlocks the"
+    - "<dark_green>Treasure Chest"
+    - ""
+    - "<green>Watch the treasure rise!"
+  enchantments:
+    UNBREAKING: 1
+  item_flags:
+    - HIDE_ENCHANTS
+
+item:
+  material: "CHEST"
+  name: "<dark_green><bold>Treasure Chest"
+  lore:
+    - "<gray>Place on a chest block and"
+    - "<gray>right-click to open!"
+    - "<green>The treasure rises from within."
+
+hologram:
+  lines:
+    - "<dark_green><bold>Treasure Chest"
+    - "<green>Watch the prize rise!"
+    - "<gray>Right-click to open"
+  offset:
+    - 0.5
+    - 1.5
+    - 0.5
+
+preview:
+  title: "<dark_green>Preview — Treasure Chest"
+  rows: 6
+  fill:
+    material: "GREEN_STAINED_GLASS_PANE"
+    name: " "
+  close:
+    slot: 49
+    material: "BARRIER"
+    name: "<red><bold>Close"
+  next:
+    slot: 50
+    material: "ARROW"
+    name: "<green><bold>Next Page"
+  previous:
+    slot: 48
+    material: "ARROW"
+    name: "<green><bold>Previous Page"
+  sound:
+    - "block.chest.open"
+  custom_slots:
+    4:
+      material: "CHEST"
+      name: "<dark_green><bold>Treasure Chest"
+      lore:
+        - "<gray>The chest opens and a treasure rises"
+        - "<gray>from within, cycling through rewards."
+        - "<green>The final item is yours!"
+        - ""
+        - "<yellow>Required: <dark_green>Treasure Key"
+
+announce:
+  to_everyone: true
+  single: "<dark_green>  <player> <gray>unearthed <dark_green><reward_name> <gray>from the <dark_green>Treasure Chest<gray>!"
+  multiple: "<dark_green>  <player> <gray>found treasures in the <dark_green>Treasure Chest<gray>!"
+  multiple_item: "  <dark_gray>▸ <dark_green><reward_name>"
+
+rewards:
+  ancient_blade:
+    chance: 3.0
+    display:
+      material: "NETHERITE_SWORD"
+      name: "<dark_green><bold>Ancient Blade"
+      lore:
+        - "<gray>A blade from a forgotten age."
+        - ""
+        - "<yellow>Chance: <gold>3%"
+      enchantments:
+        SHARPNESS: 5
+        UNBREAKING: 3
+        LOOTING: 3
+      item_flags:
+        - HIDE_ENCHANTS
+    items:
+      sword:
+        material: "NETHERITE_SWORD"
+        amount: 1
+        name: "<dark_green><bold>Ancient Blade"
+        lore:
+          - "<gray>Unearthed from the Treasure Chest."
+        enchantments:
+          SHARPNESS: 5
+          UNBREAKING: 3
+          LOOTING: 3
+    announce: "<dark_green>★★★ <player> <gray>discovered the <dark_green><bold>ANCIENT BLADE <gray>in the Treasure Chest! ★★★"
+
+  golden_treasure:
+    chance: 10.0
+    display:
+      material: "GOLD_BLOCK"
+      name: "<gold><bold>Golden Treasure"
+      lore:
+        - "<gray>A block of pure gold."
+        - ""
+        - "<yellow>Chance: <gold>10%"
+    items:
+      gold_blocks:
+        material: "GOLD_BLOCK"
+        amount: 4
+    commands:
+      - "eco give <player> 1000"
+
+  emerald_hoard:
+    chance: 15.0
+    display:
+      material: "EMERALD_BLOCK"
+      name: "<green><bold>Emerald Hoard"
+      lore:
+        - "<gray>Villagers would kill for this."
+        - ""
+        - "<yellow>Chance: <gold>15%"
+    items:
+      emeralds:
+        material: "EMERALD"
+        amount: 32
+
+  enchanted_book:
+    chance: 15.0
+    display:
+      material: "ENCHANTED_BOOK"
+      name: "<light_purple>Enchanted Tome"
+      lore:
+        - "<gray>Contains powerful knowledge."
+        - ""
+        - "<yellow>Chance: <gold>15%"
+    items:
+      book:
+        material: "ENCHANTED_BOOK"
+        amount: 1
+        enchantments:
+          MENDING: 1
+
+  diamond_cache:
+    chance: 20.0
+    display:
+      material: "DIAMOND"
+      name: "<aqua>Diamond Cache"
+      lore:
+        - "<gray>A decent haul of diamonds."
+        - ""
+        - "<yellow>Chance: <gold>20%"
+    items:
+      diamonds:
+        material: "DIAMOND"
+        amount: 8
+
+  pirate_coins:
+    chance: 20.0
+    display:
+      material: "GOLD_NUGGET"
+      name: "<yellow>Pirate Coins"
+      lore:
+        - "<gray>Yarr, some spare change."
+        - ""
+        - "<yellow>Chance: <gold>20%"
+    commands:
+      - "eco give <player> 250"
+
+  rusty_iron:
+    chance: 17.0
+    display:
+      material: "IRON_INGOT"
+      name: "<gray>Rusty Iron"
+      lore:
+        - "<dark_gray>Not every chest holds gold..."
+        - ""
+        - "<yellow>Chance: <gold>17%"
+    items:
+      iron:
+        material: "IRON_INGOT"
+        amount: 16

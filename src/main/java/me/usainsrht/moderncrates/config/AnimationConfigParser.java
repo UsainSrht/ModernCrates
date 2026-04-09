@@ -113,6 +113,36 @@ public class AnimationConfigParser {
             anim.setGuiTitleShuffling(yaml.getString("shuffling_title"));
         }
 
+        // Scratchcard-type fields
+        anim.setMatchRequired(yaml.getInt("match_required", anim.getRewardAmount()));
+
+        // Slot-type fields
+        anim.setSlotColumns(parseSlotColumns(yaml.getConfigurationSection("slot_columns")));
+        anim.setRewardWinnerColumns(yaml.getStringList("reward_winner_columns"));
+        anim.setRewardWinnerIndex(yaml.getInt("reward_winner_index", 1));
+        anim.setColumnStopDelayTicks(yaml.getInt("column_stop_delay_ticks", 15));
+        anim.setMatchChance(yaml.getDouble("match_chance", 25.0));
+
+        // Shared win/lose fields
+        anim.setWinTitle(yaml.getString("win_title"));
+        anim.setLoseTitle(yaml.getString("lose_title"));
+        anim.setWinSounds(parseSoundList(yaml, "win_sound", "sounds.win"));
+        anim.setLoseSounds(parseSoundList(yaml, "lose_sound", "sounds.lose"));
+
+        // ItemRise-type fields
+        anim.setRiseHeight(yaml.getDouble("rise_height", 2.5));
+        anim.setRiseTicks(yaml.getInt("rise_ticks", 100));
+        anim.setCycleTicks(yaml.getInt("cycle_ticks", 5));
+        anim.setParticleType(yaml.getString("particle_type", "FLAME"));
+        anim.setParticleCount(yaml.getInt("particle_count", 3));
+        anim.setParticleSpiralRadius(yaml.getDouble("particle_spiral_radius", 0.5));
+        anim.setParticleSpiralSpeed(yaml.getDouble("particle_spiral_speed", 0.3));
+        anim.setBlockOpenDelayTicks(yaml.getInt("block_open_delay_ticks", 5));
+        anim.setRiseStartDelayTicks(yaml.getInt("rise_start_delay_ticks", 10));
+        anim.setSettleDisplayTicks(yaml.getInt("settle_display_ticks", 60));
+        anim.setRiseSounds(parseSoundList(yaml, "rise_sound", "sounds.rise"));
+        anim.setSettleSounds(parseSoundList(yaml, "settle_sound", "sounds.settle"));
+
         return anim;
     }
 
@@ -174,6 +204,15 @@ public class AnimationConfigParser {
             items.put(key, parseGuiItemConfig(section.getConfigurationSection(key)));
         }
         return items;
+    }
+
+    private Map<String, List<Integer>> parseSlotColumns(ConfigurationSection section) {
+        if (section == null) return null;
+        Map<String, List<Integer>> columns = new LinkedHashMap<>();
+        for (String key : section.getKeys(false)) {
+            columns.put(key, section.getIntegerList(key));
+        }
+        return columns;
     }
 
     @SuppressWarnings("unchecked")

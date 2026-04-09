@@ -1,0 +1,164 @@
+name: "Slot Machine"
+animation: "slot"
+
+# Slot Machine crate: three reels spin and stop one by one.
+# If all three winner positions show the same reward — JACKPOT!
+# Otherwise, a consolation prize is given.
+bounce_back: true
+
+key:
+  required: true
+  material: "GOLD_INGOT"
+  count: 1
+  name: "<yellow><bold>Slot Token"
+  lore:
+    - "<gray>Insert into the"
+    - "<yellow>Slot Machine"
+    - "<gray>to spin the reels!"
+    - ""
+    - "<gold>Match 3 for the jackpot!"
+  item_flags:
+    - HIDE_ATTRIBUTES
+
+item:
+  material: "GOLD_BLOCK"
+  name: "<yellow><bold>Slot Machine"
+  lore:
+    - "<gray>Three reels, one chance."
+    - "<yellow>Will they align?"
+
+hologram:
+  lines:
+    - "<yellow><bold>Slot Machine"
+    - "<gold>Match 3 to Win!"
+    - "<gray>Right-click to spin"
+  offset:
+    - 0.5
+    - 1.5
+    - 0.5
+
+preview:
+  title: "<yellow>Slot Machine — Prizes"
+  rows: 6
+  fill:
+    material: "BLACK_STAINED_GLASS_PANE"
+    name: " "
+  close:
+    slot: 49
+    material: "BARRIER"
+    name: "<red><bold>Close"
+  next:
+    slot: 50
+    material: "ARROW"
+    name: "<green><bold>Next Page"
+  previous:
+    slot: 48
+    material: "ARROW"
+    name: "<green><bold>Previous Page"
+  sound:
+    - "block.chest.open"
+  custom_slots:
+    4:
+      material: "GOLD_BLOCK"
+      name: "<yellow><bold>Slot Machine"
+      lore:
+        - "<gray>Three reels spin with these prizes."
+        - "<yellow>If all 3 on the WIN ROW match — jackpot!"
+        - ""
+        - "<gray>No match? You still get a consolation."
+        - "<yellow>Match chance: <gold>25%"
+        - ""
+        - "<yellow>Required: <gold>Slot Token"
+
+announce:
+  to_everyone: true
+  single: "<yellow>  <player> <gray>pulled the lever and won <yellow><reward_name><gray>!"
+  multiple: "<yellow>  <player> <gray>hit the slot machine multiple times!"
+  multiple_item: "  <dark_gray>• <yellow><reward_name>"
+
+rewards:
+  triple_diamond:
+    chance: 5.0
+    display:
+      material: "DIAMOND_BLOCK"
+      name: "<aqua><bold>Triple Diamond"
+      lore:
+        - "<gray>The ultimate jackpot!"
+        - ""
+        - "<yellow>Chance: <gold>5%"
+    items:
+      diamonds:
+        material: "DIAMOND"
+        amount: 32
+    commands:
+      - "eco give <player> 5000"
+    announce: "<aqua>★ <player> <gray>hit <aqua><bold>TRIPLE DIAMOND <gray>on the slot machine! <aqua>+$5,000 + 32 Diamonds! ★"
+
+  lucky_seven:
+    chance: 10.0
+    display:
+      material: "NETHER_STAR"
+      name: "<light_purple><bold>Lucky 7"
+      lore:
+        - "<gray>Seven is the magic number."
+        - ""
+        - "<yellow>Chance: <gold>10%"
+    commands:
+      - "eco give <player> 2000"
+    announce: "<light_purple>7️ <player> <gray>rolled <light_purple><bold>Lucky 7 <gray>— <yellow>$2,000<gray>!"
+
+  cherry_bonus:
+    chance: 20.0
+    display:
+      material: "SWEET_BERRIES"
+      name: "<red>Cherry Bonus"
+      lore:
+        - "<gray>A fruity payout!"
+        - ""
+        - "<yellow>Chance: <gold>20%"
+    items:
+      berries:
+        material: "SWEET_BERRIES"
+        amount: 16
+    commands:
+      - "eco give <player> 500"
+
+  gold_bar:
+    chance: 25.0
+    display:
+      material: "GOLD_INGOT"
+      name: "<yellow>Gold Bar"
+      lore:
+        - "<gray>A modest reward."
+        - ""
+        - "<yellow>Chance: <gold>25%"
+    items:
+      gold:
+        material: "GOLD_INGOT"
+        amount: 8
+
+  lemon_drop:
+    chance: 25.0
+    display:
+      material: "GOLD_NUGGET"
+      name: "<yellow>Lemon Drop"
+      lore:
+        - "<gray>Small but sweet."
+        - ""
+        - "<yellow>Chance: <gold>25%"
+    commands:
+      - "eco give <player> 100"
+
+  bust:
+    chance: 15.0
+    display:
+      material: "COAL"
+      name: "<gray>Bust"
+      lore:
+        - "<dark_gray>The machine takes your coin."
+        - ""
+        - "<yellow>Chance: <gold>15%"
+    items:
+      coal:
+        material: "COAL"
+        amount: 4

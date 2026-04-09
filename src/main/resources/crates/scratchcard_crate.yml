@@ -1,0 +1,160 @@
+name: "Lucky Scratchcard"
+animation: "scratchcard"
+
+# Scratchcard crate: scratch 5 panels, match 3 to win!
+# Demonstrates the scratchcard animation type with a lottery theme.
+bounce_back: true
+
+key:
+  required: true
+  material: "PAPER"
+  count: 1
+  name: "<gold><bold>Scratchcard Ticket"
+  lore:
+    - "<gray>Scratch <yellow>5 <gray>panels"
+    - "<gray>Match <yellow>3 <gray>to win!"
+    - ""
+    - "<gold>Good luck!"
+  enchantments:
+    UNBREAKING: 1
+  item_flags:
+    - HIDE_ENCHANTS
+
+item:
+  material: "YELLOW_SHULKER_BOX"
+  name: "<gold><bold>Lucky Scratchcard"
+  lore:
+    - "<gray>Right-click to place"
+    - "<yellow>Match 3 to win big!"
+
+hologram:
+  lines:
+    - "<gold><bold>Lucky Scratchcard"
+    - "<yellow>Scratch 5, Match 3!"
+    - "<gray>Right-click to play"
+  offset:
+    - 0.5
+    - 1.5
+    - 0.5
+
+preview:
+  title: "<gold>Preview - Lucky Scratchcard"
+  rows: 6
+  fill:
+    material: "YELLOW_STAINED_GLASS_PANE"
+    name: " "
+  close:
+    slot: 49
+    material: "BARRIER"
+    name: "<red><bold>Close"
+  next:
+    slot: 50
+    material: "ARROW"
+    name: "<green><bold>Next Page"
+  previous:
+    slot: 48
+    material: "ARROW"
+    name: "<green><bold>Previous Page"
+  sound:
+    - "block.chest.open"
+  custom_slots:
+    4:
+      material: "PAPER"
+      name: "<gold><bold>Lucky Scratchcard"
+      lore:
+        - "<gray>Scratch 5 of 7 hidden panels."
+        - "<yellow>If 3 or more match, you win that reward!"
+        - ""
+        - "<gray>No match? You still get a consolation prize."
+        - ""
+        - "<yellow>Required: <gold>Scratchcard Ticket"
+
+announce:
+  to_everyone: true
+  single: "<gold>★ <player> <gray>scratched a winner — <gold><reward_name><gray>!"
+  multiple: "<gold>★ <player> <gray>had a lucky streak on the <gold>Scratchcard<gray>!"
+  multiple_item: "  <dark_gray>• <gold><reward_name>"
+
+rewards:
+  diamond_block:
+    chance: 5.0
+    display:
+      material: "DIAMOND_BLOCK"
+      name: "<aqua><bold>Diamond Block"
+      lore:
+        - "<gray>The grand prize!"
+        - ""
+        - "<yellow>Chance: <gold>5%"
+    items:
+      block:
+        material: "DIAMOND_BLOCK"
+        amount: 1
+    announce: "<aqua>★★★ <player> <gray>matched 3 <aqua><bold>Diamond Blocks <gray>on the scratchcard! ★★★"
+
+  emerald_stash:
+    chance: 15.0
+    display:
+      material: "EMERALD"
+      name: "<green>Emerald Stash"
+      lore:
+        - "<gray>A handful of emeralds."
+        - ""
+        - "<yellow>Chance: <gold>15%"
+    items:
+      emeralds:
+        material: "EMERALD"
+        amount: 16
+
+  gold_prize:
+    chance: 20.0
+    display:
+      material: "GOLD_INGOT"
+      name: "<yellow>Gold Prize"
+      lore:
+        - "<gray>Shiny gold ingots."
+        - ""
+        - "<yellow>Chance: <gold>20%"
+    items:
+      gold:
+        material: "GOLD_INGOT"
+        amount: 16
+
+  iron_bundle:
+    chance: 25.0
+    display:
+      material: "IRON_INGOT"
+      name: "<white>Iron Bundle"
+      lore:
+        - "<gray>A solid bundle of iron."
+        - ""
+        - "<yellow>Chance: <gold>25%"
+    items:
+      iron:
+        material: "IRON_INGOT"
+        amount: 32
+
+  money_500:
+    chance: 20.0
+    display:
+      material: "SUNFLOWER"
+      name: "<yellow>$500"
+      lore:
+        - "<gray>A cash prize!"
+        - ""
+        - "<yellow>Chance: <gold>20%"
+    commands:
+      - "eco give <player> 500"
+
+  consolation_coal:
+    chance: 15.0
+    display:
+      material: "COAL"
+      name: "<gray>Coal"
+      lore:
+        - "<dark_gray>Better luck next time!"
+        - ""
+        - "<yellow>Chance: <gold>15%"
+    items:
+      coal:
+        material: "COAL"
+        amount: 16

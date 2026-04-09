@@ -1,0 +1,128 @@
+type: slot
+
+# Slot Machine: multiple columns of rewards spin vertically.
+# Columns stop one by one. If the winner row shows matching rewards, jackpot!
+# The match_chance controls how often the reels align.
+
+gui_title: "<gold><bold>Slot Machine"
+gui_rows: 5
+gui_fill:
+  material: "BLACK_STAINED_GLASS_PANE"
+  name: " "
+
+# Each column is a vertical reel of inventory slots (top to bottom).
+# Layout in a 5-row (45-slot) GUI:
+#   Row 0: 0-8    Row 1: 9-17    Row 2: 18-26    Row 3: 27-35    Row 4: 36-44
+slot_columns:
+  left:   [10, 19, 28]
+  middle: [13, 22, 31]
+  right:  [16, 25, 34]
+
+# Which columns are checked for a matching win (order matters for stop sequence)
+reward_winner_columns:
+  - left
+  - middle
+  - right
+
+# Which position in each column is the "winner row" (0-based index)
+# 0 = top, 1 = middle, 2 = bottom
+reward_winner_index: 1
+
+# Ticks (shifts) between each column stopping
+column_stop_delay_ticks: 15
+
+# Percentage chance that all reels align for a win (0.0 - 100.0)
+match_chance: 25.0
+
+# Total item shifts before the first column stops
+total_ticks: 35
+
+# How long (ticks) the GUI stays open after the result
+stay_open_after_reward_ticks: 60
+
+# Scroll speed control (same as CSGO type)
+start_tick_rate: 1
+tick_rate_modifier: 15
+
+# Filler slots (everything not occupied by columns or pointers)
+filler_slots:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 11
+  - 12
+  - 14
+  - 15
+  - 17
+  - 20
+  - 21
+  - 23
+  - 24
+  - 27
+  - 29
+  - 30
+  - 32
+  - 33
+  - 35
+  - 36
+  - 37
+  - 38
+  - 39
+  - 40
+  - 41
+  - 42
+  - 43
+  - 44
+
+filler_items:
+  cherry:
+    material: "SWEET_BERRIES"
+    name: "<red>Cherry"
+  lemon:
+    material: "GOLD_NUGGET"
+    name: "<yellow>Lemon"
+  seven:
+    material: "NETHER_STAR"
+    name: "<light_purple>Lucky 7"
+
+# Pointers marking the winner row (left and right side of row 2)
+down_pointer:
+  slot: 18
+  material: "LIME_STAINED_GLASS_PANE"
+  name: "<green><bold>► WIN ◄"
+up_pointer:
+  slot: 26
+  material: "LIME_STAINED_GLASS_PANE"
+  name: "<green><bold>► WIN ◄"
+
+# Titles after result
+win_title: "<green><bold>JACKPOT!"
+lose_title: "<red>So Close..."
+
+# End-of-animation celebration items (shown on win)
+end_of_the_animation_item:
+  material: "GOLD_BLOCK"
+  name: "<gold><bold>★ JACKPOT! ★"
+end_of_the_animation_slots:
+  - 0
+  - 8
+  - 36
+  - 44
+
+# Sounds
+tick_sound:
+  - "block.note_block.hat"
+reward_sound:
+  - "entity.player.levelup"
+win_sound:
+  - "entity.player.levelup"
+  - "entity.firework_rocket.blast"
+lose_sound:
+  - "entity.villager.no"

@@ -1,0 +1,61 @@
+type: scratchcard
+
+# Scratchcard: player scratches hidden panels to reveal rewards.
+# If enough panels show the same reward, the player wins that reward.
+# Otherwise, a random consolation reward is given.
+
+gui_title: "<gold><bold>Scratchcard - <amount> left"
+gui_title_shuffling: "<yellow><bold>Shuffling..."
+gui_rows: 3
+gui_fill:
+  material: "YELLOW_STAINED_GLASS_PANE"
+  name: " "
+
+# Slots that hold scratchable rewards (middle row + some extras)
+reward_slots:
+  - 10
+  - 11
+  - 12
+  - 13
+  - 14
+  - 15
+  - 16
+
+# The hidden item shown before scratching
+reward_hide_item:
+  material: "GRAY_STAINED_GLASS_PANE"
+  name: "<gray><bold>? Scratch Me ?"
+  lore:
+    - "<dark_gray>Click to reveal"
+
+# How many panels the player can scratch
+reward_amount: 5
+
+# How many scratched panels must show the same reward to win
+match_required: 3
+
+# Shuffle phase before scratching begins
+shuffle_amount: 3
+shuffle_ticks: 5
+
+# How long (ticks) to display the result before closing
+show_revealed_items_for: 40
+
+# Titles shown after evaluation
+win_title: "<green><bold>★ MATCH! YOU WIN! ★"
+lose_title: "<red><bold>✘ No Match — Better Luck Next Time!"
+
+# Sounds
+shuffle_sound:
+  - "block.note_block.pling"
+reward_sound:
+  - "entity.player.levelup"
+hide_sound:
+  - "block.note_block.bass"
+reveal_sound:
+  - "entity.experience_orb.pickup"
+win_sound:
+  - "entity.player.levelup"
+  - "entity.firework_rocket.blast"
+lose_sound:
+  - "block.anvil.land"
