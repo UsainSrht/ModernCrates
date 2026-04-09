@@ -3,10 +3,13 @@ package me.usainsrht.moderncrates.listener;
 import me.usainsrht.moderncrates.ModernCratesPlugin;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import org.bukkit.block.Sign;
+import org.bukkit.block.sign.Side;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 /**
@@ -27,6 +30,7 @@ public class PlayerListener implements Listener {
         var crate = plugin.getAnimationManager().getCrateForSession(player);
         plugin.getAnimationManager().endSession(player, crate);
         plugin.getChatInputManager().cancel(player);
+        plugin.getSignInputManager().cancel(player);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
@@ -41,5 +45,21 @@ public class PlayerListener implements Listener {
         plugin.getScheduling().globalRegionalScheduler().run(() -> {
             plugin.getChatInputManager().handleChat(player, message);
         });
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onSignChange(SignChangeEvent event) {
+        Player player = event.getPlayer();
+        if (!plugin.getSignInputManager().hasPendingInput(player)) return;
+
+        event.setCancelled(true);
+
+        Sign sign = (Sign) event.getBlock().getState();
+        // Apply the lines from the event to the sign state first
+        for (int i = 0; i < 4; i++) {
+            sign.getSide(event.getSide()).line(i, event.line(i));
+        }
+
+        plugin.getSignInputManager().handleSignChange(player, sign, event.getSide());
     }
 }

@@ -8,9 +8,9 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import me.usainsrht.moderncrates.ModernCratesPlugin;
 import me.usainsrht.moderncrates.api.crate.Crate;
-import me.usainsrht.moderncrates.gui.AdminEditorGui;
 import me.usainsrht.moderncrates.gui.PlayerMenuGui;
 import me.usainsrht.moderncrates.gui.PreviewGui;
+import me.usainsrht.moderncrates.gui.editor.MainMenuGui;
 import me.usainsrht.moderncrates.util.SoundUtil;
 import me.usainsrht.moderncrates.util.TextUtil;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
@@ -162,7 +162,7 @@ public class ModernCratesCommand {
             return Command.SINGLE_SUCCESS;
         }
 
-        AdminEditorGui gui = new AdminEditorGui(player, plugin);
+        MainMenuGui gui = new MainMenuGui(player, plugin);
         gui.open();
         return Command.SINGLE_SUCCESS;
     }
