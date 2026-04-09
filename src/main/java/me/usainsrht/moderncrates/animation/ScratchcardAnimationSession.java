@@ -189,7 +189,7 @@ public class ScratchcardAnimationSession implements AnimationSession, ModernCrat
             SoundUtil.play(player, animation.getWinSounds());
             SoundUtil.play(player, animation.getRewardSounds());
         } else {
-            selectedReward = RewardSelector.selectWeighted(crate);
+            selectedReward = null;
             SoundUtil.play(player, animation.getLoseSounds());
         }
 
@@ -254,8 +254,7 @@ public class ScratchcardAnimationSession implements AnimationSession, ModernCrat
 
     @Override
     public Reward getSelectedReward() {
-        if (selectedReward != null) return selectedReward;
-        return RewardSelector.selectWeighted(crate);
+        return selectedReward;
     }
 
     @Override
@@ -263,9 +262,6 @@ public class ScratchcardAnimationSession implements AnimationSession, ModernCrat
         if (event.getReason() == InventoryCloseEvent.Reason.OPEN_NEW) return;
         if (!finished.get()) {
             cleanup();
-            if (selectedReward == null) {
-                selectedReward = RewardSelector.selectWeighted(crate);
-            }
             finished.set(true);
         }
     }
