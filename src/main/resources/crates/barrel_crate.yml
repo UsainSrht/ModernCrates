@@ -1,0 +1,227 @@
+name: "<gold>Barrel Crate"
+animation: "block_dismantle"
+
+# ╔══════════════════════════════════════════════════════════════╗
+# ║                     Barrel Crate                           ║
+# ╠══════════════════════════════════════════════════════════════╣
+# ║  Uses the Block Dismantle animation.                        ║
+# ║  The barrel shell explodes into 6 display faces:            ║
+# ║   • Top flies upward in a random direction then falls       ║
+# ║   • Four sides tumble outward and drop                      ║
+# ║   • Bottom stays in place                                   ║
+# ║  Reward items appear floating inside the open cavity.       ║
+# ║                                                             ║
+# ║  IMPORTANT: Place this crate on a BARREL block in the world ║
+# ║  and assign its location with /mc setlocation <crate>.      ║
+# ║  Without a physical location the reward is granted          ║
+# ║  instantly.                                                 ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+bounce_back: true
+
+key:
+  required: true
+  material: "TRIPWIRE_HOOK"
+  count: 1
+  name: "<gold><bold>Barrel Key"
+  lore:
+    - "<gray>Opens the"
+    - "<gold>Barrel Crate"
+    - ""
+    - "<dark_gray>Watch the barrel burst open!"
+  enchantments:
+    UNBREAKING: 1
+  item_flags:
+    - HIDE_ENCHANTS
+
+item:
+  material: "BARREL"
+  name: "<gold><bold>Barrel Crate"
+  lore:
+    - "<gray>Place on a barrel block in the world,"
+    - "<gray>then right-click with a <gold>Barrel Key<gray>."
+    - ""
+    - "<dark_gray>The barrel will burst open to reveal your prize!"
+
+hologram:
+  lines:
+    - "<gold><bold>Barrel Crate"
+    - "<yellow>Right-click with a key!"
+    - "<gray>Watch it explode!"
+  offset:
+    - 0.5
+    - 1.8
+    - 0.5
+
+preview:
+  title: "<gold>Barrel Crate — Rewards"
+  rows: 6
+  fill:
+    material: "BROWN_STAINED_GLASS_PANE"
+    name: " "
+  close:
+    slot: 49
+    material: "BARRIER"
+    name: "<red><bold>Close"
+  next:
+    slot: 50
+    material: "ARROW"
+    name: "<green><bold>Next Page"
+  previous:
+    slot: 48
+    material: "ARROW"
+    name: "<green><bold>Previous Page"
+  sound:
+    - "block.barrel.open"
+  custom_slots:
+    4:
+      material: "BARREL"
+      name: "<gold><bold>Barrel Crate"
+      lore:
+        - "<gray>The barrel bursts apart and your"
+        - "<gray>reward floats out from inside!"
+        - ""
+        - "<yellow>Required: <gold>Barrel Key"
+
+announce:
+  to_everyone: true
+  single: "<gold>  <player> <gray>blasted open a <gold>Barrel Crate <gray>and found <gold><reward_name><gray>!"
+  multiple: "<gold>  <player> <gray>blasted open a <gold>Barrel Crate <gray>and found multiple prizes!"
+  multiple_item: "  <dark_gray>▸ <gold><reward_name>"
+
+rewards:
+  netherite_ingot:
+    chance: 2.0
+    display:
+      material: "NETHERITE_INGOT"
+      name: "<dark_gray><bold>Netherite Ingot"
+      lore:
+        - "<gray>The rarest find in the barrel."
+        - ""
+        - "<yellow>Chance: <gold>2%"
+      enchantments:
+        UNBREAKING: 1
+      item_flags:
+        - HIDE_ENCHANTS
+    items:
+      ingot:
+        material: "NETHERITE_INGOT"
+        amount: 1
+        name: "<dark_gray><bold>Netherite Ingot"
+    announce: "<gold>★★★ <player> <gray>found a <dark_gray><bold>NETHERITE INGOT <gray>in a Barrel Crate! ★★★"
+
+  diamond_pickaxe:
+    chance: 5.0
+    display:
+      material: "DIAMOND_PICKAXE"
+      name: "<aqua><bold>Diamond Pickaxe"
+      lore:
+        - "<gray>Mined straight from the barrel."
+        - ""
+        - "<yellow>Chance: <gold>5%"
+      enchantments:
+        EFFICIENCY: 4
+        UNBREAKING: 3
+        FORTUNE: 3
+      item_flags:
+        - HIDE_ENCHANTS
+    items:
+      pick:
+        material: "DIAMOND_PICKAXE"
+        amount: 1
+        name: "<aqua>Diamond Pickaxe"
+        enchantments:
+          EFFICIENCY: 4
+          UNBREAKING: 3
+          FORTUNE: 3
+    announce: "<aqua><player> <gray>pulled a <aqua><bold>Diamond Pickaxe <gray>from the barrel!"
+
+  enchanted_book:
+    chance: 8.0
+    display:
+      material: "ENCHANTED_BOOK"
+      name: "<light_purple>Mending Tome"
+      lore:
+        - "<gray>Knowledge sealed in paper."
+        - ""
+        - "<yellow>Chance: <gold>8%"
+    items:
+      book:
+        material: "ENCHANTED_BOOK"
+        amount: 1
+        enchantments:
+          MENDING: 1
+
+  golden_apple:
+    chance: 15.0
+    display:
+      material: "GOLDEN_APPLE"
+      name: "<gold>Golden Apples"
+      lore:
+        - "<gray>A handful of golden apples."
+        - ""
+        - "<yellow>Chance: <gold>15%"
+    items:
+      apples:
+        material: "GOLDEN_APPLE"
+        amount: 4
+
+  diamonds:
+    chance: 15.0
+    display:
+      material: "DIAMOND"
+      name: "<aqua>Diamonds"
+      lore:
+        - "<gray>Sparkling gems from the depths."
+        - ""
+        - "<yellow>Chance: <gold>15%"
+    items:
+      gems:
+        material: "DIAMOND"
+        amount: 6
+
+  iron_block:
+    chance: 20.0
+    display:
+      material: "IRON_BLOCK"
+      name: "<white>Iron Block"
+      lore:
+        - "<gray>Solid and reliable."
+        - ""
+        - "<yellow>Chance: <gold>20%"
+    items:
+      iron:
+        material: "IRON_BLOCK"
+        amount: 2
+
+  food_bundle:
+    chance: 20.0
+    display:
+      material: "COOKED_BEEF"
+      name: "<yellow>Food Bundle"
+      lore:
+        - "<gray>Steak, bread, and more."
+        - ""
+        - "<yellow>Chance: <gold>20%"
+    items:
+      steak:
+        material: "COOKED_BEEF"
+        amount: 16
+      bread:
+        material: "BREAD"
+        amount: 16
+
+  coal_bag:
+    chance: 15.0
+    display:
+      material: "COAL"
+      name: "<dark_gray>Coal Bag"
+      lore:
+        - "<dark_gray>At least it burns..."
+        - ""
+        - "<yellow>Chance: <gold>15%"
+    items:
+      coal:
+        material: "COAL"
+        amount: 32
+

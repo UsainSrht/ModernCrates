@@ -1,0 +1,58 @@
+type: block_dismantle
+
+# ╔══════════════════════════════════════════════════════════════╗
+# ║             Block Dismantle Animation Config                ║
+# ╠══════════════════════════════════════════════════════════════╣
+# ║  A physical-crate-only animation. The crate block is        ║
+# ║  temporarily hidden and replaced by 6 thin BlockDisplay     ║
+# ║  entities forming its shell. The top face launches upward   ║
+# ║  in a random direction, the four sides fall outward, and    ║
+# ║  the bottom stays put. Reward items appear inside the open  ║
+# ║  cavity as ItemDisplay entities.                            ║
+# ║                                                             ║
+# ║  NOTE: Requires a physical crate location. Without one,     ║
+# ║  the animation falls back to an instant reward grant.       ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+# The block material that the shell faces will use.
+# Must be a solid block material (e.g. BARREL, CHEST, OBSIDIAN).
+dismantle_block_type: "BARREL"
+
+# How many ticks the side faces take to fall to the ground.
+dismantle_fall_duration_ticks: 35
+
+# How many ticks the top face takes to rise to its peak.
+# After this duration it will begin falling back down over
+# an equal number of ticks.
+dismantle_top_rise_duration_ticks: 22
+
+# How high (in blocks) the top face rises above the crate block.
+dismantle_top_launch_height: 3.5
+
+# Maximum horizontal offset (in blocks) the top face drifts in a
+# random direction. Adds a natural, unpredictable feel.
+dismantle_top_horizontal_range: 1.8
+
+# How many ticks the reward ItemDisplay entities are visible
+# before everything is cleaned up and the block is restored.
+dismantle_display_duration_ticks: 100
+
+# Number of ItemDisplay entities to show inside the open cavity.
+# The first one is always the selected reward; the rest are random
+# rewards from the crate pool (for visual flair).
+dismantle_reward_count: 3
+
+# ── Sounds ────────────────────────────────────────────────────────
+# Played when the block shell first explodes/dismantles.
+dismantle_open_sound:
+  - "block.wood.break"
+  - "entity.ender_chest.open"
+
+# Played when the reward items appear inside the cavity.
+dismantle_reward_sound:
+  - "entity.player.levelup"
+
+# Played just before cleanup (close/restore phase).
+dismantle_settle_sound:
+  - "block.chest.close"
+

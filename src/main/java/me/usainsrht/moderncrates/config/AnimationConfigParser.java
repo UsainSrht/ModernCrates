@@ -143,6 +143,18 @@ public class AnimationConfigParser {
         anim.setRiseSounds(parseSoundList(yaml, "rise_sound", "sounds.rise"));
         anim.setSettleSounds(parseSoundList(yaml, "settle_sound", "sounds.settle"));
 
+        // BlockDismantle-type fields
+        anim.setDismantleBlockType(yaml.getString("dismantle_block_type", "BARREL"));
+        anim.setDismantleFallDurationTicks(yaml.getInt("dismantle_fall_duration_ticks", 30));
+        anim.setDismantleTopRiseDurationTicks(yaml.getInt("dismantle_top_rise_duration_ticks", 20));
+        anim.setDismantleTopLaunchHeight(yaml.getDouble("dismantle_top_launch_height", 3.0));
+        anim.setDismantleTopHorizontalRange(yaml.getDouble("dismantle_top_horizontal_range", 1.5));
+        anim.setDismantleDisplayDurationTicks(yaml.getInt("dismantle_display_duration_ticks", 80));
+        anim.setDismantleRewardCount(yaml.getInt("dismantle_reward_count", 3));
+        anim.setDismantleOpenSounds(parseSoundList(yaml, "dismantle_open_sound", "sounds.dismantle_open"));
+        anim.setDismantleRewardSounds(parseSoundList(yaml, "dismantle_reward_sound", "sounds.dismantle_reward"));
+        anim.setDismantleSettleSounds(parseSoundList(yaml, "dismantle_settle_sound", "sounds.dismantle_settle"));
+
         return anim;
     }
 

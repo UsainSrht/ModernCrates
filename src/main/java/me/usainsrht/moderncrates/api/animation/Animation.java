@@ -88,6 +88,18 @@ public class Animation {
     private List<String> riseSounds;
     private List<String> settleSounds;
 
+    // BlockDismantle-type fields
+    private String dismantleBlockType;
+    private int dismantleFallDurationTicks;
+    private int dismantleTopRiseDurationTicks;
+    private double dismantleTopLaunchHeight;
+    private double dismantleTopHorizontalRange;
+    private int dismantleDisplayDurationTicks;
+    private int dismantleRewardCount;
+    private List<String> dismantleOpenSounds;
+    private List<String> dismantleRewardSounds;
+    private List<String> dismantleSettleSounds;
+
     public Animation(String id) {
         this.id = id;
     }
@@ -247,4 +259,35 @@ public class Animation {
 
     public List<String> getSettleSounds() { return settleSounds; }
     public void setSettleSounds(List<String> settleSounds) { this.settleSounds = settleSounds; }
+
+    // BlockDismantle
+    public String getDismantleBlockType() { return dismantleBlockType; }
+    public void setDismantleBlockType(String dismantleBlockType) { this.dismantleBlockType = dismantleBlockType; }
+
+    public int getDismantleFallDurationTicks() { return dismantleFallDurationTicks; }
+    public void setDismantleFallDurationTicks(int dismantleFallDurationTicks) { this.dismantleFallDurationTicks = dismantleFallDurationTicks; }
+
+    public int getDismantleTopRiseDurationTicks() { return dismantleTopRiseDurationTicks; }
+    public void setDismantleTopRiseDurationTicks(int dismantleTopRiseDurationTicks) { this.dismantleTopRiseDurationTicks = dismantleTopRiseDurationTicks; }
+
+    public double getDismantleTopLaunchHeight() { return dismantleTopLaunchHeight; }
+    public void setDismantleTopLaunchHeight(double dismantleTopLaunchHeight) { this.dismantleTopLaunchHeight = dismantleTopLaunchHeight; }
+
+    public double getDismantleTopHorizontalRange() { return dismantleTopHorizontalRange; }
+    public void setDismantleTopHorizontalRange(double dismantleTopHorizontalRange) { this.dismantleTopHorizontalRange = dismantleTopHorizontalRange; }
+
+    public int getDismantleDisplayDurationTicks() { return dismantleDisplayDurationTicks; }
+    public void setDismantleDisplayDurationTicks(int dismantleDisplayDurationTicks) { this.dismantleDisplayDurationTicks = dismantleDisplayDurationTicks; }
+
+    public int getDismantleRewardCount() { return dismantleRewardCount; }
+    public void setDismantleRewardCount(int dismantleRewardCount) { this.dismantleRewardCount = dismantleRewardCount; }
+
+    public List<String> getDismantleOpenSounds() { return dismantleOpenSounds; }
+    public void setDismantleOpenSounds(List<String> dismantleOpenSounds) { this.dismantleOpenSounds = dismantleOpenSounds; }
+
+    public List<String> getDismantleRewardSounds() { return dismantleRewardSounds; }
+    public void setDismantleRewardSounds(List<String> dismantleRewardSounds) { this.dismantleRewardSounds = dismantleRewardSounds; }
+
+    public List<String> getDismantleSettleSounds() { return dismantleSettleSounds; }
+    public void setDismantleSettleSounds(List<String> dismantleSettleSounds) { this.dismantleSettleSounds = dismantleSettleSounds; }
 }

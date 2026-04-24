@@ -1,5 +1,6 @@
 package me.usainsrht.moderncrates;
 
+import me.usainsrht.moderncrates.animation.BlockDismantleAnimationType;
 import me.usainsrht.moderncrates.animation.ClickAnimationType;
 import me.usainsrht.moderncrates.animation.CsgoAnimationType;
 import me.usainsrht.moderncrates.animation.ItemRiseAnimationType;
@@ -105,6 +106,7 @@ public class ModernCratesPlugin extends JavaPlugin {
             saveResource("crates/scratchcard_crate.yml", false);
             saveResource("crates/slot_machine.yml", false);
             saveResource("crates/treasure_chest.yml", false);
+            saveResource("crates/barrel_crate.yml", false);
         }
         if (!animationsDir.exists()) {
             animationsDir.mkdirs();
@@ -116,6 +118,7 @@ public class ModernCratesPlugin extends JavaPlugin {
             saveResource("animations/roulette.yml", false);
             saveResource("animations/scratchcard.yml", false);
             saveResource("animations/slot.yml", false);
+            saveResource("animations/block_dismantle.yml", false);
         }
 
         // Register built-in animation types
@@ -203,7 +206,7 @@ public class ModernCratesPlugin extends JavaPlugin {
             }
         }
         getLogger().info("Using vanilla TextDisplay holograms.");
-        return new VanillaHologramProvider(scheduling);
+        return new VanillaHologramProvider(this, scheduling);
     }
 
     private void registerBuiltinAnimationTypes() {
@@ -212,6 +215,7 @@ public class ModernCratesPlugin extends JavaPlugin {
         animationTypeRegistry.put("scratchcard", new ScratchcardAnimationType(scheduling));
         animationTypeRegistry.put("slot", new SlotAnimationType(scheduling));
         animationTypeRegistry.put("item_rise", new ItemRiseAnimationType(scheduling, this));
+        animationTypeRegistry.put("block_dismantle", new BlockDismantleAnimationType(scheduling, this));
     }
 
     private void loadAnimations() {
