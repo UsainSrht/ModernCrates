@@ -9,9 +9,12 @@ import me.usainsrht.moderncrates.util.ItemBuilder;
 import me.usainsrht.moderncrates.util.SoundUtil;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Directional;
 import org.bukkit.entity.BlockDisplay;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.ItemDisplay;
@@ -22,7 +25,10 @@ import org.joml.AxisAngle4f;
 import org.joml.Vector3f;
 import space.arim.morepaperlib.scheduling.ScheduledTask;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -32,63 +38,62 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * <ol>
  *   <li>SPAWN  – hide the real crate block (save BlockData, set to AIR), spawn 6 thin
  *       BlockDisplay entities that together form the visual shell of the block.</li>
- *   <li>DISMANTLE – side faces interpolate outward + downward; top face interpolates
- *       upward in a random horizontal direction then falls back down; bottom face stays.</li>
- *   <li>REWARD  – spawn up to {@code dismantleRewardCount} ItemDisplay entities inside
- *       the opened cavity with the selected reward item.</li>
- *   <li>CLEANUP – after {@code dismantleDisplayDurationTicks}, remove all display entities
- *       and restore the original block.</li>
+ *   <li>DISMANTLE – side faces rotate outward on a bottom-edge hinge (like doors falling
+ *       open); top face interpolates upward in a random horizontal direction then falls
+ *       back; bottom face stays; configured particles burst at the block centre.</li>
+ *   <li>REWARD  – one ItemDisplay for the selected (won) reward appears inside the
+ *       open cavity. No random pool items are shown.</li>
+ *   <li>CLEANUP – after {@code dismantle_display_duration_ticks}, all display entities are
+ *       removed and the original block is restored.</li>
  * </ol>
  *
- * <p>All BlockDisplay / block-mutating work is scheduled on the region-specific scheduler
- * so the session is fully Folia-compatible.
+ * <h3>Side-face hinge maths</h3>
+ * The entity is spawned at the block's lower-northwest corner. Each side face's bottom
+ * outer edge is positioned so that a single Translation + LeftRotation Transformation
+ * places it lying flat on the ground after a 90° rotation.
+ *
+ * <pre>
+ * Face    Axis  Angle   Final T            Flat region (entity-relative)
+ * ------  ----  ------  -----------------  --------------------------------
+ * North   X     −90°    (0, 0, 0)          X=[0,1]  Y=[0,FT]  Z=[−1,0]
+ * South   X     +90°    (0, FT, 1)         X=[0,1]  Y=[0,FT]  Z=[1,2]
+ * West    Z     +90°    (0, 0, 0)          X=[−1,0] Y=[0,FT]  Z=[0,1]
+ * East    Z     −90°    (1, FT, 0)         X=[1,2]  Y=[0,FT]  Z=[0,1]
+ * </pre>
  */
 public class BlockDismantleAnimationSession implements AnimationSession {
 
-    // -----------------------------------------------------------------------
-    // Face thickness – thin enough to look like a face, not a slab
-    // -----------------------------------------------------------------------
     private static final float FACE_THICKNESS = 0.05f;
 
-    // -----------------------------------------------------------------------
-    // Injected state
-    // -----------------------------------------------------------------------
     private final Player player;
     private final Crate crate;
     private final Animation animation;
     private final BlockDismantleAnimationType type;
     private final Runnable onComplete;
 
-    // -----------------------------------------------------------------------
-    // Runtime state
-    // -----------------------------------------------------------------------
-    private final AtomicBoolean finished = new AtomicBoolean(false);
+    private final AtomicBoolean finished  = new AtomicBoolean(false);
     private final AtomicBoolean cancelled = new AtomicBoolean(false);
     private final Random random = new Random();
 
-    private Location blockLocation;
+    private Location  blockLocation;
     private BlockData savedBlockData;
-    private Reward selectedReward;
+    private Reward    selectedReward;
 
-    // The 6 shell faces: 0=bottom, 1=top, 2=north, 3=south, 4=west, 5=east
-    private final List<BlockDisplay> faceDisplays = new ArrayList<>();
-    private final List<ItemDisplay> rewardDisplays = new ArrayList<>();
+    /** 0=bottom, 1=top, 2=north, 3=south, 4=west, 5=east */
+    private final List<BlockDisplay> faceDisplays   = new ArrayList<>();
+    private final List<ItemDisplay>  rewardDisplays = new ArrayList<>();
 
-    // Scheduled tasks
     private ScheduledTask dismantleTask;
     private ScheduledTask topFallTask;
     private ScheduledTask rewardTask;
     private ScheduledTask cleanupTask;
 
-    // -----------------------------------------------------------------------
-    // Constructor
-    // -----------------------------------------------------------------------
     public BlockDismantleAnimationSession(Player player, Crate crate, Animation animation,
                                            BlockDismantleAnimationType type, Runnable onComplete) {
-        this.player = player;
-        this.crate = crate;
+        this.player    = player;
+        this.crate     = crate;
         this.animation = animation;
-        this.type = type;
+        this.type      = type;
         this.onComplete = onComplete;
     }
 
@@ -98,18 +103,14 @@ public class BlockDismantleAnimationSession implements AnimationSession {
     public void start() {
         CrateLocation crateLoc = crate.getCrateLocation();
         if (crateLoc == null) { fallbackFinish(); return; }
-
         Location loc = crateLoc.toBukkit();
-        if (loc == null) { fallbackFinish(); return; }
-
-        blockLocation = loc.getBlock().getLocation(); // integer-aligned
+        if (loc == null)      { fallbackFinish(); return; }
+        blockLocation = loc.getBlock().getLocation();
 
         selectedReward = RewardSelector.selectWeighted(crate);
         if (selectedReward == null) { fallbackFinish(); return; }
 
-        // Phase 1: hide block + spawn faces on the region thread
-        type.getScheduler().regionSpecificScheduler(blockLocation)
-                .run(this::spawnShell);
+        type.getScheduler().regionSpecificScheduler(blockLocation).run(this::spawnShell);
     }
 
     @Override
@@ -117,8 +118,7 @@ public class BlockDismantleAnimationSession implements AnimationSession {
         cancelled.set(true);
         cancelTasks();
         if (blockLocation != null) {
-            type.getScheduler().regionSpecificScheduler(blockLocation)
-                    .run(this::cleanupAll);
+            type.getScheduler().regionSpecificScheduler(blockLocation).run(this::cleanupAll);
         } else {
             cleanupAll();
         }
@@ -126,41 +126,35 @@ public class BlockDismantleAnimationSession implements AnimationSession {
         finished.set(true);
     }
 
-    @Override
-    public boolean isFinished() { return finished.get(); }
-
-    @Override
-    public Reward getSelectedReward() { return selectedReward; }
+    @Override public boolean isFinished()        { return finished.get(); }
+    @Override public Reward  getSelectedReward() { return selectedReward; }
 
     // ========================= PHASE 1 – SPAWN SHELL ========================
 
-    /**
-     * Replaces the crate block with AIR and spawns the 6 face displays.
-     * Must execute on the region thread that owns {@code blockLocation}.
-     */
     private void spawnShell() {
         if (cancelled.get()) return;
-
         World world = blockLocation.getWorld();
         if (world == null) { fallbackFinish(); return; }
 
         Block block = blockLocation.getBlock();
         savedBlockData = block.getBlockData().clone();
 
-        // Resolve the face block material from config (fallback to BARREL)
         Material faceMaterial = Material.matchMaterial(animation.getDismantleBlockType().toUpperCase());
         if (faceMaterial == null || !faceMaterial.isBlock()) faceMaterial = Material.BARREL;
 
+        // Force facing=UP for directional blocks (e.g. BARREL) so the top texture faces +Y,
+        // the bottom texture faces -Y, and side textures face outward on all 4 side displays.
+        // Blocks that don't support UP facing are left at their default state.
         BlockData faceBlockData = faceMaterial.createBlockData();
+        if (faceBlockData instanceof Directional directional
+                && directional.getFaces().contains(BlockFace.UP)) {
+            directional.setFacing(BlockFace.UP);
+        }
 
-        // Hide real block
         block.setType(Material.AIR, false);
 
-        // Spawn bottom face (stays put the entire animation)
         faceDisplays.add(spawnFace(world, faceBlockData, bottomTransform()));
-        // Spawn top face (launches upward then falls)
         faceDisplays.add(spawnFace(world, faceBlockData, topTransform()));
-        // North, South, West, East
         faceDisplays.add(spawnFace(world, faceBlockData, northTransform()));
         faceDisplays.add(spawnFace(world, faceBlockData, southTransform()));
         faceDisplays.add(spawnFace(world, faceBlockData, westTransform()));
@@ -168,156 +162,132 @@ public class BlockDismantleAnimationSession implements AnimationSession {
 
         SoundUtil.play(player, animation.getDismantleOpenSounds());
 
-        // Brief pause so the initial spawn renders, then do dismantle
-        int startDelay = Math.max(1, 5);
         dismantleTask = type.getScheduler().regionSpecificScheduler(blockLocation)
-                .runDelayed(this::dismantle, startDelay);
+                .runDelayed(this::dismantle, 5);
     }
 
     // ========================= PHASE 2 – DISMANTLE ==========================
 
     /**
-     * Initiates the interpolated dismantle movement on all 6 faces.
+     * Fires all face animations simultaneously.
+     * The Minecraft client interpolates each transformation smoothly at its own
+     * render frame-rate — no server-side per-tick tasks are needed.
      */
     private void dismantle() {
         if (cancelled.get()) return;
 
         int fallTicks = Math.max(1, animation.getDismantleFallDurationTicks());
         int riseTicks = Math.max(1, animation.getDismantleTopRiseDurationTicks());
-        float height = (float) animation.getDismantleTopLaunchHeight();
-        float hRange = (float) animation.getDismantleTopHorizontalRange();
+        float height  = (float) animation.getDismantleTopLaunchHeight();
+        float hRange  = (float) animation.getDismantleTopHorizontalRange();
 
-        // ---- Bottom (index 0) stays, no interpolation needed ----
-
-        // ---- Top face (index 1) – rise first ----
+        // ---- Top face (index 1): rise then fall ----
         if (faceDisplays.size() > 1) {
             BlockDisplay topFace = faceDisplays.get(1);
             float offX = (random.nextFloat() * 2 - 1) * hRange;
             float offZ = (random.nextFloat() * 2 - 1) * hRange;
 
-            // Phase A: fly upward in a random horizontal direction
-            Transformation riseTarget = new Transformation(
-                    new Vector3f(offX, height, offZ),
+            // Rise to peak
+            applyInterpolation(topFace, new Transformation(
+                    new Vector3f(offX, 1f - FACE_THICKNESS + height, offZ),
                     new AxisAngle4f(0, 0, 1, 0),
                     new Vector3f(1f, FACE_THICKNESS, 1f),
                     new AxisAngle4f(0, 0, 1, 0)
-            );
-            applyInterpolation(topFace, riseTarget, riseTicks);
+            ), riseTicks);
 
-            // Phase B: after rise duration, fall back down past the ground
+            // After rise: fall off-screen
             topFallTask = type.getScheduler().regionSpecificScheduler(blockLocation)
                     .runDelayed(() -> {
                         if (cancelled.get() || topFace.isDead()) return;
-                        Transformation fallTarget = new Transformation(
+                        applyInterpolation(topFace, new Transformation(
                                 new Vector3f(offX, -2f, offZ),
                                 new AxisAngle4f(0, 0, 1, 0),
                                 new Vector3f(1f, FACE_THICKNESS, 1f),
                                 new AxisAngle4f(0, 0, 1, 0)
-                        );
-                        applyInterpolation(topFace, fallTarget, fallTicks);
+                        ), fallTicks);
                     }, riseTicks);
         }
 
-        // ---- Side faces: fall outward + downward ----
-        // North (index 2): translate -Z and -Y
-        animateSide(2, fallTicks, 0f, -0.8f, -1.5f);
-        // South (index 3): translate +Z and -Y
-        animateSide(3, fallTicks, 0f, -0.8f, 1.5f);
-        // West  (index 4): translate -X and -Y
-        animateSide(4, fallTicks, -1.5f, -0.8f, 0f);
-        // East  (index 5): translate +X and -Y
-        animateSide(5, fallTicks, 1.5f, -0.8f, 0f);
+        // ---- Side faces: hinge-drop using the exact fallen transformations ----
+        // Each call issues one setTransformation; the client interpolates client-side.
+        //
+        // North (2): Rx(−90°), pivot at entity origin
+        hingeDropSide(2, fallTicks,
+                new Vector3f(0f, 0f, 0f),
+                new AxisAngle4f((float) -Math.PI / 2, 1f, 0f, 0f),
+                new Vector3f(1f, 1f, FACE_THICKNESS));
 
-        // After fall, start the reward phase
+        // South (3): Rx(+90°), pivot at Z=1,Y=0 → T=(0, FT, 1)
+        hingeDropSide(3, fallTicks,
+                new Vector3f(0f, FACE_THICKNESS, 1f),
+                new AxisAngle4f((float) Math.PI / 2, 1f, 0f, 0f),
+                new Vector3f(1f, 1f, FACE_THICKNESS));
+
+        // West (4): Rz(+90°), pivot at entity origin
+        hingeDropSide(4, fallTicks,
+                new Vector3f(0f, 0f, 0f),
+                new AxisAngle4f((float) Math.PI / 2, 0f, 0f, 1f),
+                new Vector3f(FACE_THICKNESS, 1f, 1f));
+
+        // East (5): Rz(−90°), pivot at X=1,Y=0 → T=(1, FT, 0)
+        hingeDropSide(5, fallTicks,
+                new Vector3f(1f, FACE_THICKNESS, 0f),
+                new AxisAngle4f((float) -Math.PI / 2, 0f, 0f, 1f),
+                new Vector3f(FACE_THICKNESS, 1f, 1f));
+
+        // ---- Particles ----
+        spawnDismantleParticles(blockLocation.getWorld());
+
+        // ---- Schedule reward reveal ----
         int rewardDelay = fallTicks + (int) (fallTicks * 0.2) + 1;
         rewardTask = type.getScheduler().regionSpecificScheduler(blockLocation)
                 .runDelayed(this::showRewards, rewardDelay);
     }
 
     /**
-     * Translates a side face to {@code (tx, ty, tz)} over {@code ticks} ticks,
-     * additionally tilting it outward slightly so it "falls" convincingly.
+     * Sends a single interpolated transformation to a side face.
+     * The Minecraft client handles all intermediate frames at render frame-rate.
      */
-    private void animateSide(int faceIndex, int ticks, float tx, float ty, float tz) {
+    private void hingeDropSide(int faceIndex, int ticks,
+                                Vector3f translation, AxisAngle4f rotation, Vector3f scale) {
         if (faceDisplays.size() <= faceIndex) return;
         BlockDisplay face = faceDisplays.get(faceIndex);
-        if (face.isDead()) return;
-
-        // Determine scale/rotation based on which side it is
-        Transformation current = face.getTransformation();
-
-        Transformation target = new Transformation(
-                new Vector3f(
-                        current.getTranslation().x + tx,
-                        current.getTranslation().y + ty,
-                        current.getTranslation().z + tz
-                ),
-                new AxisAngle4f(0, 0, 1, 0),
-                current.getScale(),
-                new AxisAngle4f(0, 0, 1, 0)
-        );
-        applyInterpolation(face, target, ticks);
+        if (face == null || face.isDead()) return;
+        applyInterpolation(face, new Transformation(
+                translation, rotation, scale, new AxisAngle4f(0, 0, 1, 0)
+        ), ticks);
     }
 
     // ========================= PHASE 3 – SHOW REWARDS =======================
 
     /**
-     * Spawns ItemDisplay entities inside the open cavity.
+     * Spawns exactly one ItemDisplay for the selected (won) reward.
+     * No random pool items are shown so the player only sees what they actually won.
      */
     private void showRewards() {
         if (cancelled.get()) return;
-
         World world = blockLocation.getWorld();
         if (world == null) { beginCleanup(); return; }
 
         SoundUtil.play(player, animation.getDismantleRewardSounds());
 
-        int count = Math.max(1, animation.getDismantleRewardCount());
-        List<Reward> pool = new ArrayList<>(crate.getRewards().values());
-        if (pool.isEmpty()) { beginCleanup(); return; }
+        ItemStack displayItem = selectedReward.getDisplay() != null
+                ? ItemBuilder.fromDisplay(selectedReward.getDisplay())
+                : new ItemStack(Material.STONE);
 
-        // Build the display list: selected reward first, rest random
-        List<Reward> displayRewards = new ArrayList<>();
-        displayRewards.add(selectedReward);
-        for (int i = 1; i < count; i++) {
-            displayRewards.add(pool.get(random.nextInt(pool.size())));
-        }
-
-        // Position items in a grid inside the 1×1 cavity
-        // We spread them across the interior, centred at block centre
         double cx = blockLocation.getBlockX() + 0.5;
-        double cy = blockLocation.getBlockY() + 0.3; // slightly above floor
+        double cy = blockLocation.getBlockY() + 0.35;
         double cz = blockLocation.getBlockZ() + 0.5;
 
-        // Simple spiral / grid placement within [-0.3, 0.3] XZ range
-        double[] offsets = computeOffsets(count);
-
-        for (int i = 0; i < count; i++) {
-            Reward reward = displayRewards.get(i);
-            ItemStack displayItem = reward.getDisplay() != null
-                    ? ItemBuilder.fromDisplay(reward.getDisplay())
-                    : new ItemStack(Material.STONE);
-
-            Location spawnLoc = new Location(world,
-                    cx + offsets[i * 2],
-                    cy + (i * 0.18),            // stack slightly in Y as well
-                    cz + offsets[i * 2 + 1]);
-
-            ItemDisplay itemDisplay = world.spawn(spawnLoc, ItemDisplay.class, e -> {
-                e.setItemStack(displayItem);
-                e.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.GROUND);
-                e.setBillboard(Display.Billboard.VERTICAL);
-                e.setViewRange(48);
-            });
-            rewardDisplays.add(itemDisplay);
-        }
+        rewardDisplays.add(world.spawn(new Location(world, cx, cy, cz), ItemDisplay.class, e -> {
+            e.setItemStack(displayItem);
+            e.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.GROUND);
+            e.setBillboard(Display.Billboard.VERTICAL);
+            e.setViewRange(48);
+        }));
 
         SoundUtil.play(player, animation.getDismantleSettleSounds());
-
-        // Schedule cleanup
-        int displayTicks = Math.max(1, animation.getDismantleDisplayDurationTicks());
-        cleanupTask = type.getScheduler().regionSpecificScheduler(blockLocation)
-                .runDelayed(this::finalCleanup, displayTicks);
+        beginCleanup();
     }
 
     // ========================= PHASE 4 – CLEANUP ============================
@@ -331,21 +301,44 @@ public class BlockDismantleAnimationSession implements AnimationSession {
     private void finalCleanup() {
         cleanupAll();
         finished.set(true);
-        type.getScheduler().entitySpecificScheduler(player)
-                .run(onComplete::run, null);
+        type.getScheduler().entitySpecificScheduler(player).run(onComplete::run, null);
     }
 
     // ========================= HELPERS ======================================
 
     /**
-     * Spawns a single thin BlockDisplay face using the given {@link Transformation}.
-     * The entity is positioned at the block origin (bottom-west-north corner) so that
-     * the transformation matrix positions the face precisely within the block volume.
+     * Spawns a burst of every particle listed in {@code dismantle_particles}
+     * as a ring + centre cluster around the block at dismantle time.
      */
+    private void spawnDismantleParticles(World world) {
+        if (world == null) return;
+        List<String> particleNames = animation.getDismantleParticles();
+        if (particleNames == null || particleNames.isEmpty()) return;
+
+        double cx = blockLocation.getBlockX() + 0.5;
+        double cy = blockLocation.getBlockY() + 0.5;
+        double cz = blockLocation.getBlockZ() + 0.5;
+
+        for (String name : particleNames) {
+            Particle particle;
+            try {
+                particle = Particle.valueOf(name.toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException ignored) {
+                continue;
+            }
+            // Ring around the block
+            for (int i = 0; i < 12; i++) {
+                double angle = (2 * Math.PI * i) / 12;
+                world.spawnParticle(particle,
+                        cx + 0.7 * Math.cos(angle), cy, cz + 0.7 * Math.sin(angle),
+                        1, 0, 0, 0, 0);
+            }
+            // Central burst
+            world.spawnParticle(particle, cx, cy, cz, 6, 0.3, 0.3, 0.3, 0);
+        }
+    }
     private BlockDisplay spawnFace(World world, BlockData blockData, Transformation transform) {
-        // Spawn at block origin (lower-corner)
-        Location origin = blockLocation.clone().add(0, 0, 0);
-        return world.spawn(origin, BlockDisplay.class, e -> {
+        return world.spawn(blockLocation.clone(), BlockDisplay.class, e -> {
             e.setBlock(blockData);
             e.setTransformation(transform);
             e.setViewRange(64);
@@ -353,10 +346,6 @@ public class BlockDismantleAnimationSession implements AnimationSession {
         });
     }
 
-    /**
-     * Sets a new transformation on a BlockDisplay and lets the client interpolate
-     * over the given number of ticks.
-     */
     private static void applyInterpolation(BlockDisplay display, Transformation target, int durationTicks) {
         if (display == null || display.isDead()) return;
         display.setInterpolationDuration(durationTicks);
@@ -364,103 +353,50 @@ public class BlockDismantleAnimationSession implements AnimationSession {
         display.setTransformation(target);
     }
 
-    // ---- Face transformations at rest ----
-    // All faces are 1 block wide/tall except in thickness dimension (FACE_THICKNESS).
-    // The display entity origin is at the block's bottom-north-west corner.
-
-    /** Bottom face – sits flush at Y=0 of the block. */
+    // ---- Resting face transformations ----
     private static Transformation bottomTransform() {
-        return new Transformation(
-                new Vector3f(0f, 0f, 0f),
-                new AxisAngle4f(0, 0, 1, 0),
-                new Vector3f(1f, FACE_THICKNESS, 1f),
-                new AxisAngle4f(0, 0, 1, 0)
-        );
+        return new Transformation(new Vector3f(0f, 0f, 0f),
+                new AxisAngle4f(0, 0, 1, 0), new Vector3f(1f, FACE_THICKNESS, 1f),
+                new AxisAngle4f(0, 0, 1, 0));
     }
 
-    /** Top face – sits at Y = 1 - FACE_THICKNESS of the block. */
     private static Transformation topTransform() {
-        return new Transformation(
-                new Vector3f(0f, 1f - FACE_THICKNESS, 0f),
-                new AxisAngle4f(0, 0, 1, 0),
-                new Vector3f(1f, FACE_THICKNESS, 1f),
-                new AxisAngle4f(0, 0, 1, 0)
-        );
+        return new Transformation(new Vector3f(0f, 1f - FACE_THICKNESS, 0f),
+                new AxisAngle4f(0, 0, 1, 0), new Vector3f(1f, FACE_THICKNESS, 1f),
+                new AxisAngle4f(0, 0, 1, 0));
     }
 
-    /** North face – flush at Z=0, spans X and Y. */
     private static Transformation northTransform() {
-        return new Transformation(
-                new Vector3f(0f, 0f, 0f),
-                new AxisAngle4f(0, 0, 1, 0),
-                new Vector3f(1f, 1f, FACE_THICKNESS),
-                new AxisAngle4f(0, 0, 1, 0)
-        );
+        return new Transformation(new Vector3f(0f, 0f, 0f),
+                new AxisAngle4f(0, 0, 1, 0), new Vector3f(1f, 1f, FACE_THICKNESS),
+                new AxisAngle4f(0, 0, 1, 0));
     }
 
-    /** South face – at Z = 1 - FACE_THICKNESS. */
     private static Transformation southTransform() {
-        return new Transformation(
-                new Vector3f(0f, 0f, 1f - FACE_THICKNESS),
-                new AxisAngle4f(0, 0, 1, 0),
-                new Vector3f(1f, 1f, FACE_THICKNESS),
-                new AxisAngle4f(0, 0, 1, 0)
-        );
+        return new Transformation(new Vector3f(0f, 0f, 1f - FACE_THICKNESS),
+                new AxisAngle4f(0, 0, 1, 0), new Vector3f(1f, 1f, FACE_THICKNESS),
+                new AxisAngle4f(0, 0, 1, 0));
     }
 
-    /** West face – flush at X=0. */
     private static Transformation westTransform() {
-        return new Transformation(
-                new Vector3f(0f, 0f, 0f),
-                new AxisAngle4f(0, 0, 1, 0),
-                new Vector3f(FACE_THICKNESS, 1f, 1f),
-                new AxisAngle4f(0, 0, 1, 0)
-        );
+        return new Transformation(new Vector3f(0f, 0f, 0f),
+                new AxisAngle4f(0, 0, 1, 0), new Vector3f(FACE_THICKNESS, 1f, 1f),
+                new AxisAngle4f(0, 0, 1, 0));
     }
 
-    /** East face – at X = 1 - FACE_THICKNESS. */
     private static Transformation eastTransform() {
-        return new Transformation(
-                new Vector3f(1f - FACE_THICKNESS, 0f, 0f),
-                new AxisAngle4f(0, 0, 1, 0),
-                new Vector3f(FACE_THICKNESS, 1f, 1f),
-                new AxisAngle4f(0, 0, 1, 0)
-        );
+        return new Transformation(new Vector3f(1f - FACE_THICKNESS, 0f, 0f),
+                new AxisAngle4f(0, 0, 1, 0), new Vector3f(FACE_THICKNESS, 1f, 1f),
+                new AxisAngle4f(0, 0, 1, 0));
     }
 
-    /**
-     * Computes XZ offsets for {@code count} items so they spread within [-0.3, 0.3].
-     * Returns a flat array: [x0, z0, x1, z1, …]
-     */
-    private static double[] computeOffsets(int count) {
-        double[] out = new double[count * 2];
-        if (count == 1) return out; // centre
-        double spread = 0.28;
-        // Place items around a circle
-        for (int i = 0; i < count; i++) {
-            double angle = (2 * Math.PI * i) / count;
-            out[i * 2]     = Math.cos(angle) * spread;
-            out[i * 2 + 1] = Math.sin(angle) * spread;
-        }
-        return out;
-    }
-
-    /** Removes all spawned display entities and restores the crate block. */
     private void cleanupAll() {
-        for (BlockDisplay d : faceDisplays) {
-            if (d != null && !d.isDead()) d.remove();
-        }
+        for (BlockDisplay d : faceDisplays)  { if (d != null && !d.isDead()) d.remove(); }
         faceDisplays.clear();
-
-        for (ItemDisplay d : rewardDisplays) {
-            if (d != null && !d.isDead()) d.remove();
-        }
+        for (ItemDisplay d : rewardDisplays) { if (d != null && !d.isDead()) d.remove(); }
         rewardDisplays.clear();
-
-        // Restore the block
         if (blockLocation != null && savedBlockData != null) {
-            Block block = blockLocation.getBlock();
-            block.setBlockData(savedBlockData, false);
+            blockLocation.getBlock().setBlockData(savedBlockData, false);
             savedBlockData = null;
         }
     }

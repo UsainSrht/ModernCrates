@@ -150,7 +150,7 @@ public class AnimationConfigParser {
         anim.setDismantleTopLaunchHeight(yaml.getDouble("dismantle_top_launch_height", 3.0));
         anim.setDismantleTopHorizontalRange(yaml.getDouble("dismantle_top_horizontal_range", 1.5));
         anim.setDismantleDisplayDurationTicks(yaml.getInt("dismantle_display_duration_ticks", 80));
-        anim.setDismantleRewardCount(yaml.getInt("dismantle_reward_count", 3));
+        anim.setDismantleParticles(parseParticleList(yaml, "dismantle_particles"));
         anim.setDismantleOpenSounds(parseSoundList(yaml, "dismantle_open_sound", "sounds.dismantle_open"));
         anim.setDismantleRewardSounds(parseSoundList(yaml, "dismantle_reward_sound", "sounds.dismantle_reward"));
         anim.setDismantleSettleSounds(parseSoundList(yaml, "dismantle_settle_sound", "sounds.dismantle_settle"));
@@ -192,6 +192,21 @@ public class AnimationConfigParser {
                 String val = yaml.getString(nestedKey);
                 return val != null && !val.isEmpty() ? List.of(val) : List.of();
             }
+        }
+        return List.of();
+    }
+
+    /**
+     * Reads a particle list from a YAML key. Accepts a single string or a list.
+     * Invalid/unknown particle names are kept as-is; the session validates them at runtime.
+     */
+    private List<String> parseParticleList(YamlConfiguration yaml, String key) {
+        if (yaml.isList(key)) {
+            return yaml.getStringList(key);
+        }
+        if (yaml.isString(key)) {
+            String val = yaml.getString(key);
+            return val != null && !val.isEmpty() ? List.of(val) : List.of();
         }
         return List.of();
     }

@@ -95,7 +95,7 @@ public class Animation {
     private double dismantleTopLaunchHeight;
     private double dismantleTopHorizontalRange;
     private int dismantleDisplayDurationTicks;
-    private int dismantleRewardCount;
+    private List<String> dismantleParticles;
     private List<String> dismantleOpenSounds;
     private List<String> dismantleRewardSounds;
     private List<String> dismantleSettleSounds;
@@ -279,8 +279,8 @@ public class Animation {
     public int getDismantleDisplayDurationTicks() { return dismantleDisplayDurationTicks; }
     public void setDismantleDisplayDurationTicks(int dismantleDisplayDurationTicks) { this.dismantleDisplayDurationTicks = dismantleDisplayDurationTicks; }
 
-    public int getDismantleRewardCount() { return dismantleRewardCount; }
-    public void setDismantleRewardCount(int dismantleRewardCount) { this.dismantleRewardCount = dismantleRewardCount; }
+    public List<String> getDismantleParticles() { return dismantleParticles; }
+    public void setDismantleParticles(List<String> dismantleParticles) { this.dismantleParticles = dismantleParticles; }
 
     public List<String> getDismantleOpenSounds() { return dismantleOpenSounds; }
     public void setDismantleOpenSounds(List<String> dismantleOpenSounds) { this.dismantleOpenSounds = dismantleOpenSounds; }

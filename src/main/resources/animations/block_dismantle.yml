@@ -33,14 +33,19 @@ dismantle_top_launch_height: 3.5
 # random direction. Adds a natural, unpredictable feel.
 dismantle_top_horizontal_range: 1.8
 
-# How many ticks the reward ItemDisplay entities are visible
+# How many ticks the reward ItemDisplay entity is visible
 # before everything is cleaned up and the block is restored.
 dismantle_display_duration_ticks: 100
 
-# Number of ItemDisplay entities to show inside the open cavity.
-# The first one is always the selected reward; the rest are random
-# rewards from the crate pool (for visual flair).
-dismantle_reward_count: 3
+# ── Particles ─────────────────────────────────────────────────────
+# Particles to burst around the block the instant the faces start to
+# fall. Accepts any bukkit Particle enum name (case-insensitive).
+# Use a list for multiple particle types at once.
+# Common examples: SWEEP_ATTACK, EXPLOSION_NORMAL, CRIT, FLASH,
+#                  FIREWORKS_SPARK, SPELL_WITCH, TOTEM
+dismantle_particles:
+  - "SWEEP_ATTACK"
+  - "CRIT"
 
 # ── Sounds ────────────────────────────────────────────────────────
 # Played when the block shell first explodes/dismantles.
