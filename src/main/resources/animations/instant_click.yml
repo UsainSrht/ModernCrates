@@ -1,17 +1,40 @@
+# ╔══════════════════════════════════════════════════════════════╗
+# ║               Instant Click Animation Config                ║
+# ╠══════════════════════════════════════════════════════════════╣
+# ║  A single-click variant of the Click animation. There is    ║
+# ║  no meaningful shuffle phase — the GUI opens and one panel  ║
+# ║  sits at the centre waiting to be clicked. One click and    ║
+# ║  the reward is instantly revealed.                          ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+# Animation type — uses the CLICK engine.
+# Built-in types: csgo, click, scratchcard, slot, item_rise, block_dismantle
 type: CLICK
 
-# No shuffle phase — transitions immediately to clicking.
-# One center slot means the player clicks once and the reward is instantly revealed.
+# Title shown while the player waits to click their single panel.
+# Supports MiniMessage formatting: <gold>, <bold>, <rainbow>, etc.
 gui_title: "<gold><bold>⭐ Instant Crate ⭐"
+
+# Title shown during the (minimal) shuffle phase.
 gui_title_shuffling: "<yellow><bold>Opening..."
+
+# Number of inventory rows (1–6). Each row is 9 slots wide.
 gui_rows: 3
+
+# Default background item filling every slot not in reward_slots
+# or filler_slots.
 gui_fill:
   material: "YELLOW_STAINED_GLASS_PANE"
   name: " "
 
+# ── Slot lists ────────────────────────────────────────────────────
+
+# The single reward slot — the one panel the player clicks.
+# Slot 13 = centre slot of a 3-row GUI.
 reward_slots:
   - 13
 
+# All slots that are NOT the reward slot (filled by filler items).
 filler_slots:
   - 0
   - 1
@@ -40,6 +63,9 @@ filler_slots:
   - 25
   - 26
 
+# ── Custom filler items ───────────────────────────────────────────
+# Named map of items randomly assigned to filler_slots instead of
+# repeating gui_fill. Add multiple entries for variety.
 filler_items:
   star_1:
     material: "GOLD_NUGGET"
@@ -51,6 +77,10 @@ filler_items:
     material: "GLOWSTONE_DUST"
     name: "<yellow>✧"
 
+# ── Click phase ───────────────────────────────────────────────────
+
+# The item placed over the reward slot before clicking.
+# The player sees this and clicks it to reveal their prize.
 reward_hide_item:
   material: "CHEST"
   name: "<gold><bold>Click to Open!"
@@ -58,17 +88,39 @@ reward_hide_item:
     - "<gray>Your reward is waiting inside!"
     - "<yellow>Click to reveal."
 
-shuffle_amount: 1
-shuffle_ticks: 1
+# How many reward slots the player clicks. With only one reward_slot
+# defined, this must be 1.
 reward_amount: 1
+
+# Ticks to keep the revealed reward visible before closing.
+# Higher = the player has more time to see their prize.
+# Example range: 40–100 (20 ticks = 1 second)
 show_revealed_items_for: 60
 
+# ── Shuffle phase ─────────────────────────────────────────────────
+# Setting both to 1 effectively skips any visible shuffle —
+# the GUI transitions almost instantly to the click phase.
+
+# Number of shuffle passes. 1 = a single near-instant scramble.
+shuffle_amount: 1
+
+# Ticks per swap during shuffling. 1 = blink-of-an-eye fast.
+shuffle_ticks: 1
+
+# ── Sounds ────────────────────────────────────────────────────────
+# Each key accepts a list of sound names. All play simultaneously.
+# Common values: block.chest.open, entity.player.levelup,
+#                entity.experience_orb.pickup
 sounds:
+  # Played once when all rewards are awarded.
   reward:
     - "entity.player.levelup"
+  # Played during the shuffle phase.
   shuffle:
     - "block.chest.open"
+  # Played when the hide panel is placed over the reward slot.
   hide:
     - "block.chest.open"
+  # Played when the player clicks to reveal their reward.
   reveal:
     - "entity.experience_orb.pickup"

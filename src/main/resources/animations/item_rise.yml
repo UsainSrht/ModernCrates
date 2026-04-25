@@ -1,46 +1,90 @@
+# ╔══════════════════════════════════════════════════════════════╗
+# ║                 Item Rise Animation Config                  ║
+# ╠══════════════════════════════════════════════════════════════╣
+# ║  Physical-crate-only animation. The container block opens   ║
+# ║  its lid, then an ItemDisplay entity rises from inside      ║
+# ║  while cycling through possible rewards. A TextDisplay      ║
+# ║  above it shows the current reward name. Particles spiral   ║
+# ║  around the rising item. When it reaches the top it freezes ║
+# ║  on the winning reward for the player to collect.           ║
+# ║                                                             ║
+# ║  NOTE: Requires the crate to have a physical block location ║
+# ║  set to a lidded container (CHEST, BARREL, SHULKER_BOX).   ║
+# ║  Without a physical location it falls back to instant grant.║
+# ╚══════════════════════════════════════════════════════════════╝
+
+# Animation type identifier.
+# Built-in types: csgo, click, scratchcard, slot, item_rise, block_dismantle
 type: item_rise
 
-# Item Rise: a physical-crate-only animation.
-# The container block (chest/barrel/shulker) opens its lid, then an item
-# display entity rises from inside while cycling through rewards.
-# A text display above it shows the current reward name.
-# Particles spiral around the item as it rises.
-# When it reaches the top, the last item becomes the player's prize.
-#
-# NOTE: This animation requires the crate to be a physical crate assigned
-# to a lidded container block. If used on a non-physical crate, it falls
-# back to an instant reward grant.
+# ── Rise arc ──────────────────────────────────────────────────────
 
-# How high (in blocks) the item rises above the container
-rise_height: 2.5
+# How high (in blocks) above the container the item floats at peak.
+# Example range: 0.5–3.0
+rise_height: 1.5
 
-# Total ticks for the rise animation
-rise_ticks: 100
+# Total ticks for the full rise from container to peak height.
+# Higher = slower, more dramatic ascent. Example range: 30–120
+rise_ticks: 50
 
-# Ticks between each reward item cycle during the rise
+# Ticks between each reward item swap during the rise.
+# Lower = faster cycling through items (more dazzling effect).
+# Example range: 3–10
 cycle_ticks: 5
 
-# Particle configuration
+# ── Particles ─────────────────────────────────────────────────────
+
+# Bukkit Particle enum name for the spiral effect.
+# Case-insensitive. Examples: FLAME, CRIT, SPELL_WITCH, TOTEM,
+#                              FIREWORKS_SPARK, ENCHANTMENT_TABLE
 particle_type: "FLAME"
+
+# Number of particles spawned per spiral tick.
+# Example range: 1–8
 particle_count: 3
+
+# Radius of the spiral around the item display (in blocks).
+# Example range: 0.2–1.0
 particle_spiral_radius: 0.5
+
+# Angular speed of the spiral. Higher = faster rotation.
+# Example range: 0.1–0.8
 particle_spiral_speed: 0.3
 
-# Delay (ticks) before the container lid opens
+# ── Delays ────────────────────────────────────────────────────────
+
+# Ticks after the session starts before the container lid opens.
+# Use this to build a short pause before anything happens.
+# Example range: 0–20
 block_open_delay_ticks: 5
 
-# Delay (ticks) after lid opens before the item starts rising
+# Ticks after the lid opens before the item begins rising.
+# Adds a beat of suspense while the open container is visible.
+# Example range: 5–20
 rise_start_delay_ticks: 10
 
-# How long (ticks) the final reward item is displayed at the top before cleanup
+# How long (ticks) the final reward item is displayed at the peak
+# before the animation cleans up and rewards the player.
+# Example range: 40–100 (20 ticks = 1 second)
 settle_display_ticks: 60
 
-# Sounds
+# ── Sounds ────────────────────────────────────────────────────────
+# Each key accepts a list of sound names. All play simultaneously.
+# Common values: block.note_block.chime, block.beacon.activate,
+#                entity.player.levelup, entity.firework_rocket.blast
+
+# Played on each cycle tick while the item is rising.
 tick_sound:
   - "block.note_block.chime"
+
+# Played when the item begins its ascent.
 rise_sound:
   - "block.beacon.activate"
+
+# Played when the item reaches the peak and settles on the reward.
 settle_sound:
   - "entity.player.levelup"
+
+# Played when the reward is actually granted to the player.
 reward_sound:
   - "entity.firework_rocket.blast"

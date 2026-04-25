@@ -1,17 +1,40 @@
+# ╔══════════════════════════════════════════════════════════════╗
+# ║                Scratchcard Animation Config                 ║
+# ╠══════════════════════════════════════════════════════════════╣
+# ║  Panels are hidden behind scratch-panes. The player clicks  ║
+# ║  them one by one to reveal rewards. If enough panels show   ║
+# ║  the same reward, they win that reward. Otherwise a random  ║
+# ║  consolation prize is given.                                ║
+# ║                                                             ║
+# ║  GUI layout (3 rows, 27 slots):                             ║
+# ║    Row 0 [0–8]:   top filler border                         ║
+# ║    Row 1 [9–17]:  scratchable reward panels                 ║
+# ║    Row 2 [18–26]: bottom filler border                      ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+# Animation type identifier.
+# Built-in types: csgo, click, scratchcard, slot, item_rise, block_dismantle
 type: scratchcard
 
-# Scratchcard: player scratches hidden panels to reveal rewards.
-# If enough panels show the same reward, the player wins that reward.
-# Otherwise, a random consolation reward is given.
-
+# Title shown while scratch panels are available.
+# <amount> is replaced with the number of remaining scratchable panels.
 gui_title: "<gold><bold>Scratchcard - <amount> left"
+
+# Title shown during the shuffle phase before scratching begins.
 gui_title_shuffling: "<yellow><bold>Shuffling..."
+
+# Number of inventory rows (1–6). Each row is 9 slots wide.
 gui_rows: 3
+
+# Default background item for every unlisted slot.
 gui_fill:
   material: "YELLOW_STAINED_GLASS_PANE"
   name: " "
 
-# Slots that hold scratchable rewards (middle row + some extras)
+# ── Slot lists ────────────────────────────────────────────────────
+
+# Inventory slots that hold the scratchable reward panels.
+# Slots are 0-indexed, left-to-right, top-to-bottom.
 reward_slots:
   - 10
   - 11
@@ -21,41 +44,75 @@ reward_slots:
   - 15
   - 16
 
-# The hidden item shown before scratching
+# ── Scratch mechanics ─────────────────────────────────────────────
+
+# The item placed over each reward before the player scratches it.
+# Clicking this item removes it and reveals the reward underneath.
 reward_hide_item:
   material: "GRAY_STAINED_GLASS_PANE"
   name: "<gray><bold>? Scratch Me ?"
   lore:
     - "<dark_gray>Click to reveal"
 
-# How many panels the player can scratch
+# How many panels the player is allowed to scratch (must be ≤
+# the number of reward_slots). Example: 5 out of 7 available panels.
 reward_amount: 5
 
-# How many scratched panels must show the same reward to win
+# How many revealed panels must show the exact same reward for the
+# player to win that reward. Example: 3 = three-of-a-kind wins.
+# If match_required is never reached, a consolation reward is given.
 match_required: 3
 
-# Shuffle phase before scratching begins
+# ── Shuffle phase ─────────────────────────────────────────────────
+
+# Number of scramble passes before scratching begins.
+# 0 disables shuffling entirely. Example range: 1–5
 shuffle_amount: 3
+
+# Ticks between each swap during the shuffle phase.
+# Lower = faster. Example: 5 = a swap every 5 ticks (4 per second)
 shuffle_ticks: 5
 
-# How long (ticks) to display the result before closing
+# ── Result display ────────────────────────────────────────────────
+
+# Ticks to keep all revealed panels visible after the result is evaluated
+# before the GUI closes. Example range: 20–80 (20 ticks = 1 second)
 show_revealed_items_for: 40
 
-# Titles shown after evaluation
+# ── Result titles ─────────────────────────────────────────────────
+
+# Title broadcast to the player when they hit the required match count.
 win_title: "<green><bold>★ MATCH! YOU WIN! ★"
+
+# Title broadcast to the player when no match was found.
 lose_title: "<red><bold>✘ No Match — Better Luck Next Time!"
 
-# Sounds
+# ── Sounds ────────────────────────────────────────────────────────
+# Each key accepts a list of sound names. All play simultaneously.
+# Common values: block.note_block.pling, entity.player.levelup,
+#                entity.experience_orb.pickup, block.anvil.land
+
+# Played on each swap during the shuffle phase.
 shuffle_sound:
   - "block.note_block.pling"
+
+# Played once when rewards are fully evaluated and awarded.
 reward_sound:
   - "entity.player.levelup"
+
+# Played when the scratch-pane hides are placed at the start.
 hide_sound:
   - "block.note_block.bass"
+
+# Played each time the player clicks to reveal a panel.
 reveal_sound:
   - "entity.experience_orb.pickup"
+
+# Played when the result is a winning match.
 win_sound:
   - "entity.player.levelup"
   - "entity.firework_rocket.blast"
+
+# Played when the result is no match.
 lose_sound:
   - "block.anvil.land"

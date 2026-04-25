@@ -97,6 +97,7 @@ public final class ItemBuilder {
                     .map(TextUtil::parse)
                     .collect(Collectors.toList()));
         }
+        meta.setHideTooltip(config.isHideTooltip());
         item.setItemMeta(meta);
         return item;
     }

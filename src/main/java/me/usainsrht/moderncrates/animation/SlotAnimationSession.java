@@ -54,6 +54,7 @@ public class SlotAnimationSession implements AnimationSession, ModernCratesGui {
 
     // Filler
     private List<ItemStack> fillerItemStacks;
+    private final Set<Integer> reservedFillerSlots = new HashSet<>();
 
     private static final int REEL_STRIP_SIZE = 40;
     private static final int HARDCODED_TICK_LIMIT = 2000;
@@ -116,6 +117,7 @@ public class SlotAnimationSession implements AnimationSession, ModernCratesGui {
 
         buildFillerItems();
         buildReels();
+        rebuildReservedFillerSlots();
 
         // If NOT a match, ensure winner row rewards don't accidentally all match
         if (!willMatch && reels.size() > 1) {
@@ -140,7 +142,6 @@ public class SlotAnimationSession implements AnimationSession, ModernCratesGui {
 
     private void buildReels() {
         List<String> columnNames = new ArrayList<>(animation.getSlotColumns().keySet());
-        int winnerIdx = animation.getRewardWinnerIndex();
         int baseTargetShifts = animation.getTotalTicks();
         int startRate = Math.max(1, animation.getStartTickRate());
         int stopDelay = animation.getColumnStopDelayTicks();
@@ -163,8 +164,9 @@ public class SlotAnimationSession implements AnimationSession, ModernCratesGui {
 
             // Plant the winning reward at the exact landing position for winner columns
             // After targetShifts shifts, visible window starts at offset=targetShifts.
-            // Winner row is at guiSlots[winnerIdx], which reads strip[(offset + winnerIdx) % SIZE].
+            // Winner row is a 0-based index inside each column list.
             if (willMatch && animation.getRewardWinnerColumns().contains(colName)) {
+                int winnerIdx = getWinnerIndexForReel(guiSlots);
                 int landingPos = (targetShifts + winnerIdx) % REEL_STRIP_SIZE;
                 strip[landingPos] = matchReward;
             }
@@ -174,7 +176,6 @@ public class SlotAnimationSession implements AnimationSession, ModernCratesGui {
     }
 
     private void ensureNoAccidentalMatch() {
-        int winnerIdx = animation.getRewardWinnerIndex();
         List<String> winnerCols = animation.getRewardWinnerColumns();
         if (winnerCols.size() < 2) return;
 
@@ -189,10 +190,10 @@ public class SlotAnimationSession implements AnimationSession, ModernCratesGui {
         }
         if (firstWinnerReel == null || lastWinnerReel == null || firstWinnerReel == lastWinnerReel) return;
 
-        int firstLandingPos = (firstWinnerReel.targetShifts + winnerIdx) % REEL_STRIP_SIZE;
+        int firstLandingPos = (firstWinnerReel.targetShifts + getWinnerIndexForReel(firstWinnerReel.guiSlots)) % REEL_STRIP_SIZE;
         Reward firstReward = firstWinnerReel.strip[firstLandingPos];
 
-        int lastLandingPos = (lastWinnerReel.targetShifts + winnerIdx) % REEL_STRIP_SIZE;
+        int lastLandingPos = (lastWinnerReel.targetShifts + getWinnerIndexForReel(lastWinnerReel.guiSlots)) % REEL_STRIP_SIZE;
         Reward lastReward = lastWinnerReel.strip[lastLandingPos];
 
         if (firstReward != null && lastReward != null && firstReward.getId().equals(lastReward.getId())) {
@@ -299,7 +300,6 @@ public class SlotAnimationSession implements AnimationSession, ModernCratesGui {
     }
 
     private void finishAnimation() {
-        int winnerIdx = animation.getRewardWinnerIndex();
         List<String> winnerCols = animation.getRewardWinnerColumns();
 
         Set<String> winnerRewardIds = new HashSet<>();
@@ -307,6 +307,7 @@ public class SlotAnimationSession implements AnimationSession, ModernCratesGui {
 
         for (ReelState reel : reels) {
             if (winnerCols.contains(reel.name)) {
+                int winnerIdx = getWinnerIndexForReel(reel.guiSlots);
                 Reward r = reel.getVisible(winnerIdx);
                 if (r != null) {
                     winnerRewardIds.add(r.getId());
@@ -369,9 +370,29 @@ public class SlotAnimationSession implements AnimationSession, ModernCratesGui {
                 || fillerItemStacks == null || fillerItemStacks.isEmpty()) return;
 
         for (int slot : fillerSlots) {
+            if (reservedFillerSlots.contains(slot)) continue;
             if (slot >= 0 && slot < inventory.getSize()) {
                 inventory.setItem(slot, fillerItemStacks.get(random.nextInt(fillerItemStacks.size())));
             }
+        }
+    }
+
+    private int getWinnerIndexForReel(List<Integer> guiSlots) {
+        if (guiSlots == null || guiSlots.isEmpty()) return 0;
+        int configured = Math.max(0, animation.getRewardWinnerIndex());
+        return Math.min(configured, guiSlots.size() - 1);
+    }
+
+    private void rebuildReservedFillerSlots() {
+        reservedFillerSlots.clear();
+        for (ReelState reel : reels) {
+            reservedFillerSlots.addAll(reel.guiSlots);
+        }
+        if (animation.getDownPointer() != null) {
+            reservedFillerSlots.add(animation.getDownPointer().getSlot());
+        }
+        if (animation.getUpPointer() != null) {
+            reservedFillerSlots.add(animation.getUpPointer().getSlot());
         }
     }
 

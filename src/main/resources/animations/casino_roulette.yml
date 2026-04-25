@@ -1,55 +1,86 @@
+# ╔══════════════════════════════════════════════════════════════╗
+# ║              Casino Roulette Animation Config               ║
+# ╠══════════════════════════════════════════════════════════════╣
+# ║  A CSGO-style animation mapped onto a 6-row oval "wheel".   ║
+# ║  Reward slots trace a clockwise oval so items visually spin ║
+# ║  around a casino roulette wheel. The ball (reward) lands at ║
+# ║  the top-centre (reward_index 3 = slot 4). Two pointers     ║
+# ║  inside the oval mark the landing axis.                     ║
+# ║                                                             ║
+# ║  Visual wheel layout (● = reward slot, ▲/▼ = pointers):    ║
+# ║    Row 0:  _   _   ●   ●   ●   ●   ●   _   _              ║
+# ║    Row 1:  _   ●   _   _  [▲]  _   _   ●   _              ║
+# ║    Row 2:  ●   _   _   _   _   _   _   _   ●              ║
+# ║    Row 3:  ●   _   _   _   _   _   _   _   ●              ║
+# ║    Row 4:  _   ●   _   _  [▼]  _   _   ●   _              ║
+# ║    Row 5:  _   _   ●   ●   ●   ●   ●   _   _              ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+# Animation type — uses the CSGO scrolling-strip engine.
+# Built-in types: csgo, click, scratchcard, slot, item_rise, block_dismantle
 type: CSGO
 
-# Casino roulette wheel animation using a 6-row GUI.
-# Reward slots trace a clockwise oval so items visually spin around the wheel.
-# The winning position sits at the top-centre (slot 4). Pointers inside the
-# circle mark the landing axis. The slower tick_rate_modifier makes the wheel
-# noticeably decelerate before stopping — heightening the suspense.
-#
-# Circle layout (● = reward slot, ▲/▼ = pointers):
-#   Row 0:  _   _   ●   ●   ●   ●   ●   _   _
-#   Row 1:  _   ●   _   _  [▲]  _   _   ●   _
-#   Row 2:  ●   _   _   _   _   _   _   _   ●
-#   Row 3:  ●   _   _   _   _   _   _   _   ●
-#   Row 4:  _   ●   _   _  [▼]  _   _   ●   _
-#   Row 5:  _   _   ●   ●   ●   ●   ●   _   _
-
+# Title shown in the inventory while spinning.
+# Supports MiniMessage formatting: <gold>, <bold>, <rainbow>, etc.
 gui_title: "<dark_red><bold>  Casino Roulette  "
+
+# Number of inventory rows (1–6). 6 rows = 54 slots for the full wheel.
 gui_rows: 6
+
+# Default background item for every unlisted slot.
 gui_fill:
   material: "GREEN_STAINED_GLASS_PANE"
   name: " "
 
-total_ticks: 55
+# ── Scrolling behaviour ───────────────────────────────────────────
+
+# Total item shifts (advances around the oval) before deceleration starts.
+# Higher = longer, more dramatic spin. Example range: 30–80
+total_ticks: 50
+
+# Ticks the GUI stays open after the reward is revealed.
+# Example range: 40–120 (20 ticks = 1 second)
 stay_open_after_reward_ticks: 80
+
+# Initial shift speed. 1 = advance every tick (fastest start).
 start_tick_rate: 1
+
+# Deceleration intensity. Tick rate increases by 1 every N shifts.
+# Lower = sharper braking. Higher = slow wheel crawl to a stop.
+# Example: 10 is a dramatic, suspenseful deceleration.
 tick_rate_modifier: 10
 
-# 1-based index into reward_slots — position 3 = slot 4 (top centre)
+# ── Reward position ───────────────────────────────────────────────
+
+# 1-based index into reward_slots — this slot is the win position.
+# reward_index 3 = slot index 2 in the list = slot 4 (top-centre).
 reward_index: 3
 
-# Clockwise circle: top row L→R, right side ↓, bottom row R→L, left side ↑
+# ── Slot lists ────────────────────────────────────────────────────
+
+# The oval path the rewards travel around, listed clockwise:
+#   Top row L→R, right side ↓, bottom row R→L, left side ↑
 reward_slots:
-  - 2
+  - 2   # top row start →
   - 3
-  - 4
+  - 4   # ← reward_index 3 lands here (top-centre, the win position)
   - 5
-  - 6
-  - 16
+  - 6   # top row end
+  - 16  # right side ↓
   - 26
   - 35
   - 43
-  - 51
+  - 51  # bottom row start (right) ←
   - 50
   - 49
   - 48
-  - 47
-  - 37
+  - 47  # bottom row end (left)
+  - 37  # left side ↑
   - 27
   - 18
-  - 10
+  - 10  # back to top
 
-# Every slot that is NOT part of the circle (corners + interior)
+# Every slot NOT part of the oval (corners + interior of the wheel).
 filler_slots:
   - 0
   - 1
@@ -88,37 +119,52 @@ filler_slots:
   - 52
   - 53
 
+# ── Custom filler items ───────────────────────────────────────────
+# Named map of items randomly assigned to filler_slots.
+# hide_tooltip: true removes the item tooltip for a cleaner look.
 filler_items:
   felt_dark:
     material: "BLACK_STAINED_GLASS_PANE"
     name: " "
-  felt_green:
-    material: "GREEN_STAINED_GLASS_PANE"
-    name: " "
+    hide_tooltip: true
 
+# ── Pointers ──────────────────────────────────────────────────────
+
+# Two pointers inside the oval that visually bracket the landing axis.
+# slot: inventory slot index. name: MiniMessage display name.
 pointers:
   down:
-    slot: 13
+    slot: 13   # interior of Row 1, column 4 — points UP toward the win zone
     material: "WHITE_STAINED_GLASS_PANE"
     name: "<white><bold>   ▲   "
   up:
-    slot: 40
+    slot: 40   # interior of Row 4, column 4 — points DOWN toward the win zone
     material: "WHITE_STAINED_GLASS_PANE"
     name: "<white><bold>   ▼   "
 
+# ── End-of-animation decoration ──────────────────────────────────
+
+# Item placed in the celebration slots once the wheel stops.
 end_of_the_animation_item:
   material: "SUNFLOWER"
   name: "<yellow><bold>★ Result ★"
   lore:
     - "<gray>The ball has landed!"
+
+# Inventory slots where the celebration item is placed.
 end_of_the_animation_slots:
   - 0
   - 8
   - 45
   - 53
 
+# ── Sounds ────────────────────────────────────────────────────────
+# Each key accepts a list of sound names. All play simultaneously.
+# Common values: block.note_block.bass, entity.player.levelup
 sounds:
+  # Played on every item shift tick while the wheel spins.
   tick:
     - "block.note_block.bass"
+  # Played once when the wheel stops and the reward is awarded.
   reward:
     - "entity.player.levelup"

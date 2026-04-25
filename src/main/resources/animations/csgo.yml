@@ -1,24 +1,86 @@
+# ╔══════════════════════════════════════════════════════════════╗
+# ║                   CSGO Animation Config                     ║
+# ╠══════════════════════════════════════════════════════════════╣
+# ║  A scrolling reward strip inspired by CS:GO case openings.  ║
+# ║  Reward items cycle across a row of slots, decelerating     ║
+# ║  until one item lands under the pointer — that's the prize. ║
+# ║                                                             ║
+# ║  GUI layout (3 rows, 27 slots):                             ║
+# ║    Row 0 [0–8]:   top filler + pointers                     ║
+# ║    Row 1 [9–17]:  ← reward strip scrolls here →            ║
+# ║    Row 2 [18–26]: bottom filler + pointers                  ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+# Animation type identifier — must match a registered AnimationType.
+# Built-in types: csgo, click, scratchcard, slot, item_rise, block_dismantle
 type: csgo
+
+# ── GUI ───────────────────────────────────────────────────────────
+
+# Title shown in the inventory while the animation is running.
+# Supports MiniMessage formatting: <gold>, <bold>, <rainbow>, etc.
 gui_title: "<gold><bold>Crate Opening"
+
+# Number of inventory rows (1–6). Each row is 9 slots wide.
+# Example: 3 = 27 slots total, 6 = 54 slots total
 gui_rows: 3
+
+# Default background item filling every slot not in reward_slots,
+# filler_slots, or pointer slots.
 gui_fill:
+  # Any valid Minecraft material name (case-insensitive).
+  # Examples: BLACK_STAINED_GLASS_PANE, GRAY_STAINED_GLASS_PANE, AIR
   material: "BLACK_STAINED_GLASS_PANE"
+  # Display name. Use " " (single space) for a blank, invisible name.
   name: " "
+
+# ── Scrolling behaviour ───────────────────────────────────────────
+
+# Total number of reward shifts (item advances) before the strip
+# begins to decelerate. Higher = longer spin.
+# Example range: 20–80 (lower feels snappy, higher builds suspense)
 total_ticks: 45
+
+# How many ticks the GUI stays open after the reward is revealed,
+# giving the player time to see their prize.
+# Example range: 40–120 (20 ticks = 1 second)
 stay_open_after_reward_ticks: 60
+
+# Initial shift speed. 1 = advance every server tick (fastest).
+# 2 = advance every 2 ticks, etc. Keep at 1 for a fast start.
 start_tick_rate: 1
+
+# Deceleration intensity. During the slowdown phase the tick rate
+# increases by 1 every tick_rate_modifier shifts.
+# Lower = brakes harder/faster. Higher = slow, gradual stop.
+# Example: 5 is subtle, 20 is very gradual (more suspense).
 tick_rate_modifier: 20
+
+# ── Reward position ───────────────────────────────────────────────
+
+# 1-based index into reward_slots that marks the winning slot.
+# The strip always stops so this index is under the pointer.
+# Example: 5 = 5th slot in the reward_slots list (centre of 9)
 reward_index: 5
+
+# ── Slot lists ────────────────────────────────────────────────────
+
+# Inventory slots that form the scrolling reward strip.
+# Slots are 0-indexed, left-to-right, top-to-bottom.
+# These should form a contiguous horizontal row.
 reward_slots:
   - 9
   - 10
   - 11
   - 12
-  - 13
+  - 13  # ← reward_index 5 lands here (centre slot of the strip)
   - 14
   - 15
   - 16
   - 17
+
+# Slots filled with the gui_fill item (decorative borders).
+# List every slot that is NOT a reward slot or pointer slot.
 filler_slots:
   - 0
   - 1
@@ -38,15 +100,32 @@ filler_slots:
   - 24
   - 25
   - 26
+
+# ── Pointers ──────────────────────────────────────────────────────
+
+# Indicator shown above the reward strip, pointing down at the win zone.
+# slot: the inventory slot index where this pointer lives.
 down_pointer:
   slot: 4
   material: "YELLOW_STAINED_GLASS_PANE"
   name: "<yellow><bold>▼"
+
+# Indicator shown below the reward strip, pointing up at the win zone.
 up_pointer:
   slot: 22
   material: "YELLOW_STAINED_GLASS_PANE"
   name: "<yellow><bold>▲"
+
+# ── Sounds ────────────────────────────────────────────────────────
+# Each key accepts a list of Minecraft sound names (namespaced or
+# bukkit enum). All listed sounds play simultaneously.
+# Common values: block.note_block.hat, entity.player.levelup,
+#                entity.experience_orb.pickup, block.chest.open
+
+# Played on every item shift tick during the spin.
 tick_sound:
   - "block.note_block.hat"
+
+# Played once when the strip stops and the reward is awarded.
 reward_sound:
   - "entity.player.levelup"

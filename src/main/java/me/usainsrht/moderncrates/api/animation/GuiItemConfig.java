@@ -12,6 +12,7 @@ public class GuiItemConfig {
     private String name;
     private List<String> lore;
     private Map<String, Object> nbt;
+    private boolean hideTooltip;
 
     public String getMaterial() { return material; }
     public void setMaterial(String material) { this.material = material; }
@@ -24,4 +25,7 @@ public class GuiItemConfig {
 
     public Map<String, Object> getNbt() { return nbt; }
     public void setNbt(Map<String, Object> nbt) { this.nbt = nbt; }
+
+    public boolean isHideTooltip() { return hideTooltip; }
+    public void setHideTooltip(boolean hideTooltip) { this.hideTooltip = hideTooltip; }
 }

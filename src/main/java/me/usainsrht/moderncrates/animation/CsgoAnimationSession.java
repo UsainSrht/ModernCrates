@@ -146,6 +146,12 @@ public class CsgoAnimationSession implements AnimationSession, ModernCratesGui {
 
             itemsTicked++;
 
+            // Decelerate based on completed item shifts so progress remains finite.
+            if (animation.getTickRateModifier() > 0
+                    && itemsTicked % animation.getTickRateModifier() == 0) {
+                tickRate++;
+            }
+
             if (itemsTicked >= animation.getTotalTicks()) {
                 // Stop the scroll task
                 if (scrollTask != null) {
@@ -166,10 +172,6 @@ public class CsgoAnimationSession implements AnimationSession, ModernCratesGui {
         }
 
         ticksPassed++;
-        // Increase tick rate (slow down) every tickRateModifier ticks
-        if (animation.getTickRateModifier() > 0 && ticksPassed % animation.getTickRateModifier() == 0) {
-            tickRate++;
-        }
         // Emergency stop to prevent infinite loops
         if (ticksPassed > HARDCODED_STOP_THRESHOLD) {
             if (scrollTask != null) {

@@ -164,6 +164,7 @@ public class AnimationConfigParser {
         config.setMaterial(section.getString("material"));
         config.setName(section.getString("name"));
         config.setLore(section.getStringList("lore"));
+        config.setHideTooltip(section.getBoolean("hide_tooltip", false));
         if (section.contains("nbt")) {
             config.setNbt(sectionToMap(section.getConfigurationSection("nbt")));
         }
@@ -218,6 +219,7 @@ public class AnimationConfigParser {
         config.setMaterial(section.getString("material"));
         config.setName(section.getString("name"));
         config.setLore(section.getStringList("lore"));
+        config.setHideTooltip(section.getBoolean("hide_tooltip", false));
         if (section.contains("nbt")) {
             config.setNbt(sectionToMap(section.getConfigurationSection("nbt")));
         }

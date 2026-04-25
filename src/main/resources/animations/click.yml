@@ -1,10 +1,45 @@
+# ╔══════════════════════════════════════════════════════════════╗
+# ║                   Click Animation Config                    ║
+# ╠══════════════════════════════════════════════════════════════╣
+# ║  Reward slots are hidden behind glass panes. First a        ║
+# ║  shuffle phase scrambles their positions. Then the player   ║
+# ║  clicks hidden panels one by one to reveal their prizes.    ║
+# ║                                                             ║
+# ║  GUI layout (3 rows, 27 slots):                             ║
+# ║    Row 0 [0–8]:   top filler border                         ║
+# ║    Row 1 [9–17]:  reward slots (hidden panels)              ║
+# ║    Row 2 [18–26]: bottom filler border                      ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+# Animation type identifier.
+# Built-in types: csgo, click, scratchcard, slot, item_rise, block_dismantle
 type: CLICK
+
+# Title shown while the player is clicking to reveal rewards.
+# Supports MiniMessage formatting: <gold>, <bold>, <rainbow>, etc.
 gui_title: "<gold><bold>Click to Reveal"
+
+# Title shown during the shuffle phase (before clicking begins).
+# Use <yellow> or similar to visually differ from the reveal phase.
 gui_title_shuffling: "<yellow><bold>Shuffling..."
+
+# Number of inventory rows (1–6). Each row is 9 slots wide.
+# Example: 3 = 27 slots total, 6 = 54 slots total
 gui_rows: 3
+
+# Default background item filling every slot not listed in
+# reward_slots or filler_slots.
 gui_fill:
+  # Any valid Minecraft material name (case-insensitive).
   material: "BLACK_STAINED_GLASS_PANE"
+  # Display name. Use " " (single space) for a blank, invisible name.
   name: " "
+
+# ── Slot lists ────────────────────────────────────────────────────
+
+# Inventory slots that hold the clickable reward panels.
+# Slots are 0-indexed, left-to-right, top-to-bottom.
+# The length of this list determines the pool of possible reward positions.
 reward_slots:
   - 10
   - 11
@@ -13,6 +48,9 @@ reward_slots:
   - 14
   - 15
   - 16
+
+# Slots always filled with the gui_fill item (static borders).
+# List every slot that is NOT in reward_slots.
 filler_slots:
   - 0
   - 1
@@ -34,18 +72,51 @@ filler_slots:
   - 24
   - 25
   - 26
+
+# ── Click phase ───────────────────────────────────────────────────
+
+# The item placed in every reward slot before revealing.
+# The player clicks this to uncover their reward underneath.
 reward_hide_item:
   material: "GRAY_STAINED_GLASS_PANE"
   name: "<gray><bold>Click to Reveal"
-shuffle_amount: 3
-shuffle_ticks: 5
+
+# How many reward slots the player actually wins from. Must be ≤
+# the number of reward_slots. Example: 3 out of 7 slots clicked.
 reward_amount: 3
+
+# Ticks to keep all revealed items visible before closing the GUI.
+# 20 ticks = 1 second. Example range: 20–100
 show_revealed_items_for: 20
+
+# ── Shuffle phase ─────────────────────────────────────────────────
+
+# How many full shuffles (scramble passes) run before clicking starts.
+# Higher = longer shuffle suspense. 0 disables the phase entirely.
+# Example range: 1–5
+shuffle_amount: 3
+
+# Ticks between each individual swap during shuffling.
+# Lower = faster shuffling. Example: 5 = a swap every 5 ticks
+shuffle_ticks: 5
+
+# ── Sounds ────────────────────────────────────────────────────────
+# Each key accepts a list of sound names. All play simultaneously.
+# Common values: block.note_block.hat, entity.player.levelup,
+#                entity.experience_orb.pickup, block.chest.open
+
+# Played on each swap during the shuffle phase.
 shuffle_sound:
   - "block.note_block.pling"
+
+# Played when all rewards are finally awarded.
 reward_sound:
   - "entity.player.levelup"
+
+# Played when reward_hide_item panels are placed (hiding the rewards).
 hide_sound:
   - "block.note_block.bass"
+
+# Played each time the player clicks to reveal a panel.
 reveal_sound:
   - "entity.experience_orb.pickup"

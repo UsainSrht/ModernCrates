@@ -1,32 +1,72 @@
+# ╔══════════════════════════════════════════════════════════════╗
+# ║                  Roulette Animation Config                  ║
+# ╠══════════════════════════════════════════════════════════════╣
+# ║  Classic slot-machine roulette: reward items scroll across  ║
+# ║  the middle row, decelerating until one lands in the WIN    ║
+# ║  ZONE. Celebration beacons appear at the corners on stop.   ║
+# ║                                                             ║
+# ║  GUI layout (3 rows, 27 slots):                             ║
+# ║    Row 0 [0–8]:   top filler + pointers                     ║
+# ║    Row 1 [9–17]:  ← reward strip scrolls here →            ║
+# ║    Row 2 [18–26]: bottom filler + pointers                  ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+# Animation type — uses the CSGO scrolling-strip engine.
+# Built-in types: csgo, click, scratchcard, slot, item_rise, block_dismantle
 type: CSGO
 
-# Classic slot-machine roulette: reward items scroll across the middle row.
-# The win zone pointer sits at index 5 (the center slot, slot 13 in the middle row).
-# Custom filler items give the GUI a shiny, high-energy casino feel.
-# End-of-animation beacons pulse at the corners to celebrate the win.
+# Title shown in the inventory while the animation is running.
+# Supports MiniMessage formatting: <gold>, <bold>, <rainbow>, etc.
 gui_title: "<aqua><bold>⚡ Roulette Crate ⚡"
+
+# Number of inventory rows (1–6). Each row is 9 slots wide.
 gui_rows: 3
+
+# Default background item for every unlisted slot.
 gui_fill:
   material: "CYAN_STAINED_GLASS_PANE"
   name: " "
 
-total_ticks: 60
+# ── Scrolling behaviour ───────────────────────────────────────────
+
+# Total item shifts before the strip starts to decelerate.
+# Example range: 20–80
+total_ticks: 40
+
+# Ticks the GUI stays open after the reward is revealed.
+# Example range: 40–120 (20 ticks = 1 second)
 stay_open_after_reward_ticks: 80
+
+# Initial shift speed. 1 = every tick (fastest start).
 start_tick_rate: 1
-tick_rate_modifier: 15
+
+# Deceleration intensity. Tick rate increases by 1 every N shifts.
+# Lower = sharper braking. Higher = gentle, suspenseful slowdown.
+# Example: 5 is noticeable, 10 is dramatic, 20 is very gradual.
+tick_rate_modifier: 10
+
+# ── Reward position ───────────────────────────────────────────────
+
+# 1-based index into reward_slots pointing to the winning slot.
+# The strip stops when this slot is aligned with the pointer.
+# Example: 5 = centre of a 9-slot strip
 reward_index: 5
 
+# ── Slot lists ────────────────────────────────────────────────────
+
+# The contiguous horizontal row of slots the reward strip scrolls through.
 reward_slots:
   - 9
   - 10
   - 11
   - 12
-  - 13
+  - 13  # ← reward_index 5 lands here (centre slot of the strip)
   - 14
   - 15
   - 16
   - 17
 
+# All slots not used by reward_slots or pointers (decorative borders).
 filler_slots:
   - 0
   - 1
@@ -47,23 +87,19 @@ filler_slots:
   - 25
   - 26
 
+# ── Custom filler items ───────────────────────────────────────────
+# Named map of items used to randomly decorate filler_slots instead
+# of repeating the plain gui_fill everywhere. Each key is an
+# arbitrary name; add as many variants as you like.
 filler_items:
-  trophy:
-    material: "NETHER_STAR"
-    name: "<yellow>★ Trophy"
-  coin:
-    material: "GOLD_NUGGET"
-    name: "<gold>✦ Coin"
-  gem:
-    material: "AMETHYST_SHARD"
-    name: "<light_purple>◆ Gem"
-  crystal:
-    material: "PRISMARINE_CRYSTALS"
-    name: "<aqua>❋ Crystal"
-  shard:
-    material: "QUARTZ"
-    name: "<white>◈ Shard"
+  blackglass:
+    material: "BLACK_STAINED_GLASS_PANE"
+    name: " "
 
+# ── Pointers ──────────────────────────────────────────────────────
+
+# Indicators placed above and below the strip marking the win zone.
+# slot: inventory slot index. name: MiniMessage display name.
 pointers:
   down:
     slot: 4
@@ -74,11 +110,18 @@ pointers:
     material: "LIME_STAINED_GLASS_PANE"
     name: "<green><bold>▲ WIN ZONE ▲"
 
+# ── End-of-animation decoration ──────────────────────────────────
+
+# Item placed in the celebration slots once the strip stops.
+# Great for beacons, trophies, or firework stars at the corners.
 end_of_the_animation_item:
   material: "BEACON"
   name: "<green><bold>★ WINNER! ★"
   lore:
     - "<gray>Congratulations on your win!"
+
+# Inventory slots where the celebration item is placed.
+# Commonly the four corners of the GUI.
 end_of_the_animation_slots:
   - 0
   - 2
@@ -89,8 +132,13 @@ end_of_the_animation_slots:
   - 24
   - 26
 
+# ── Sounds ────────────────────────────────────────────────────────
+# Each key accepts a list of sound names. All play simultaneously.
+# Common values: block.note_block.hat, entity.player.levelup
 sounds:
+  # Played on every item shift tick during the spin.
   tick:
     - "block.note_block.hat"
+  # Played once when the strip stops and the reward is awarded.
   reward:
     - "entity.player.levelup"

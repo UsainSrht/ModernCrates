@@ -1,133 +1,189 @@
+# ╔══════════════════════════════════════════════════════════════╗
+# ║                 Slot Machine Animation Config               ║
+# ╠══════════════════════════════════════════════════════════════╣
+# ║  Three independent vertical reels spin simultaneously and   ║
+# ║  decelerate one by one (left → middle → right). If all      ║
+# ║  three reels show the same reward on the winner row, the    ║
+# ║  player wins — JACKPOT!                                     ║
+# ║                                                             ║
+# ║  GUI layout (5 rows, 45 slots):                             ║
+# ║    Col 2 = left reel, Col 4 = middle reel, Col 6 = right   ║
+# ║    Slot indices: Row×9+Col  (e.g. Row 0 Col 2 = slot 2)    ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+# Animation type identifier.
+# Built-in types: csgo, click, scratchcard, slot, item_rise, block_dismantle
 type: slot
 
-# Slot Machine: each column is an independent reel with its own circular reward strip.
-# Reels spin at full speed, decelerate independently, and stop one by one (left to right).
-# If the winner row shows matching rewards across all reels, jackpot!
-
+# Title shown in the inventory while the animation is running.
+# Supports MiniMessage formatting: <gold>, <bold>, <rainbow>, etc.
 gui_title: "<gold><bold>Slot Machine"
+
+# Number of inventory rows (1–6). 5 rows gives a tall, dramatic reel display.
 gui_rows: 5
+
+# Default background item filling every slot not listed elsewhere.
 gui_fill:
   material: "BLACK_STAINED_GLASS_PANE"
   name: " "
 
-# Each column is a vertical reel of inventory slots (top to bottom).
-# Layout in a 5-row (45-slot) GUI:
-#   Row 0: 0-8    Row 1: 9-17    Row 2: 18-26    Row 3: 27-35    Row 4: 36-44
+# ── Reels (columns) ───────────────────────────────────────────────
+# Each entry defines one reel as a list of slot indices (top → bottom).
+# The reel scrolls by cycling items through these slots in order.
+# Slot indices in a 5-row GUI: Row 0→0-8, Row 1→9-17, Row 2→18-26,
+#                               Row 3→27-35, Row 4→36-44
+#
+# Example 5-slot column starting at column 2:
+#   slots 2, 11, 20, 29, 38  (column 2 across all 5 rows)
 slot_columns:
-  left:   [10, 19, 28]
-  middle: [13, 22, 31]
-  right:  [16, 25, 34]
+  left:   [2, 11, 20, 29, 38]
+  middle: [4, 13, 22, 31, 40]
+  right:  [6, 15, 24, 33, 42]
 
-# Which columns are checked for a matching win (order determines stop sequence)
+# Which reel keys are evaluated for a win, in stopping order.
+# The first entry stops first, the last stops last.
 reward_winner_columns:
   - left
   - middle
   - right
 
-# Which position in each column is the "winner row" (0-based index)
-# 0 = top, 1 = middle, 2 = bottom
-reward_winner_index: 1
+# 0-based index within each column list that forms the "winner row".
+# Example: 2 = the 3rd slot in the column (the middle of 5 rows).
+# Valid range: 0 to (column length − 1)
+reward_winner_index: 2
 
-# Additional shifts between each reel stopping (also used as deceleration window)
-# Higher = longer delay between reels locking + smoother slowdown
-column_stop_delay_ticks: 12
+# ── Timing ────────────────────────────────────────────────────────
 
-# Percentage chance that all reels align for a win (0.0 - 100.0)
-match_chance: 25.0
-
-# Total item shifts before the FIRST reel stops (later reels add column_stop_delay_ticks each)
+# Total item shifts before the FIRST reel begins to slow down.
+# Each subsequent reel adds column_stop_delay_ticks on top.
+# Example range: 25–60
 total_ticks: 40
 
-# How long (ticks) the GUI stays open after the result
+# Extra shifts added between each reel stopping. Also controls the
+# deceleration window — higher = smoother, longer slowdown per reel.
+# Example range: 8–20
+column_stop_delay_ticks: 12
+
+# How long (ticks) the GUI stays open after the result is shown.
+# Example range: 40–100 (20 ticks = 1 second)
 stay_open_after_reward_ticks: 60
 
-# Initial scroll speed: 1 = every tick (fastest), 2 = every other tick, etc.
+# Initial shift speed. 1 = advance every tick (fastest).
 start_tick_rate: 1
 
-# Deceleration rate: during slowdown, tick rate increases by 1 every N shifts
-# Lower = faster deceleration, higher = more gradual
-# Example: 2 means rate goes 1->1->2->2->3->3->4... per shift during decel phase
-tick_rate_modifier: 2
+# Deceleration rate. Tick rate increases by 1 every N shifts.
+# Lower = faster braking. Higher = more gradual.
+# Example: 1 = very quick stop, 3 = smooth cinematic slowdown
+tick_rate_modifier: 1
 
-# Filler slots (everything not occupied by columns or pointers)
+# ── Win chance ────────────────────────────────────────────────────
+
+# Percentage probability (0.0–100.0) that all three reels align
+# on the same reward, triggering a jackpot win.
+# When not a jackpot, each reel stops on a random reward instead.
+# Example: 25.0 = 1-in-4 chance of jackpot
+match_chance: 25.0
+
+# ── Slot lists ────────────────────────────────────────────────────
+
+# All slots NOT occupied by a reel column or pointer.
+# Must cover every remaining slot to avoid blank GUI cells.
 filler_slots:
   - 0
   - 1
-  - 2
   - 3
-  - 4
   - 5
-  - 6
   - 7
   - 8
   - 9
-  - 11
+  - 10
   - 12
   - 14
-  - 15
+  - 16
   - 17
-  - 20
+  - 18
+  - 19
   - 21
   - 23
-  - 24
+  - 25
+  - 26
   - 27
-  - 29
+  - 28
   - 30
   - 32
-  - 33
+  - 34
   - 35
   - 36
   - 37
-  - 38
   - 39
-  - 40
   - 41
-  - 42
   - 43
   - 44
 
+# ── Custom filler items ───────────────────────────────────────────
+# Named map of items randomly assigned to filler_slots.
+# Add multiple entries to vary the decoration across the GUI.
 filler_items:
-  cherry:
-    material: "SWEET_BERRIES"
-    name: "<red>Cherry"
-  lemon:
-    material: "GOLD_NUGGET"
-    name: "<yellow>Lemon"
-  seven:
-    material: "NETHER_STAR"
-    name: "<light_purple>Lucky 7"
+  blackglass:
+    material: "BLACK_STAINED_GLASS_PANE"
+    name: " "
 
-# Pointers marking the winner row (left and right side of row 2)
+# ── Pointers ──────────────────────────────────────────────────────
+
+# Indicator on the LEFT side of the winner row.
+# Slot 18 = Row 2, Column 0 (left edge of the middle row).
 down_pointer:
   slot: 18
   material: "LIME_STAINED_GLASS_PANE"
   name: "<green><bold>► WIN ◄"
+
+# Indicator on the RIGHT side of the winner row.
+# Slot 26 = Row 2, Column 8 (right edge of the middle row).
 up_pointer:
   slot: 26
   material: "LIME_STAINED_GLASS_PANE"
   name: "<green><bold>► WIN ◄"
 
-# Titles after result
+# ── Result titles ─────────────────────────────────────────────────
+
+# Title shown to the player in the action bar / title when all reels match.
 win_title: "<green><bold>JACKPOT!"
+
+# Title shown when the reels do not all match.
 lose_title: "<red>So Close..."
 
-# End-of-animation celebration items (shown on win)
+# ── End-of-animation decoration (win only) ───────────────────────
+
+# Item placed in celebration slots when the player hits the jackpot.
 end_of_the_animation_item:
   material: "GOLD_BLOCK"
   name: "<gold><bold>★ JACKPOT! ★"
+
+# Inventory slots where the celebration item appears on a win.
 end_of_the_animation_slots:
   - 0
   - 8
   - 36
   - 44
 
-# Sounds
+# ── Sounds ────────────────────────────────────────────────────────
+# Each key accepts a list of sound names. All play simultaneously.
+# Common values: block.note_block.hat, entity.player.levelup,
+#                entity.firework_rocket.blast, entity.villager.no
+
+# Played on every item shift tick while the reels are spinning.
 tick_sound:
   - "block.note_block.hat"
+
+# Played once when all reels have stopped, regardless of outcome.
 reward_sound:
   - "entity.player.levelup"
+
+# Played on a jackpot win (in addition to reward_sound).
 win_sound:
   - "entity.player.levelup"
   - "entity.firework_rocket.blast"
+
+# Played when the reels stop without a match.
 lose_sound:
   - "entity.villager.no"

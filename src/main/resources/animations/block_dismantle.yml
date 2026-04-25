@@ -1,9 +1,7 @@
-type: block_dismantle
-
 # ╔══════════════════════════════════════════════════════════════╗
 # ║             Block Dismantle Animation Config                ║
 # ╠══════════════════════════════════════════════════════════════╣
-# ║  A physical-crate-only animation. The crate block is        ║
+# ║  Physical-crate-only animation. The crate block is          ║
 # ║  temporarily hidden and replaced by 6 thin BlockDisplay     ║
 # ║  entities forming its shell. The top face launches upward   ║
 # ║  in a random direction, the four sides fall outward, and    ║
@@ -14,33 +12,49 @@ type: block_dismantle
 # ║  the animation falls back to an instant reward grant.       ║
 # ╚══════════════════════════════════════════════════════════════╝
 
-# The block material that the shell faces will use.
-# Must be a solid block material (e.g. BARREL, CHEST, OBSIDIAN).
+# Animation type identifier.
+# Built-in types: csgo, click, scratchcard, slot, item_rise, block_dismantle
+type: block_dismantle
+
+# ── Shell appearance ──────────────────────────────────────────────
+
+# The block material used for the six shell face displays.
+# Must be a solid block material — textured blocks look best.
+# Examples: BARREL, CHEST, OBSIDIAN, AMETHYST_BLOCK, GOLD_BLOCK
 dismantle_block_type: "BARREL"
 
-# How many ticks the side faces take to fall to the ground.
-dismantle_fall_duration_ticks: 35
+# ── Face animation timing ─────────────────────────────────────────
 
-# How many ticks the top face takes to rise to its peak.
-# After this duration it will begin falling back down over
-# an equal number of ticks.
-dismantle_top_rise_duration_ticks: 22
+# Ticks for the four side faces to fall outward to the ground.
+# Higher = slower, floatier feel. Example range: 8–30
+dismantle_fall_duration_ticks: 10
 
-# How high (in blocks) the top face rises above the crate block.
+# Ticks for the top face to travel from the block up to its peak.
+# After this duration it arcs back down over the same number of ticks.
+# Higher = taller, slower arc. Example range: 8–25
+dismantle_top_rise_duration_ticks: 10
+
+# ── Top face launch parameters ────────────────────────────────────
+
+# Maximum height (in blocks) the top face rises above the crate.
+# The actual height follows a smooth arc. Example range: 2.0–5.0
 dismantle_top_launch_height: 3.5
 
-# Maximum horizontal offset (in blocks) the top face drifts in a
-# random direction. Adds a natural, unpredictable feel.
-dismantle_top_horizontal_range: 1.8
+# Maximum horizontal distance (in blocks) the top face drifts from the
+# crate in a random direction. 0 = straight up. Example range: 0–4.0
+dismantle_top_horizontal_range: 3
 
-# How many ticks the reward ItemDisplay entity is visible
-# before everything is cleaned up and the block is restored.
+# ── Reward display ────────────────────────────────────────────────
+
+# Ticks the ItemDisplay reward entity is visible inside the open
+# cavity before everything is cleaned up and the block is restored.
+# Example range: 60–160 (20 ticks = 1 second)
 dismantle_display_duration_ticks: 100
 
 # ── Particles ─────────────────────────────────────────────────────
-# Particles to burst around the block the instant the faces start to
-# fall. Accepts any bukkit Particle enum name (case-insensitive).
-# Use a list for multiple particle types at once.
+# Particle burst spawned around the block the instant the faces
+# begin to fall. Accepts any Bukkit Particle enum name (case-insensitive).
+# Use a list to fire multiple particle types at once.
 # Common examples: SWEEP_ATTACK, EXPLOSION_NORMAL, CRIT, FLASH,
 #                  FIREWORKS_SPARK, SPELL_WITCH, TOTEM
 dismantle_particles:
@@ -48,16 +62,19 @@ dismantle_particles:
   - "CRIT"
 
 # ── Sounds ────────────────────────────────────────────────────────
-# Played when the block shell first explodes/dismantles.
+# Each key accepts a list of sound names. All play simultaneously.
+# Common values: block.wood.break, block.barrel.open, entity.player.levelup
+
+# Played the instant the shell explodes and the faces start moving.
 dismantle_open_sound:
   - "block.wood.break"
-  - "entity.ender_chest.open"
+  - "block.barrel.open"
 
-# Played when the reward items appear inside the cavity.
+# Played when the reward ItemDisplay appears inside the cavity.
 dismantle_reward_sound:
   - "entity.player.levelup"
 
-# Played just before cleanup (close/restore phase).
+# Played just before cleanup when the block is restored.
 dismantle_settle_sound:
-  - "block.chest.close"
+  - "block.barrel.close"
 
