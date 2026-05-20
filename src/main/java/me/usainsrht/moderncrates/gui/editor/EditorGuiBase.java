@@ -67,6 +67,38 @@ public abstract class EditorGuiBase implements ModernCratesGui {
     // ========================
 
     /**
+     * Shows a YES/NO confirmation dialog. Calls {@code onConfirm} only when the player clicks YES.
+     */
+    protected void requestConfirmation(String title, Runnable onConfirm) {
+        player.closeInventory();
+
+        Dialog dialog = Dialog.create(factory -> {
+            factory.empty()
+                .base(
+                    DialogBase.builder(TextUtil.parse("<gold>" + title))
+                        .canCloseWithEscape(true)
+                        .build()
+                )
+                .type(
+                    DialogType.confirmation(
+                        ActionButton.builder(Component.text("✔ YES"))
+                            .action(DialogAction.customClick((response, audience) -> {
+                                plugin.getScheduling().globalRegionalScheduler().run(onConfirm::run);
+                            }, ClickCallback.Options.builder().uses(1).build()))
+                            .build(),
+                        ActionButton.builder(Component.text("✖ NO"))
+                            .action(DialogAction.customClick((response, audience) -> {
+                                plugin.getScheduling().globalRegionalScheduler().run(this::open);
+                            }, ClickCallback.Options.builder().uses(1).build()))
+                            .build()
+                    )
+                );
+        });
+
+        player.showDialog(dialog);
+    }
+
+    /**
      * Opens a dialog for the player to input text.
      * After submission, the callback is invoked on the main thread with the entered text.
      */

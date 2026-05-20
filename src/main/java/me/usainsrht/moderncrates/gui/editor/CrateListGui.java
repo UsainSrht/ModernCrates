@@ -59,18 +59,27 @@ public class CrateListGui extends EditorGuiBase {
             return;
         }
         if (slot == inventory.getSize() - 1) {
-            String newId = "new_crate_" + System.currentTimeMillis() % 10000;
-            Crate crate = new Crate(newId);
-            crate.setName("New Crate");
-            crate.setAnimationId("csgo");
-            crate.setRewards(new LinkedHashMap<>());
-            CrateItemConfig itemCfg = new CrateItemConfig();
-            itemCfg.setMaterial("CHEST");
-            itemCfg.setName("<gold><bold>" + crate.getName());
-            crate.setItemConfig(itemCfg);
-            plugin.getCrateRegistry().put(newId, crate);
-            saveCrate(crate);
-            new CrateEditorGui(player, plugin, crate).open();
+            // Ask user for the crate ID/name
+            requestSignInput("Enter crate ID (e.g. fire_crate)", input -> {
+                String rawId = input.trim().toLowerCase()
+                        .replaceAll("[^a-z0-9_]", "_")  // sanitize
+                        .replaceAll("_+", "_")
+                        .replaceAll("^_|_$", "");
+                if (rawId.isEmpty()) rawId = "new_crate_" + (System.currentTimeMillis() % 10000);
+                final String crateId = rawId;
+
+                Crate crate = new Crate(crateId);
+                crate.setName(input.trim()); // keep original name with formatting
+                crate.setAnimationId("csgo");
+                crate.setRewards(new LinkedHashMap<>());
+                CrateItemConfig itemCfg = new CrateItemConfig();
+                itemCfg.setMaterial("CHEST");
+                itemCfg.setName("<gold><bold>" + crate.getName());
+                crate.setItemConfig(itemCfg);
+                plugin.getCrateRegistry().put(crateId, crate);
+                saveCrate(crate);
+                new CrateEditorGui(player, plugin, crate).open();
+            });
             return;
         }
 
@@ -80,10 +89,14 @@ public class CrateListGui extends EditorGuiBase {
         if (crate == null) return;
 
         if (rightClick) {
-            plugin.getCrateRegistry().remove(crateId);
-            File f = new File(plugin.getDataFolder(), "crates/" + crateId + ".yml");
-            if (f.exists()) f.delete();
-            open();
+            // Confirmation dialog before deletion
+            requestConfirmation("Delete crate '" + crate.getName() + "'?", () -> {
+                plugin.getCrateRegistry().remove(crateId);
+                plugin.getHologramManager().removeHologram(crateId);
+                File f = new File(plugin.getDataFolder(), "crates/" + crateId + ".yml");
+                if (f.exists()) f.delete();
+                open();
+            });
         } else {
             new CrateEditorGui(player, plugin, crate).open();
         }

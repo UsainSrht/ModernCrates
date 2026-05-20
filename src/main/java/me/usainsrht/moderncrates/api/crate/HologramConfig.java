@@ -9,8 +9,15 @@ public class HologramConfig {
 
     private List<String> lines;
     private double offsetX;
-    private double offsetY;
+    private double offsetY = 2.5;
     private double offsetZ;
+
+    // Display options (vanilla TextDisplay)
+    private float scale = 1.0f;
+    private String billboard = "CENTER";
+    private boolean seeThrough = true;
+    /** ARGB background color. -1 means use the default (vanilla semi-transparent black). */
+    private int backgroundColor = -1;
 
     public List<String> getLines() {
         return lines;
@@ -42,5 +49,37 @@ public class HologramConfig {
 
     public void setOffsetZ(double offsetZ) {
         this.offsetZ = offsetZ;
+    }
+
+    public float getScale() {
+        return scale;
+    }
+
+    public void setScale(float scale) {
+        this.scale = scale;
+    }
+
+    public String getBillboard() {
+        return billboard;
+    }
+
+    public void setBillboard(String billboard) {
+        this.billboard = billboard;
+    }
+
+    public boolean isSeeThrough() {
+        return seeThrough;
+    }
+
+    public void setSeeThrough(boolean seeThrough) {
+        this.seeThrough = seeThrough;
+    }
+
+    public int getBackgroundColor() {
+        return backgroundColor;
+    }
+
+    public void setBackgroundColor(int backgroundColor) {
+        this.backgroundColor = backgroundColor;
     }
 }

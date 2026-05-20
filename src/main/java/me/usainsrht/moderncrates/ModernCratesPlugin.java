@@ -26,6 +26,7 @@ import me.usainsrht.moderncrates.hologram.HologramProvider;
 import me.usainsrht.moderncrates.hologram.VanillaHologramProvider;
 import me.usainsrht.moderncrates.util.SoundUtil;
 import me.usainsrht.moderncrates.util.TextUtil;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import space.arim.morepaperlib.MorePaperLib;
@@ -39,6 +40,9 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Main plugin class for ModernCrates.
  */
+
+//todo fix: last update the item rise animation is broken doesnt play instantly gives item
+
 public class ModernCratesPlugin extends JavaPlugin {
 
     private MorePaperLib morePaperLib;
@@ -259,6 +263,16 @@ public class ModernCratesPlugin extends JavaPlugin {
      * @return true when an animation session is started, false otherwise.
      */
     public boolean tryOpenCrate(Player player, Crate crate) {
+        return tryOpenCrate(player, crate, null);
+    }
+
+    /**
+     * Tries to open a crate for a player at a specific physical block location.
+     * The interactedLocation is used by BlockDismantle to animate the correct block.
+     *
+     * @return true when an animation session is started, false otherwise.
+     */
+    public boolean tryOpenCrate(Player player, Crate crate, Location interactedLocation) {
         // Check if player already has an active session
         if (animationManager.hasActiveSession(player)) {
             player.sendMessage(TextUtil.parse("<red>You already have a crate open!"));
@@ -296,7 +310,7 @@ public class ModernCratesPlugin extends JavaPlugin {
         }
 
         // Start animation
-        animationManager.startSession(player, crate, type, animation);
+        animationManager.startSession(player, crate, type, animation, interactedLocation);
         return true;
     }
 
@@ -304,7 +318,7 @@ public class ModernCratesPlugin extends JavaPlugin {
      * Opens a crate for a player, handling key checks and animation startup.
      */
     public void openCrate(Player player, Crate crate) {
-        tryOpenCrate(player, crate);
+        tryOpenCrate(player, crate, null);
     }
 
     // --- Getters ---

@@ -37,6 +37,9 @@ public class ClickAnimationSession implements AnimationSession, ModernCratesGui 
     private final AtomicBoolean finished = new AtomicBoolean(false);
     private final AtomicBoolean cancelled = new AtomicBoolean(false);
 
+    @Override
+    public boolean isNotCloseable() { return animation.isNotCloseable(); }
+
     // State
     private enum Phase { SHUFFLING, CLICKING, DONE }
     private Phase phase = Phase.SHUFFLING;

@@ -47,12 +47,22 @@ public class GuiListener implements Listener {
         }
 
         // Handle animation session close
-        if (holder instanceof AnimationSession) {
+        if (holder instanceof AnimationSession session) {
             if (event.getReason() == InventoryCloseEvent.Reason.OPEN_NEW) {
                 return; // Session is transitioning (e.g. click animation title update)
             }
-            // Always end session and grant reward.
-            // handleClose (called above) already determined the reward for early closes.
+
+            // If the animation is not-closeable and hasn't finished yet, re-open it
+            if (session.isNotCloseable() && !session.isFinished()) {
+                plugin.getScheduling().entitySpecificScheduler(player)
+                        .runDelayed(() -> {
+                            if (plugin.getAnimationManager().hasActiveSession(player)) {
+                                player.openInventory(event.getInventory());
+                            }
+                        }, null, 1L);
+                return;
+            }
+
             var crate = plugin.getAnimationManager().getCrateForSession(player);
             plugin.getAnimationManager().endSession(player, crate);
         }

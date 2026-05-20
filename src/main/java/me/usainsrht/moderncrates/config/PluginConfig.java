@@ -18,6 +18,7 @@ public class PluginConfig {
 
     private String prefix;
     private String hologramSystem;
+    private boolean giveFullInventoryDrop;
     private Map<String, String> messages;
     private Map<String, String> sounds;
     private CommandConfig commandConfig;
@@ -31,6 +32,7 @@ public class PluginConfig {
 
         prefix = yaml.getString("prefix", "<gold>MC <gray>> ");
         hologramSystem = yaml.getString("hologram-system", "VANILLA");
+        giveFullInventoryDrop = yaml.getBoolean("give-full-inventory-drop", true);
 
         messages = new java.util.HashMap<>();
         var msgSection = yaml.getConfigurationSection("messages");
@@ -62,6 +64,7 @@ public class PluginConfig {
     public void save() throws IOException {
         yaml.set("prefix", prefix);
         yaml.set("hologram-system", hologramSystem);
+        yaml.set("give-full-inventory-drop", giveFullInventoryDrop);
 
         for (var entry : messages.entrySet()) {
             yaml.set("messages." + entry.getKey(), entry.getValue());
@@ -85,13 +88,17 @@ public class PluginConfig {
             yaml = new YamlConfiguration();
             prefix = "<gold>MC <dark_gray>> ";
             hologramSystem = "VANILLA";
+            giveFullInventoryDrop = true;
             messages = Map.of(
                     "reload", "<green>reloaded!",
                     "no_key", "<red>You don't have a <dark_red><crate> <red>key to open this crate!",
                     "no_crate", "<red>No crate named <dark_red><crate><red>!",
                     "no_player", "<red>No player named <dark_red><player><red>!",
                     "crate_given", "<green>Crate <dark_green><crate> <green>given to <dark_green><player><green>!",
-                    "key_given", "<green>Crate <dark_green><crate> <green>key given to <dark_green><player><green>!"
+                    "key_given", "<green>Crate <dark_green><crate> <green>key given to <dark_green><player><green>!",
+                    "inventory_full_dropped", "<yellow>Your inventory was full! The crate <gold><crate> <yellow>was dropped at your feet.",
+                    "inventory_full_virtual_key", "<yellow>Your inventory was full! A virtual key for <gold><crate> <yellow>was added to your account instead.",
+                    "inventory_full_no_space", "<red>Your inventory is full! The item for <dark_red><crate> <red>could not be given."
             );
             sounds = Map.of(
                     "reload", "ui.button.click",
@@ -113,6 +120,7 @@ public class PluginConfig {
 
     public String getPrefix() { return prefix; }
     public String getHologramSystem() { return hologramSystem; }
+    public boolean isGiveFullInventoryDrop() { return giveFullInventoryDrop; }
     public String getMessage(String key) { return messages.getOrDefault(key, ""); }
     public String getSound(String key) { return sounds.getOrDefault(key, ""); }
     public CommandConfig getCommandConfig() { return commandConfig; }

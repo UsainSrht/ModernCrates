@@ -12,6 +12,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.event.inventory.InventoryClickEvent;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class CrateEditorGui extends EditorGuiBase {
@@ -61,7 +62,8 @@ public class CrateEditorGui extends EditorGuiBase {
         List<String> locLore = new ArrayList<>();
         locLore.add("<gray>Left-click: <white>get placement item (place to add location)");
         locLore.add("<gray>Right-click: <white>add your target block as location");
-        locLore.add("<gray>Shift-click: <white>clear all locations");
+        locLore.add("<gray>Shift-left: <white>clear ALL locations");
+        locLore.add("<gray>Shift-right: <white>remove your target block from locations");
         locLore.add("");
         List<CrateLocation> locs = crate.getCrateLocations();
         if (locs.isEmpty()) {
@@ -85,7 +87,7 @@ public class CrateEditorGui extends EditorGuiBase {
 
     private ItemStack createAnimationSelector() {
         List<String> lore = new ArrayList<>();
-        lore.add("<gray>Click to cycle animations");
+        lore.add("<gray>Left-click: next | Right-click: previous");
         lore.add("");
         for (String animId : plugin.getAnimationRegistry().keySet()) {
             if (animId.equals(crate.getAnimationId())) {
@@ -101,6 +103,7 @@ public class CrateEditorGui extends EditorGuiBase {
     public void handleClick(InventoryClickEvent event) {
         int slot = event.getRawSlot();
         boolean shiftClick = event.isShiftClick();
+        boolean rightClick = event.isRightClick();
 
         switch (slot) {
             case 10 -> requestSignInput("Enter name", input -> {
@@ -111,7 +114,12 @@ public class CrateEditorGui extends EditorGuiBase {
                 List<String> animIds = new ArrayList<>(plugin.getAnimationRegistry().keySet());
                 if (!animIds.isEmpty()) {
                     int idx = animIds.indexOf(crate.getAnimationId());
-                    crate.setAnimationId(animIds.get((idx + 1) % animIds.size()));
+                    if (idx < 0) idx = 0;
+                    // Left-click = go down (next), right-click = go up (previous)
+                    int newIdx = rightClick
+                            ? (idx - 1 + animIds.size()) % animIds.size()
+                            : (idx + 1) % animIds.size();
+                    crate.setAnimationId(animIds.get(newIdx));
                     open();
                 }
             }
@@ -139,15 +147,47 @@ public class CrateEditorGui extends EditorGuiBase {
             case 28 -> new AnnounceEditorGui(player, plugin, crate).open();
             case 30 -> new RewardsListGui(player, plugin, crate).open();
             case 32 -> {
-                if (shiftClick) {
+                if (shiftClick && !rightClick) {
+                    // Shift-left: clear ALL locations
                     crate.clearCrateLocations();
                     plugin.getHologramManager().removeHologram(crate.getId());
+                    player.sendMessage(TextUtil.parse("<yellow>All crate locations cleared."));
                     open();
-                } else if (event.isRightClick()) {
-                    // Add player's target block as a new crate location
+                } else if (shiftClick && rightClick) {
+                    // Shift-right: remove target block from locations
                     org.bukkit.block.Block target = player.getTargetBlockExact(10);
                     if (target != null) {
-                    crate.addCrateLocation(new CrateLocation(
+                        boolean removed = false;
+                        Iterator<CrateLocation> it = crate.getCrateLocations().iterator();
+                        while (it.hasNext()) {
+                            CrateLocation loc = it.next();
+                            if (loc.getWorldName().equals(target.getWorld().getName())
+                                    && (int) loc.getX() == target.getX()
+                                    && (int) loc.getY() == target.getY()
+                                    && (int) loc.getZ() == target.getZ()) {
+                                it.remove();
+                                removed = true;
+                                break;
+                            }
+                        }
+                        if (removed) {
+                            plugin.getHologramManager().removeHologram(crate.getId());
+                            if (!crate.getCrateLocations().isEmpty()) {
+                                plugin.getHologramManager().createHologram(crate);
+                            }
+                            player.sendMessage(TextUtil.parse("<yellow>Target block removed from crate locations."));
+                        } else {
+                            player.sendMessage(TextUtil.parse("<red>Target block is not a crate location."));
+                        }
+                    } else {
+                        player.sendMessage(TextUtil.parse("<red>No block in sight (max 10 blocks)."));
+                    }
+                    open();
+                } else if (rightClick) {
+                    // Right-click: add target block as new location
+                    org.bukkit.block.Block target = player.getTargetBlockExact(10);
+                    if (target != null) {
+                        crate.addCrateLocation(new CrateLocation(
                                 target.getWorld().getName(),
                                 target.getX(), target.getY(), target.getZ()
                         ));
@@ -159,14 +199,12 @@ public class CrateEditorGui extends EditorGuiBase {
                     }
                     open();
                 } else {
-                    // Left-click: give the crate placement item and close
+                    // Left-click: give placement item
                     player.closeInventory();
                     ItemStack placerItem = plugin.getKeyManager().createCratePlacerItem(crate);
                     if (placerItem != null) {
                         player.getInventory().addItem(placerItem);
-                        player.sendMessage(TextUtil.parse(
-                                "<green>Place the item to register that block as a crate location."
-                        ));
+                        player.sendMessage(TextUtil.parse("<green>Place the item to register that block as a crate location."));
                     }
                 }
             }

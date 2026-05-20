@@ -88,6 +88,9 @@ public class Animation {
     private List<String> riseSounds;
     private List<String> settleSounds;
 
+    // Not-closeable flag: prevents players from closing the GUI while animating
+    private boolean notCloseable;
+
     // BlockDismantle-type fields
     private String dismantleBlockType;
     private int dismantleFallDurationTicks;
@@ -263,6 +266,9 @@ public class Animation {
     // BlockDismantle
     public String getDismantleBlockType() { return dismantleBlockType; }
     public void setDismantleBlockType(String dismantleBlockType) { this.dismantleBlockType = dismantleBlockType; }
+
+    public boolean isNotCloseable() { return notCloseable; }
+    public void setNotCloseable(boolean notCloseable) { this.notCloseable = notCloseable; }
 
     public int getDismantleFallDurationTicks() { return dismantleFallDurationTicks; }
     public void setDismantleFallDurationTicks(int dismantleFallDurationTicks) { this.dismantleFallDurationTicks = dismantleFallDurationTicks; }

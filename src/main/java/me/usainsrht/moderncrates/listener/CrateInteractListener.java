@@ -13,6 +13,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -20,9 +21,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 import java.io.File;
+import java.util.Iterator;
 
 /**
- * Handles physical crate interaction, crate item usage, and crate placement.
+ * Handles physical crate interaction, crate item usage, crate placement, and crate block breaking.
  */
 public class CrateInteractListener implements Listener {
 
@@ -43,7 +45,6 @@ public class CrateInteractListener implements Listener {
 
             // Block crate-item usage if it is actually a placement item
             if (plugin.getKeyManager().getCrateIdFromPlacerItem(mainHand) != null) {
-                // Let BlockPlaceEvent handle it; do nothing here
                 return;
             }
 
@@ -56,7 +57,6 @@ public class CrateInteractListener implements Listener {
                 boolean opened = plugin.tryOpenCrate(player, crate);
                 if (!opened) return;
 
-                // Consume one crate item only when the crate actually opens.
                 if (mainHand.getAmount() > 1) {
                     mainHand.setAmount(mainHand.getAmount() - 1);
                 } else {
@@ -73,8 +73,7 @@ public class CrateInteractListener implements Listener {
             if (crate == null) return;
 
             event.setCancelled(true);
-            var previewGui = new PreviewGui(player, crate);
-            previewGui.open();
+            new PreviewGui(player, crate).open();
             return;
         }
 
@@ -99,18 +98,18 @@ public class CrateInteractListener implements Listener {
 
             // Shift-right-click to preview
             if (player.isSneaking()) {
-                var previewGui = new PreviewGui(player, crate);
-                previewGui.open();
+                new PreviewGui(player, crate).open();
                 return;
             }
 
-            plugin.openCrate(player, crate);
+            // Pass the block location so BlockDismantle animates the correct block
+            Location blockLoc = block.getLocation();
+            plugin.tryOpenCrate(player, crate, blockLoc);
         }
     }
 
     /**
      * Handles placement of a crate placement item.
-     * The placed block's location is registered as a new location for that crate.
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
@@ -136,7 +135,7 @@ public class CrateInteractListener implements Listener {
         } catch (Exception e) {
             plugin.getLogger().warning("Failed to auto-save crate after placement: " + e.getMessage());
         }
-        plugin.getHologramManager().removeHologram(crateId);
+        plugin.getHologramManager().removeHologram(crate.getId());
         plugin.getHologramManager().createHologram(crate);
 
         event.getPlayer().sendMessage(TextUtil.parse(
@@ -145,7 +144,57 @@ public class CrateInteractListener implements Listener {
         ));
     }
 
-    private Crate getCrateAtBlock(Block block) {
+    /**
+     * When a player sneaks and breaks a crate block, removes that location from the crate.
+     * Requires moderncrates.admin permission.
+     */
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onBlockBreak(BlockBreakEvent event) {
+        Player player = event.getPlayer();
+        if (!player.isSneaking()) return;
+        if (!player.hasPermission("moderncrates.admin")) return;
+
+        Block block = event.getBlock();
+        Crate crate = getCrateAtBlock(block);
+        if (crate == null) return;
+
+        // Remove this specific location from the crate
+        event.setCancelled(true); // Prevent the block from actually being broken
+        boolean removed = removeCrateLocation(crate, block);
+        if (!removed) return;
+
+        try {
+            plugin.getCrateConfigParser().save(crate, new File(plugin.getDataFolder(), "crates"));
+        } catch (Exception e) {
+            plugin.getLogger().warning("Failed to auto-save crate after location removal: " + e.getMessage());
+        }
+        plugin.getHologramManager().removeHologram(crate.getId());
+        if (!crate.getCrateLocations().isEmpty()) {
+            plugin.getHologramManager().createHologram(crate);
+        }
+
+        player.sendMessage(TextUtil.parse(
+                "<yellow>Removed crate location for <white>" + crate.getName()
+                + "<yellow>. (" + crate.getCrateLocations().size() + " remaining)"
+        ));
+    }
+
+    private boolean removeCrateLocation(Crate crate, Block block) {
+        Iterator<CrateLocation> it = crate.getCrateLocations().iterator();
+        while (it.hasNext()) {
+            CrateLocation loc = it.next();
+            if (loc.getWorldName().equals(block.getWorld().getName())
+                    && (int) loc.getX() == block.getX()
+                    && (int) loc.getY() == block.getY()
+                    && (int) loc.getZ() == block.getZ()) {
+                it.remove();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    Crate getCrateAtBlock(Block block) {
         for (Crate crate : plugin.getCrateRegistry().values()) {
             for (CrateLocation loc : crate.getCrateLocations()) {
                 if (loc.getWorldName().equals(block.getWorld().getName())
@@ -161,9 +210,7 @@ public class CrateInteractListener implements Listener {
 
     private boolean canOpen(Player player, Crate crate) {
         if (!crate.requiresKey()) return true;
-        // Check physical keys
         if (plugin.getKeyManager().hasKey(player, crate)) return true;
-        // Check virtual keys
         return plugin.getVirtualKeyManager().getKeys(player, crate.getId()) > 0;
     }
 

@@ -29,8 +29,12 @@ hologram:
     - "<gray>Right-click to open"
   offset:
     - 0.5
-    - 1.5
+    - 2.5
     - 0.5
+  scale: 1.0
+  billboard: "CENTER"
+  see_through: true
+  background_color: -1
 
 preview:
   title: "<gold>Preview - Example Crate"

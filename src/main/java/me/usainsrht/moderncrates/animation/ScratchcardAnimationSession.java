@@ -38,6 +38,9 @@ public class ScratchcardAnimationSession implements AnimationSession, ModernCrat
     private final AtomicBoolean finished = new AtomicBoolean(false);
     private final AtomicBoolean cancelled = new AtomicBoolean(false);
 
+    @Override
+    public boolean isNotCloseable() { return animation.isNotCloseable(); }
+
     private enum Phase { SHUFFLING, SCRATCHING, DONE }
     private Phase phase = Phase.SHUFFLING;
     private int shuffleCount = 0;

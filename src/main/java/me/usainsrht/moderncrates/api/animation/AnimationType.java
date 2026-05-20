@@ -1,6 +1,7 @@
 package me.usainsrht.moderncrates.api.animation;
 
 import me.usainsrht.moderncrates.api.crate.Crate;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 /**
@@ -27,6 +28,15 @@ public interface AnimationType {
      * @return a new animation session
      */
     AnimationSession createSession(Player player, Crate crate, Animation animation);
+
+    /**
+     * Creates a session with an optional physical block location.
+     * Used by BlockDismantle to animate the correct barrel when multiple are placed.
+     * Default implementation ignores the location; override when needed.
+     */
+    default AnimationSession createSession(Player player, Crate crate, Animation animation, Location interactedLocation) {
+        return createSession(player, crate, animation);
+    }
 
     /**
      * Validates that the given animation configuration is compatible with this type.

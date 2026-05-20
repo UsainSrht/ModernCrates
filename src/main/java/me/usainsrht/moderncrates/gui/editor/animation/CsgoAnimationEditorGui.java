@@ -77,6 +77,11 @@ public class CsgoAnimationEditorGui extends EditorGuiBase {
         inventory.setItem(37, ItemBuilder.create("NOTE_BLOCK", "<yellow><bold>Sounds",
                 List.of("<gray>Click to edit all sounds")));
 
+        // Not-closeable toggle
+        inventory.setItem(39, ItemBuilder.create(animation.isNotCloseable() ? "IRON_DOOR" : "OAK_DOOR",
+                "<yellow><bold>Not Closeable: <white>" + (animation.isNotCloseable() ? "Yes" : "No"),
+                List.of("<gray>Click to toggle - prevents closing the GUI")));
+
         // Bottom
         inventory.setItem(45, ItemBuilder.create("ARROW", "<red><bold>Back",
                 List.of("<gray>Return to animation list")));
@@ -96,9 +101,13 @@ public class CsgoAnimationEditorGui extends EditorGuiBase {
                 List<String> types = new ArrayList<>(plugin.getAnimationTypeRegistry().keySet());
                 if (!types.isEmpty()) {
                     int idx = types.indexOf(animation.getTypeId());
-                    String newType = types.get((idx + 1) % types.size());
+                    if (idx < 0) idx = 0;
+                    // Left = next (down), right = previous (up)
+                    int newIdx = rightClick
+                            ? (idx - 1 + types.size()) % types.size()
+                            : (idx + 1) % types.size();
+                    String newType = types.get(newIdx);
                     animation.setTypeId(newType);
-                    // Re-open with the correct editor for the new type
                     AnimationListGui.openAnimationEditor(player, plugin, animation);
                 }
             }
@@ -141,6 +150,7 @@ public class CsgoAnimationEditorGui extends EditorGuiBase {
                 open();
             });
             case 37 -> new AnimationSoundsEditorGui(player, plugin, animation).open();
+            case 39 -> { animation.setNotCloseable(!animation.isNotCloseable()); open(); }
             case 45 -> new AnimationListGui(player, plugin).open();
             case 49 -> { saveAnimation(animation); player.sendMessage(TextUtil.parse("<green>Animation saved!")); }
         }

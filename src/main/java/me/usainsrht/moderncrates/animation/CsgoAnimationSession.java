@@ -58,6 +58,11 @@ public class CsgoAnimationSession implements AnimationSession, ModernCratesGui {
 
     private static final int HARDCODED_STOP_THRESHOLD = 1200;
 
+    @Override
+    public boolean isNotCloseable() {
+        return animation.isNotCloseable();
+    }
+
     public CsgoAnimationSession(Player player, Crate crate, Animation animation, CsgoAnimationType type) {
         this.player = player;
         this.crate = crate;

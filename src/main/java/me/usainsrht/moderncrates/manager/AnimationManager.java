@@ -4,6 +4,7 @@ import me.usainsrht.moderncrates.api.animation.Animation;
 import me.usainsrht.moderncrates.api.animation.AnimationSession;
 import me.usainsrht.moderncrates.api.animation.AnimationType;
 import me.usainsrht.moderncrates.api.crate.Crate;
+import org.bukkit.Location;
 import me.usainsrht.moderncrates.api.reward.Reward;
 import me.usainsrht.moderncrates.api.reward.RewardItem;
 import me.usainsrht.moderncrates.util.ItemBuilder;
@@ -44,9 +45,15 @@ public class AnimationManager {
     }
 
     public void startSession(Player player, Crate crate, AnimationType type, Animation animation) {
+        startSession(player, crate, type, animation, null);
+    }
+
+    public void startSession(Player player, Crate crate, AnimationType type, Animation animation, Location interactedLocation) {
         if (hasActiveSession(player)) return;
 
-        AnimationSession session = type.createSession(player, crate, animation);
+        AnimationSession session = interactedLocation != null
+                ? type.createSession(player, crate, animation, interactedLocation)
+                : type.createSession(player, crate, animation);
         activeSessions.put(player.getUniqueId(), session);
         sessionCrates.put(player.getUniqueId(), crate);
         session.start();
@@ -88,7 +95,7 @@ public class AnimationManager {
                     Map<Integer, ItemStack> overflow = player.getInventory().addItem(stack);
                     // Drop overflow items at player location
                     overflow.values().forEach(dropped ->
-                            player.getWorld().dropItemNaturally(player.getLocation(), dropped));
+                            player.getWorld().dropItem(player.getLocation(), dropped));
                 }
             }
         }

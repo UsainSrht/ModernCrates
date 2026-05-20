@@ -5,6 +5,8 @@ animation: "scratchcard"
 # Demonstrates the scratchcard animation type with a lottery theme.
 bounce_back: true
 
+not_closeable: true
+
 key:
   required: true
   material: "PAPER"
@@ -34,8 +36,12 @@ hologram:
     - "<gray>Right-click to play"
   offset:
     - 0.5
-    - 1.5
+    - 2.5
     - 0.5
+  scale: 1.0
+  billboard: "CENTER"
+  see_through: true
+  background_color: -1
 
 preview:
   title: "<gold>Preview - Lucky Scratchcard"

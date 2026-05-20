@@ -43,6 +43,9 @@ public class SlotAnimationSession implements AnimationSession, ModernCratesGui {
     private final AtomicBoolean finished = new AtomicBoolean(false);
     private final AtomicBoolean cancelled = new AtomicBoolean(false);
 
+    @Override
+    public boolean isNotCloseable() { return animation.isNotCloseable(); }
+
     private final Random random = new Random();
     private final List<ReelState> reels = new ArrayList<>();
     private int reelsStoppedCount = 0;

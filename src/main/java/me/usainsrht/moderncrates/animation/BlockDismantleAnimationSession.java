@@ -70,6 +70,8 @@ public class BlockDismantleAnimationSession implements AnimationSession {
     private final Animation animation;
     private final BlockDismantleAnimationType type;
     private final Runnable onComplete;
+    /** The physical block location the player actually clicked. May be null if opened without a physical block. */
+    private final Location providedLocation;
 
     private final AtomicBoolean finished  = new AtomicBoolean(false);
     private final AtomicBoolean cancelled = new AtomicBoolean(false);
@@ -89,23 +91,30 @@ public class BlockDismantleAnimationSession implements AnimationSession {
     private ScheduledTask cleanupTask;
 
     public BlockDismantleAnimationSession(Player player, Crate crate, Animation animation,
-                                           BlockDismantleAnimationType type, Runnable onComplete) {
+                                           BlockDismantleAnimationType type, Runnable onComplete,
+                                           Location providedLocation) {
         this.player    = player;
         this.crate     = crate;
         this.animation = animation;
         this.type      = type;
         this.onComplete = onComplete;
+        this.providedLocation = providedLocation;
     }
 
     // ============================= LIFECYCLE ================================
 
     @Override
     public void start() {
-        CrateLocation crateLoc = crate.getCrateLocation();
-        if (crateLoc == null) { fallbackFinish(); return; }
-        Location loc = crateLoc.toBukkit();
-        if (loc == null)      { fallbackFinish(); return; }
-        blockLocation = loc.getBlock().getLocation();
+        // Use the provided (interacted) location first; fall back to first registered crate location
+        Location loc = null;
+        if (providedLocation != null) {
+            loc = providedLocation.getBlock().getLocation();
+        } else {
+            CrateLocation crateLoc = crate.getCrateLocation();
+            if (crateLoc != null) loc = crateLoc.toBukkit();
+        }
+        if (loc == null) { fallbackFinish(); return; }
+        blockLocation = loc;
 
         selectedReward = RewardSelector.selectWeighted(crate);
         if (selectedReward == null) { fallbackFinish(); return; }

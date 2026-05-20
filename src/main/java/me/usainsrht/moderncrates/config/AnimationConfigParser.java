@@ -155,6 +155,9 @@ public class AnimationConfigParser {
         anim.setDismantleRewardSounds(parseSoundList(yaml, "dismantle_reward_sound", "sounds.dismantle_reward"));
         anim.setDismantleSettleSounds(parseSoundList(yaml, "dismantle_settle_sound", "sounds.dismantle_settle"));
 
+        // Not-closeable
+        anim.setNotCloseable(yaml.getBoolean("not_closeable", false));
+
         return anim;
     }
 
@@ -282,6 +285,7 @@ public class AnimationConfigParser {
 
         if (animation.getTickSounds() != null) yaml.set("tick_sound", animation.getTickSounds());
         if (animation.getRewardSounds() != null) yaml.set("reward_sound", animation.getRewardSounds());
+        yaml.set("not_closeable", animation.isNotCloseable());
 
         yaml.save(file);
     }

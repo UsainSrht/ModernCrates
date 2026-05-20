@@ -29,4 +29,12 @@ public interface AnimationSession {
      * Only valid after the animation has finished.
      */
     Reward getSelectedReward();
+
+    /**
+     * Returns true when the player should not be able to close this GUI manually.
+     * GUI-based sessions (CSGO, click, etc.) check the animation's not_closeable flag.
+     */
+    default boolean isNotCloseable() {
+        return false;
+    }
 }

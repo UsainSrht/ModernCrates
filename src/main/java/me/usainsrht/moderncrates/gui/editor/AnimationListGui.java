@@ -59,24 +59,33 @@ public class AnimationListGui extends EditorGuiBase {
             return;
         }
         if (slot == inventory.getSize() - 1) {
-            String newId = "new_anim_" + System.currentTimeMillis() % 10000;
-            Animation anim = new Animation(newId);
-            anim.setTypeId("csgo");
-            anim.setTotalTicks(45);
-            anim.setStayOpenAfterRewardTicks(50);
-            anim.setStartTickRate(1);
-            anim.setTickRateModifier(20);
-            anim.setGuiTitle("<red><bold><crate>");
-            anim.setGuiRows(3);
-            anim.setRewardIndex(5);
-            anim.setRewardSlots(List.of(9, 10, 11, 12, 13, 14, 15, 16, 17));
-            GuiItemConfig fill = new GuiItemConfig();
-            fill.setMaterial("BLACK_STAINED_GLASS_PANE");
-            fill.setName(" ");
-            anim.setGuiFill(fill);
-            plugin.getAnimationRegistry().put(newId, anim);
-            saveAnimation(anim);
-            openAnimationEditor(anim);
+            // Ask the user for the animation ID
+            requestSignInput("Enter animation ID (e.g. my_csgo)", input -> {
+                String rawId = input.trim().toLowerCase()
+                        .replaceAll("[^a-z0-9_]", "_")
+                        .replaceAll("_+", "_")
+                        .replaceAll("^_|_$", "");
+                if (rawId.isEmpty()) rawId = "new_anim_" + (System.currentTimeMillis() % 10000);
+                final String animId = rawId;
+
+                Animation anim = new Animation(animId);
+                anim.setTypeId("csgo");
+                anim.setTotalTicks(45);
+                anim.setStayOpenAfterRewardTicks(50);
+                anim.setStartTickRate(1);
+                anim.setTickRateModifier(20);
+                anim.setGuiTitle("<red><bold><crate>");
+                anim.setGuiRows(3);
+                anim.setRewardIndex(5);
+                anim.setRewardSlots(List.of(9, 10, 11, 12, 13, 14, 15, 16, 17));
+                GuiItemConfig fill = new GuiItemConfig();
+                fill.setMaterial("BLACK_STAINED_GLASS_PANE");
+                fill.setName(" ");
+                anim.setGuiFill(fill);
+                plugin.getAnimationRegistry().put(animId, anim);
+                saveAnimation(anim);
+                openAnimationEditor(anim);
+            });
             return;
         }
 
@@ -86,10 +95,12 @@ public class AnimationListGui extends EditorGuiBase {
         if (anim == null) return;
 
         if (rightClick) {
-            plugin.getAnimationRegistry().remove(animId);
-            File f = new File(plugin.getDataFolder(), "animations/" + animId + ".yml");
-            if (f.exists()) f.delete();
-            open();
+            requestConfirmation("Delete animation '" + animId + "'?", () -> {
+                plugin.getAnimationRegistry().remove(animId);
+                File f = new File(plugin.getDataFolder(), "animations/" + animId + ".yml");
+                if (f.exists()) f.delete();
+                open();
+            });
         } else {
             openAnimationEditor(anim);
         }

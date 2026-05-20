@@ -50,8 +50,12 @@ hologram:
     - "<gray>Watch it explode!"
   offset:
     - 0.5
-    - 1.8
+    - 2.5
     - 0.5
+  scale: 1.0
+  billboard: "CENTER"
+  see_through: true
+  background_color: -1
 
 preview:
   title: "<gold>Barrel Crate — Rewards"
