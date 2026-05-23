@@ -49,7 +49,7 @@ dismantle_top_horizontal_range: 3
 # Ticks the ItemDisplay reward entity is visible inside the open
 # cavity before everything is cleaned up and the block is restored.
 # Example range: 60–160 (20 ticks = 1 second)
-dismantle_display_duration_ticks: 100
+dismantle_display_duration_ticks: 80
 
 # ── Particles ─────────────────────────────────────────────────────
 # Particle burst spawned around the block the instant the faces

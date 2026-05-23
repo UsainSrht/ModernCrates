@@ -19,6 +19,7 @@ public class PluginConfig {
     private String prefix;
     private String hologramSystem;
     private boolean giveFullInventoryDrop;
+    private boolean allowShiftLeftClickRemove;
     private Map<String, String> messages;
     private Map<String, String> sounds;
     private CommandConfig commandConfig;
@@ -33,6 +34,7 @@ public class PluginConfig {
         prefix = yaml.getString("prefix", "<gold>MC <gray>> ");
         hologramSystem = yaml.getString("hologram-system", "VANILLA");
         giveFullInventoryDrop = yaml.getBoolean("give-full-inventory-drop", true);
+        allowShiftLeftClickRemove = yaml.getBoolean("allow-shift-left-click-remove", true);
 
         messages = new java.util.HashMap<>();
         var msgSection = yaml.getConfigurationSection("messages");
@@ -65,6 +67,7 @@ public class PluginConfig {
         yaml.set("prefix", prefix);
         yaml.set("hologram-system", hologramSystem);
         yaml.set("give-full-inventory-drop", giveFullInventoryDrop);
+        yaml.set("allow-shift-left-click-remove", allowShiftLeftClickRemove);
 
         for (var entry : messages.entrySet()) {
             yaml.set("messages." + entry.getKey(), entry.getValue());
@@ -89,6 +92,7 @@ public class PluginConfig {
             prefix = "<gold>MC <dark_gray>> ";
             hologramSystem = "VANILLA";
             giveFullInventoryDrop = true;
+            allowShiftLeftClickRemove = true;
             messages = Map.of(
                     "reload", "<green>reloaded!",
                     "no_key", "<red>You don't have a <dark_red><crate> <red>key to open this crate!",
@@ -121,6 +125,7 @@ public class PluginConfig {
     public String getPrefix() { return prefix; }
     public String getHologramSystem() { return hologramSystem; }
     public boolean isGiveFullInventoryDrop() { return giveFullInventoryDrop; }
+    public boolean isAllowShiftLeftClickRemove() { return allowShiftLeftClickRemove; }
     public String getMessage(String key) { return messages.getOrDefault(key, ""); }
     public String getSound(String key) { return sounds.getOrDefault(key, ""); }
     public CommandConfig getCommandConfig() { return commandConfig; }

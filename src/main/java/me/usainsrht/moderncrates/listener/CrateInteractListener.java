@@ -73,6 +73,34 @@ public class CrateInteractListener implements Listener {
             if (crate == null) return;
 
             event.setCancelled(true);
+            
+            // Check if shift+left-click removal is enabled
+            if (plugin.getPluginConfig().isAllowShiftLeftClickRemove() && player.isSneaking() && player.hasPermission("moderncrates.admin")) {
+                // Remove this specific crate location
+                boolean removed = removeCrateLocation(crate, block);
+                if (!removed) {
+                    player.sendMessage(TextUtil.parse("<red>Error: Could not find this crate location."));
+                    return;
+                }
+
+                try {
+                    plugin.getCrateConfigParser().save(crate, new File(plugin.getDataFolder(), "crates"));
+                } catch (Exception e) {
+                    plugin.getLogger().warning("Failed to auto-save crate after location removal: " + e.getMessage());
+                }
+                plugin.getHologramManager().removeHologram(crate.getId());
+                if (!crate.getCrateLocations().isEmpty()) {
+                    plugin.getHologramManager().createHologram(crate);
+                }
+
+                player.sendMessage(TextUtil.parse(
+                        "<yellow>Removed crate location for <white>" + crate.getName()
+                        + "<yellow>. (" + crate.getCrateLocations().size() + " remaining)"
+                ));
+                return;
+            }
+            
+            // Normal left-click opens preview
             new PreviewGui(player, crate).open();
             return;
         }

@@ -40,6 +40,8 @@ public class ItemRiseAnimationSession implements AnimationSession {
     private final Animation animation;
     private final ItemRiseAnimationType type;
     private final Runnable onComplete;
+    /** The physical block location the player actually clicked. May be null if opened without a physical block. */
+    private final Location providedLocation;
 
     private final AtomicBoolean finished = new AtomicBoolean(false);
     private final AtomicBoolean cancelled = new AtomicBoolean(false);
@@ -66,23 +68,30 @@ public class ItemRiseAnimationSession implements AnimationSession {
 
     public ItemRiseAnimationSession(Player player, Crate crate, Animation animation,
                                      ItemRiseAnimationType type, Runnable onComplete) {
+        this(player, crate, animation, type, onComplete, null);
+    }
+
+    public ItemRiseAnimationSession(Player player, Crate crate, Animation animation,
+                                     ItemRiseAnimationType type, Runnable onComplete,
+                                     Location providedLocation) {
         this.player = player;
         this.crate = crate;
         this.animation = animation;
         this.type = type;
         this.onComplete = onComplete;
+        this.providedLocation = providedLocation;
     }
 
     @Override
     public void start() {
-        // Validate physical crate with lidded block
-        CrateLocation crateLoc = crate.getCrateLocation();
-        if (crateLoc == null) {
-            fallbackFinish();
-            return;
+        // Use the provided (interacted) location first; fall back to first registered crate location
+        Location loc = null;
+        if (providedLocation != null) {
+            loc = providedLocation.getBlock().getLocation();
+        } else {
+            CrateLocation crateLoc = crate.getCrateLocation();
+            if (crateLoc != null) loc = crateLoc.toBukkit();
         }
-
-        Location loc = crateLoc.toBukkit();
         if (loc == null) {
             fallbackFinish();
             return;

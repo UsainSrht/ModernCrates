@@ -4,6 +4,7 @@ import me.usainsrht.moderncrates.ModernCratesPlugin;
 import me.usainsrht.moderncrates.api.animation.Animation;
 import me.usainsrht.moderncrates.api.animation.AnimationSession;
 import me.usainsrht.moderncrates.api.crate.Crate;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import space.arim.morepaperlib.scheduling.GracefulScheduling;
 
@@ -27,6 +28,12 @@ public class ItemRiseAnimationType extends AbstractAnimationType {
     public AnimationSession createSession(Player player, Crate crate, Animation animation) {
         Runnable onComplete = () -> plugin.getAnimationManager().endSession(player, null);
         return new ItemRiseAnimationSession(player, crate, animation, this, onComplete);
+    }
+
+    @Override
+    public AnimationSession createSession(Player player, Crate crate, Animation animation, Location interactedLocation) {
+        Runnable onComplete = () -> plugin.getAnimationManager().endSession(player, null);
+        return new ItemRiseAnimationSession(player, crate, animation, this, onComplete, interactedLocation);
     }
 
     @Override
