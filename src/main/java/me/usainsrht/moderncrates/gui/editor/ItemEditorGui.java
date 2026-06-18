@@ -49,8 +49,12 @@ public class ItemEditorGui extends EditorGuiBase {
         }
 
         inventory.setItem(27, ItemBuilder.create("ARROW", "<red><bold>Back", List.of("<gray>Return to crate editor")));
-        inventory.setItem(31, ItemBuilder.create("LIME_WOOL", "<green><bold>Save", List.of("<gray>Save crate")));
         player.openInventory(inventory);
+    }
+
+    @Override
+    protected void save() {
+        saveCrate(crate);
     }
 
     @Override
@@ -64,6 +68,7 @@ public class ItemEditorGui extends EditorGuiBase {
             ic.setMaterial("CHEST");
             ic.setName("<gold><bold>" + crate.getName());
             crate.setItemConfig(ic);
+            save();
             open();
             return;
         }
@@ -84,6 +89,7 @@ public class ItemEditorGui extends EditorGuiBase {
             case 15 -> {
                 if (rightClick) {
                     finalIc.setLore(null);
+                    save();
                     open();
                 } else {
                     requestSignInput("Lore line", input -> {
@@ -95,7 +101,6 @@ public class ItemEditorGui extends EditorGuiBase {
                 }
             }
             case 27 -> new CrateEditorGui(player, plugin, crate).open();
-            case 31 -> { saveCrate(crate); player.sendMessage(TextUtil.parse("<green>Crate saved!")); }
         }
     }
 }

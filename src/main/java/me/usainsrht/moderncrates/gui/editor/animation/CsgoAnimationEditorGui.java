@@ -32,6 +32,11 @@ public class CsgoAnimationEditorGui extends EditorGuiBase {
     }
 
     @Override
+    protected void save() {
+        saveAnimation(animation);
+    }
+
+    @Override
     public void open() {
         inventory = Bukkit.createInventory(this, 54,
                 TextUtil.parse("<dark_red><bold>CSGO Animation: " + animation.getId()));
@@ -85,8 +90,6 @@ public class CsgoAnimationEditorGui extends EditorGuiBase {
         // Bottom
         inventory.setItem(45, ItemBuilder.create("ARROW", "<red><bold>Back",
                 List.of("<gray>Return to animation list")));
-        inventory.setItem(49, ItemBuilder.create("LIME_WOOL", "<green><bold>Save",
-                List.of("<gray>Save animation to file")));
         player.openInventory(inventory);
     }
 
@@ -108,6 +111,7 @@ public class CsgoAnimationEditorGui extends EditorGuiBase {
                             : (idx + 1) % types.size();
                     String newType = types.get(newIdx);
                     animation.setTypeId(newType);
+                    save();
                     AnimationListGui.openAnimationEditor(player, plugin, animation);
                 }
             }
@@ -117,6 +121,7 @@ public class CsgoAnimationEditorGui extends EditorGuiBase {
             });
             case 14 -> {
                 adjustInt(animation::getGuiRows, animation::setGuiRows, rightClick, shiftClick, 1, 6);
+                save();
                 open();
             }
             case 16 -> requestSignInput("Fill material", input -> {
@@ -126,11 +131,11 @@ public class CsgoAnimationEditorGui extends EditorGuiBase {
                 animation.setGuiFill(fill);
                 open();
             });
-            case 19 -> { adjustInt(animation::getTotalTicks, animation::setTotalTicks, rightClick, shiftClick, 1, 999); open(); }
-            case 20 -> { adjustInt(animation::getStayOpenAfterRewardTicks, animation::setStayOpenAfterRewardTicks, rightClick, shiftClick, 0, 999); open(); }
-            case 21 -> { adjustInt(animation::getStartTickRate, animation::setStartTickRate, rightClick, shiftClick, 1, 100); open(); }
-            case 22 -> { adjustInt(animation::getTickRateModifier, animation::setTickRateModifier, rightClick, shiftClick, 0, 100); open(); }
-            case 23 -> { adjustInt(animation::getRewardIndex, animation::setRewardIndex, rightClick, shiftClick, 1, 100); open(); }
+            case 19 -> { adjustInt(animation::getTotalTicks, animation::setTotalTicks, rightClick, shiftClick, 1, 999); save(); open(); }
+            case 20 -> { adjustInt(animation::getStayOpenAfterRewardTicks, animation::setStayOpenAfterRewardTicks, rightClick, shiftClick, 0, 999); save(); open(); }
+            case 21 -> { adjustInt(animation::getStartTickRate, animation::setStartTickRate, rightClick, shiftClick, 1, 100); save(); open(); }
+            case 22 -> { adjustInt(animation::getTickRateModifier, animation::setTickRateModifier, rightClick, shiftClick, 0, 100); save(); open(); }
+            case 23 -> { adjustInt(animation::getRewardIndex, animation::setRewardIndex, rightClick, shiftClick, 1, 100); save(); open(); }
             case 28 -> requestSignInput("Reward slots", input -> {
                 animation.setRewardSlots(parseIntList(input));
                 open();
@@ -150,9 +155,8 @@ public class CsgoAnimationEditorGui extends EditorGuiBase {
                 open();
             });
             case 37 -> new AnimationSoundsEditorGui(player, plugin, animation).open();
-            case 39 -> { animation.setNotCloseable(!animation.isNotCloseable()); open(); }
+            case 39 -> { animation.setNotCloseable(!animation.isNotCloseable()); save(); open(); }
             case 45 -> new AnimationListGui(player, plugin).open();
-            case 49 -> { saveAnimation(animation); player.sendMessage(TextUtil.parse("<green>Animation saved!")); }
         }
     }
 

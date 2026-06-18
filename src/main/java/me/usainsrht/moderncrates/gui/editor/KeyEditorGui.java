@@ -76,8 +76,12 @@ public class KeyEditorGui extends EditorGuiBase {
         }
 
         inventory.setItem(45, ItemBuilder.create("ARROW", "<red><bold>Back", List.of("<gray>Return to crate editor")));
-        inventory.setItem(49, ItemBuilder.create("LIME_WOOL", "<green><bold>Save", List.of("<gray>Save crate to file")));
         player.openInventory(inventory);
+    }
+
+    @Override
+    protected void save() {
+        saveCrate(crate);
     }
 
     @Override
@@ -94,6 +98,7 @@ public class KeyEditorGui extends EditorGuiBase {
             kcRaw.setCount(1);
             kcRaw.setName("<gold><bold>" + crate.getName() + " Key");
             crate.setKeyConfig(kcRaw);
+            save();
             open();
             return;
         }
@@ -101,7 +106,7 @@ public class KeyEditorGui extends EditorGuiBase {
         final CrateKeyConfig kc = kcRaw;
 
         switch (slot) {
-            case 10 -> { kc.setRequired(!kc.isRequired()); open(); }
+            case 10 -> { kc.setRequired(!kc.isRequired()); save(); open(); }
             case 12 -> requestSignInput("Key material", input -> {
                 Material m = Material.matchMaterial(input.toUpperCase());
                 if (m != null) kc.setMaterial(input.toUpperCase());
@@ -112,6 +117,7 @@ public class KeyEditorGui extends EditorGuiBase {
                 int delta = rightClick ? -1 : 1;
                 if (shiftClick) delta *= 5;
                 kc.setCount(Math.max(1, kc.getCount() + delta));
+                save();
                 open();
             }
             case 16 -> requestSignInput("Key name", input -> {
@@ -121,6 +127,7 @@ public class KeyEditorGui extends EditorGuiBase {
             case 28 -> {
                 if (rightClick) {
                     kc.setLore(null);
+                    save();
                     open();
                 } else {
                     requestSignInput("Lore line", input -> {
@@ -134,6 +141,7 @@ public class KeyEditorGui extends EditorGuiBase {
             case 30 -> {
                 if (rightClick) {
                     kc.setEnchantments(null);
+                    save();
                     open();
                 } else {
                     requestSignInput("ENCH LEVEL", input -> {
@@ -156,6 +164,7 @@ public class KeyEditorGui extends EditorGuiBase {
             case 32 -> {
                 if (rightClick) {
                     kc.setItemFlags(null);
+                    save();
                     open();
                 } else {
                     requestSignInput("Item flag", input -> {
@@ -167,7 +176,6 @@ public class KeyEditorGui extends EditorGuiBase {
                 }
             }
             case 45 -> new CrateEditorGui(player, plugin, crate).open();
-            case 49 -> { saveCrate(crate); player.sendMessage(TextUtil.parse("<green>Crate saved!")); }
         }
     }
 }

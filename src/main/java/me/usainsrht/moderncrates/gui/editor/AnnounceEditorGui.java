@@ -21,6 +21,11 @@ public class AnnounceEditorGui extends EditorGuiBase {
     }
 
     @Override
+    protected void save() {
+        saveCrate(crate);
+    }
+
+    @Override
     public void open() {
         AnnounceConfig ac = crate.getAnnounceConfig();
 
@@ -42,7 +47,6 @@ public class AnnounceEditorGui extends EditorGuiBase {
         }
 
         inventory.setItem(27, ItemBuilder.create("ARROW", "<red><bold>Back", List.of("<gray>Return to crate editor")));
-        inventory.setItem(31, ItemBuilder.create("LIME_WOOL", "<green><bold>Save", List.of("<gray>Save crate")));
         player.openInventory(inventory);
     }
 
@@ -56,6 +60,7 @@ public class AnnounceEditorGui extends EditorGuiBase {
             ac.setToEveryone(true);
             ac.setSingle("<gold><player> <gray>won <gold><reward_name> <gray>from <gold>" + crate.getName());
             crate.setAnnounceConfig(ac);
+            save();
             open();
             return;
         }
@@ -63,7 +68,7 @@ public class AnnounceEditorGui extends EditorGuiBase {
 
         AnnounceConfig finalAc = ac;
         switch (slot) {
-            case 10 -> { finalAc.setToEveryone(!finalAc.isToEveryone()); open(); }
+            case 10 -> { finalAc.setToEveryone(!finalAc.isToEveryone()); save(); open(); }
             case 12 -> requestSignInput("Single message", input -> {
                 finalAc.setSingle(input);
                 open();
@@ -77,7 +82,6 @@ public class AnnounceEditorGui extends EditorGuiBase {
                 open();
             });
             case 27 -> new CrateEditorGui(player, plugin, crate).open();
-            case 31 -> { saveCrate(crate); player.sendMessage(TextUtil.parse("<green>Crate saved!")); }
         }
     }
 }

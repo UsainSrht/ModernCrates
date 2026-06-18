@@ -22,6 +22,11 @@ public class AnimationSoundsEditorGui extends EditorGuiBase {
     }
 
     @Override
+    protected void save() {
+        saveAnimation(animation);
+    }
+
+    @Override
     public void open() {
         inventory = Bukkit.createInventory(this, 36, TextUtil.parse("<dark_red><bold>Sounds: " + animation.getId()));
         fillBlack();
@@ -49,6 +54,7 @@ public class AnimationSoundsEditorGui extends EditorGuiBase {
         BiConsumer<String, Consumer<List<String>>> handle = (prompt, setter) -> {
             if (rightClick) {
                 setter.accept(null);
+                save();
                 open();
             } else {
                 requestSignInput(prompt, input -> {

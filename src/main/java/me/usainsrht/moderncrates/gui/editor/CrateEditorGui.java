@@ -77,12 +77,15 @@ public class CrateEditorGui extends EditorGuiBase {
         inventory.setItem(32, ItemBuilder.create("COMPASS",
                 "<yellow><bold>Locations <white>(" + locs.size() + ")", locLore));
 
-        // Bottom: Save, Back
+        // Bottom: Back
         inventory.setItem(45, ItemBuilder.create("ARROW", "<red><bold>Back", List.of("<gray>Return to crate list")));
-        inventory.setItem(49, ItemBuilder.create("LIME_WOOL", "<green><bold>Save to File",
-                List.of("<gray>Saves this crate to YAML")));
 
         player.openInventory(inventory);
+    }
+
+    @Override
+    protected void save() {
+        saveCrate(crate);
     }
 
     private ItemStack createAnimationSelector() {
@@ -120,6 +123,7 @@ public class CrateEditorGui extends EditorGuiBase {
                             ? (idx - 1 + animIds.size()) % animIds.size()
                             : (idx + 1) % animIds.size();
                     crate.setAnimationId(animIds.get(newIdx));
+                    save();
                     open();
                 }
             }
@@ -134,10 +138,12 @@ public class CrateEditorGui extends EditorGuiBase {
                 } else {
                     kc.setRequired(!kc.isRequired());
                 }
+                save();
                 open();
             }
             case 16 -> {
                 crate.setBounceBack(!crate.isBounceBack());
+                save();
                 open();
             }
             case 19 -> new KeyEditorGui(player, plugin, crate).open();
@@ -152,6 +158,7 @@ public class CrateEditorGui extends EditorGuiBase {
                     crate.clearCrateLocations();
                     plugin.getHologramManager().removeHologram(crate.getId());
                     player.sendMessage(TextUtil.parse("<yellow>All crate locations cleared."));
+                    save();
                     open();
                 } else if (shiftClick && rightClick) {
                     // Shift-right: remove target block from locations
@@ -176,6 +183,7 @@ public class CrateEditorGui extends EditorGuiBase {
                                 plugin.getHologramManager().createHologram(crate);
                             }
                             player.sendMessage(TextUtil.parse("<yellow>Target block removed from crate locations."));
+                            save();
                         } else {
                             player.sendMessage(TextUtil.parse("<red>Target block is not a crate location."));
                         }
@@ -194,6 +202,7 @@ public class CrateEditorGui extends EditorGuiBase {
                         plugin.getHologramManager().removeHologram(crate.getId());
                         plugin.getHologramManager().createHologram(crate);
                         player.sendMessage(TextUtil.parse("<green>Target block added as crate location."));
+                        save();
                     } else {
                         player.sendMessage(TextUtil.parse("<red>No block in sight (max 10 blocks)."));
                     }
@@ -209,10 +218,6 @@ public class CrateEditorGui extends EditorGuiBase {
                 }
             }
             case 45 -> new CrateListGui(player, plugin).open();
-            case 49 -> {
-                saveCrate(crate);
-                player.sendMessage(TextUtil.parse("<green>Crate saved to file!"));
-            }
         }
     }
 

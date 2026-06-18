@@ -83,8 +83,12 @@ public class RewardEditorGui extends EditorGuiBase {
                 List.of("<gray>Reward items are edited via YAML")));
 
         inventory.setItem(45, ItemBuilder.create("ARROW", "<red><bold>Back", List.of("<gray>Return to rewards list")));
-        inventory.setItem(49, ItemBuilder.create("LIME_WOOL", "<green><bold>Save", List.of("<gray>Save crate")));
         player.openInventory(inventory);
+    }
+
+    @Override
+    protected void save() {
+        saveCrate(crate);
     }
 
     @Override
@@ -108,6 +112,7 @@ public class RewardEditorGui extends EditorGuiBase {
             case 21 -> {
                 if (rightClick) {
                     if (reward.getDisplay() != null) reward.getDisplay().setLore(null);
+                    save();
                     open();
                 } else {
                     requestSignInput("Lore line", input -> {
@@ -123,11 +128,13 @@ public class RewardEditorGui extends EditorGuiBase {
                 double delta = rightClick ? -1 : 1;
                 if (shiftClick) delta *= 5;
                 reward.setChance(Math.max(0.01, reward.getChance() + delta));
+                save();
                 open();
             }
             case 25 -> {
                 if (rightClick) {
                     reward.setCommands(null);
+                    save();
                     open();
                 } else {
                     requestSignInput("Command", input -> {
@@ -141,6 +148,7 @@ public class RewardEditorGui extends EditorGuiBase {
             case 37 -> {
                 if (rightClick) {
                     reward.setAnnounce(null);
+                    save();
                     open();
                 } else {
                     requestSignInput("Announce msg", input -> {
@@ -150,7 +158,6 @@ public class RewardEditorGui extends EditorGuiBase {
                 }
             }
             case 45 -> new RewardsListGui(player, plugin, crate).open();
-            case 49 -> { saveCrate(crate); player.sendMessage(TextUtil.parse("<green>Crate saved!")); }
         }
     }
 

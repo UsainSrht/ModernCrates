@@ -52,8 +52,12 @@ public class PreviewEditorGui extends EditorGuiBase {
         }
 
         inventory.setItem(45, ItemBuilder.create("ARROW", "<red><bold>Back", List.of("<gray>Return to crate editor")));
-        inventory.setItem(49, ItemBuilder.create("LIME_WOOL", "<green><bold>Save", List.of("<gray>Save crate")));
         player.openInventory(inventory);
+    }
+
+    @Override
+    protected void save() {
+        saveCrate(crate);
     }
 
     @Override
@@ -72,6 +76,7 @@ public class PreviewEditorGui extends EditorGuiBase {
             fill.setName(" ");
             pc.setFill(fill);
             crate.setPreviewConfig(pc);
+            save();
             open();
             return;
         }
@@ -85,6 +90,7 @@ public class PreviewEditorGui extends EditorGuiBase {
             });
             case 12 -> {
                 adjustInt(finalPc::getRows, finalPc::setRows, rightClick, shiftClick, 1, 6);
+                save();
                 open();
             }
             case 14 -> requestSignInput("Fill material", input -> {
@@ -113,6 +119,7 @@ public class PreviewEditorGui extends EditorGuiBase {
             case 25 -> {
                 if (rightClick) {
                     finalPc.setSounds(null);
+                    save();
                     open();
                 } else {
                     requestSignInput("Sound name", input -> {
@@ -124,7 +131,6 @@ public class PreviewEditorGui extends EditorGuiBase {
                 }
             }
             case 45 -> new CrateEditorGui(player, plugin, crate).open();
-            case 49 -> { saveCrate(crate); player.sendMessage(TextUtil.parse("<green>Crate saved!")); }
         }
     }
 

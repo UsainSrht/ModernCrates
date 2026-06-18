@@ -66,12 +66,12 @@ public abstract class EditorGuiBase implements ModernCratesGui {
     // Dialog-based Text Input
     // ========================
 
+    protected void save() {}
+
     /**
      * Shows a YES/NO confirmation dialog. Calls {@code onConfirm} only when the player clicks YES.
      */
     protected void requestConfirmation(String title, Runnable onConfirm) {
-        player.closeInventory();
-
         Dialog dialog = Dialog.create(factory -> {
             factory.empty()
                 .base(
@@ -83,12 +83,12 @@ public abstract class EditorGuiBase implements ModernCratesGui {
                     DialogType.confirmation(
                         ActionButton.builder(Component.text("✔ YES"))
                             .action(DialogAction.customClick((response, audience) -> {
-                                plugin.getScheduling().globalRegionalScheduler().run(onConfirm::run);
+                                plugin.getScheduling().entitySpecificScheduler(player).run(onConfirm::run, null);
                             }, ClickCallback.Options.builder().uses(1).build()))
                             .build(),
                         ActionButton.builder(Component.text("✖ NO"))
                             .action(DialogAction.customClick((response, audience) -> {
-                                plugin.getScheduling().globalRegionalScheduler().run(this::open);
+                                plugin.getScheduling().entitySpecificScheduler(player).run(this::open, null);
                             }, ClickCallback.Options.builder().uses(1).build()))
                             .build()
                     )
@@ -103,8 +103,6 @@ public abstract class EditorGuiBase implements ModernCratesGui {
      * After submission, the callback is invoked on the main thread with the entered text.
      */
     protected void requestSignInput(String promptLine, Consumer<String> callback) {
-        player.closeInventory();
-
         Dialog dialog = Dialog.create(factory -> {
             factory.empty()
                 .base(
@@ -123,16 +121,20 @@ public abstract class EditorGuiBase implements ModernCratesGui {
                         ActionButton.builder(Component.text("Submit"))
                             .action(DialogAction.customClick((response, audience) -> {
                                 String text = response.getText("input");
-                                plugin.getScheduling().globalRegionalScheduler().run(() -> {
+                                plugin.getScheduling().entitySpecificScheduler(player).run(() -> {
                                     if (text == null || text.trim().isEmpty()) {
                                         open();
                                     } else {
                                         callback.accept(text.trim());
+                                        save();
                                     }
-                                });
+                                }, null);
                             }, ClickCallback.Options.builder().uses(1).build()))
                             .build(),
                         ActionButton.builder(Component.text("Cancel"))
+                            .action(DialogAction.customClick((response, audience) -> {
+                                plugin.getScheduling().entitySpecificScheduler(player).run(this::open, null);
+                            }, ClickCallback.Options.builder().uses(1).build()))
                             .build()
                     )
                 );
@@ -145,8 +147,6 @@ public abstract class EditorGuiBase implements ModernCratesGui {
      * Opens a dialog for multi-line text input.
      */
     protected void requestSignInputMultiLine(String promptLine, Consumer<String[]> callback) {
-        player.closeInventory();
-
         Dialog dialog = Dialog.create(factory -> {
             factory.empty()
                 .base(
@@ -169,12 +169,16 @@ public abstract class EditorGuiBase implements ModernCratesGui {
                                     String val = response.getText("line" + i);
                                     lines[i] = val != null ? val : "";
                                 }
-                                plugin.getScheduling().globalRegionalScheduler().run(() -> {
+                                plugin.getScheduling().entitySpecificScheduler(player).run(() -> {
                                     callback.accept(lines);
-                                });
+                                    save();
+                                }, null);
                             }, ClickCallback.Options.builder().uses(1).build()))
                             .build(),
                         ActionButton.builder(Component.text("Cancel"))
+                            .action(DialogAction.customClick((response, audience) -> {
+                                plugin.getScheduling().entitySpecificScheduler(player).run(this::open, null);
+                            }, ClickCallback.Options.builder().uses(1).build()))
                             .build()
                     )
                 );

@@ -34,6 +34,11 @@ public class SlotAnimationEditorGui extends EditorGuiBase {
     }
 
     @Override
+    protected void save() {
+        saveAnimation(animation);
+    }
+
+    @Override
     public void open() {
         inventory = Bukkit.createInventory(this, 54,
                 TextUtil.parse("<dark_red><bold>Slot Animation: " + animation.getId()));
@@ -110,8 +115,6 @@ public class SlotAnimationEditorGui extends EditorGuiBase {
         // Bottom
         inventory.setItem(45, ItemBuilder.create("ARROW", "<red><bold>Back",
                 List.of("<gray>Return to animation list")));
-        inventory.setItem(49, ItemBuilder.create("LIME_WOOL", "<green><bold>Save",
-                List.of("<gray>Save animation to file")));
         player.openInventory(inventory);
     }
 
@@ -128,6 +131,7 @@ public class SlotAnimationEditorGui extends EditorGuiBase {
                     int idx = types.indexOf(animation.getTypeId());
                     String newType = types.get((idx + 1) % types.size());
                     animation.setTypeId(newType);
+                    save();
                     AnimationListGui.openAnimationEditor(player, plugin, animation);
                 }
             }
@@ -137,6 +141,7 @@ public class SlotAnimationEditorGui extends EditorGuiBase {
             });
             case 14 -> {
                 adjustInt(animation::getGuiRows, animation::setGuiRows, rightClick, shiftClick, 1, 6);
+                save();
                 open();
             }
             case 16 -> requestSignInput("Fill material", input -> {
@@ -146,12 +151,12 @@ public class SlotAnimationEditorGui extends EditorGuiBase {
                 animation.setGuiFill(fill);
                 open();
             });
-            case 19 -> { adjustInt(animation::getTotalTicks, animation::setTotalTicks, rightClick, shiftClick, 1, 999); open(); }
-            case 20 -> { adjustInt(animation::getStayOpenAfterRewardTicks, animation::setStayOpenAfterRewardTicks, rightClick, shiftClick, 0, 999); open(); }
-            case 21 -> { adjustInt(animation::getStartTickRate, animation::setStartTickRate, rightClick, shiftClick, 1, 100); open(); }
-            case 22 -> { adjustInt(animation::getTickRateModifier, animation::setTickRateModifier, rightClick, shiftClick, 0, 100); open(); }
-            case 23 -> { adjustInt(animation::getColumnStopDelayTicks, animation::setColumnStopDelayTicks, rightClick, shiftClick, 1, 100); open(); }
-            case 24 -> { adjustInt(animation::getRewardWinnerIndex, animation::setRewardWinnerIndex, rightClick, shiftClick, 0, 10); open(); }
+            case 19 -> { adjustInt(animation::getTotalTicks, animation::setTotalTicks, rightClick, shiftClick, 1, 999); save(); open(); }
+            case 20 -> { adjustInt(animation::getStayOpenAfterRewardTicks, animation::setStayOpenAfterRewardTicks, rightClick, shiftClick, 0, 999); save(); open(); }
+            case 21 -> { adjustInt(animation::getStartTickRate, animation::setStartTickRate, rightClick, shiftClick, 1, 100); save(); open(); }
+            case 22 -> { adjustInt(animation::getTickRateModifier, animation::setTickRateModifier, rightClick, shiftClick, 0, 100); save(); open(); }
+            case 23 -> { adjustInt(animation::getColumnStopDelayTicks, animation::setColumnStopDelayTicks, rightClick, shiftClick, 1, 100); save(); open(); }
+            case 24 -> { adjustInt(animation::getRewardWinnerIndex, animation::setRewardWinnerIndex, rightClick, shiftClick, 0, 10); save(); open(); }
             case 25 -> requestSignInput("Match chance %", input -> {
                 try {
                     animation.setMatchChance(Math.max(0.0, Math.min(100.0, Double.parseDouble(input))));
@@ -205,7 +210,6 @@ public class SlotAnimationEditorGui extends EditorGuiBase {
             });
             case 40 -> new AnimationSoundsEditorGui(player, plugin, animation).open();
             case 45 -> new AnimationListGui(player, plugin).open();
-            case 49 -> { saveAnimation(animation); player.sendMessage(TextUtil.parse("<green>Animation saved!")); }
         }
     }
 

@@ -31,6 +31,11 @@ public class ClickAnimationEditorGui extends EditorGuiBase {
     }
 
     @Override
+    protected void save() {
+        saveAnimation(animation);
+    }
+
+    @Override
     public void open() {
         inventory = Bukkit.createInventory(this, 54,
                 TextUtil.parse("<dark_red><bold>Click Animation: " + animation.getId()));
@@ -79,8 +84,6 @@ public class ClickAnimationEditorGui extends EditorGuiBase {
         // Bottom
         inventory.setItem(45, ItemBuilder.create("ARROW", "<red><bold>Back",
                 List.of("<gray>Return to animation list")));
-        inventory.setItem(49, ItemBuilder.create("LIME_WOOL", "<green><bold>Save",
-                List.of("<gray>Save animation to file")));
         player.openInventory(inventory);
     }
 
@@ -97,6 +100,7 @@ public class ClickAnimationEditorGui extends EditorGuiBase {
                     int idx = types.indexOf(animation.getTypeId());
                     String newType = types.get((idx + 1) % types.size());
                     animation.setTypeId(newType);
+                    save();
                     AnimationListGui.openAnimationEditor(player, plugin, animation);
                 }
             }
@@ -110,6 +114,7 @@ public class ClickAnimationEditorGui extends EditorGuiBase {
             });
             case 14 -> {
                 adjustInt(animation::getGuiRows, animation::setGuiRows, rightClick, shiftClick, 1, 6);
+                save();
                 open();
             }
             case 16 -> requestSignInput("Fill material", input -> {
@@ -119,10 +124,10 @@ public class ClickAnimationEditorGui extends EditorGuiBase {
                 animation.setGuiFill(fill);
                 open();
             });
-            case 19 -> { adjustInt(animation::getShuffleAmount, animation::setShuffleAmount, rightClick, shiftClick, 1, 100); open(); }
-            case 20 -> { adjustInt(animation::getShuffleTicks, animation::setShuffleTicks, rightClick, shiftClick, 1, 100); open(); }
-            case 22 -> { adjustInt(animation::getRewardAmount, animation::setRewardAmount, rightClick, shiftClick, 1, 100); open(); }
-            case 24 -> { adjustInt(animation::getShowRevealedItemsFor, animation::setShowRevealedItemsFor, rightClick, shiftClick, 1, 999); open(); }
+            case 19 -> { adjustInt(animation::getShuffleAmount, animation::setShuffleAmount, rightClick, shiftClick, 1, 100); save(); open(); }
+            case 20 -> { adjustInt(animation::getShuffleTicks, animation::setShuffleTicks, rightClick, shiftClick, 1, 100); save(); open(); }
+            case 22 -> { adjustInt(animation::getRewardAmount, animation::setRewardAmount, rightClick, shiftClick, 1, 100); save(); open(); }
+            case 24 -> { adjustInt(animation::getShowRevealedItemsFor, animation::setShowRevealedItemsFor, rightClick, shiftClick, 1, 999); save(); open(); }
             case 25 -> {
                 if (rightClick) {
                     requestSignInput("Hide item name", input -> {
@@ -150,7 +155,6 @@ public class ClickAnimationEditorGui extends EditorGuiBase {
             });
             case 34 -> new AnimationSoundsEditorGui(player, plugin, animation).open();
             case 45 -> new AnimationListGui(player, plugin).open();
-            case 49 -> { saveAnimation(animation); player.sendMessage(TextUtil.parse("<green>Animation saved!")); }
         }
     }
 

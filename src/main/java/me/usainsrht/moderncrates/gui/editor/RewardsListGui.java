@@ -68,6 +68,11 @@ public class RewardsListGui extends EditorGuiBase {
     }
 
     @Override
+    protected void save() {
+        saveCrate(crate);
+    }
+
+    @Override
     public void handleClick(InventoryClickEvent event) {
         int slot = event.getRawSlot();
         boolean rightClick = event.isRightClick();
@@ -85,6 +90,7 @@ public class RewardsListGui extends EditorGuiBase {
             display.setName("<gray>New Reward");
             reward.setDisplay(display);
             crate.getRewards().put(newId, reward);
+            save();
             open();
             return;
         }
@@ -94,6 +100,7 @@ public class RewardsListGui extends EditorGuiBase {
 
         if (rightClick) {
             crate.getRewards().remove(rewardId);
+            save();
             open();
         } else {
             new RewardEditorGui(player, plugin, crate, rewardId).open();

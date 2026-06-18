@@ -73,13 +73,19 @@ public class HologramEditorGui extends EditorGuiBase {
         }
 
         inventory.setItem(45, ItemBuilder.create("ARROW", "<red><bold>Back", List.of("<gray>Return to crate editor")));
-        inventory.setItem(49, ItemBuilder.create("LIME_WOOL", "<green><bold>Save & Refresh", List.of("<gray>Save and update holograms")));
         player.openInventory(inventory);
     }
 
     private void refreshHologram() {
         plugin.getHologramManager().removeHologram(crate.getId());
         plugin.getHologramManager().createHologram(crate);
+        saveCrate(crate);
+    }
+
+    @Override
+    protected void save() {
+        saveCrate(crate);
+        refreshHologram();
     }
 
     @Override
@@ -92,8 +98,8 @@ public class HologramEditorGui extends EditorGuiBase {
         if (slot == 22 && hc == null) {
             hc = new HologramConfig();
             hc.setLines(new ArrayList<>(List.of("<gold><bold>" + crate.getName())));
-            // defaults: offsetY=2.5, seeThrough=true, scale=1.0, billboard=CENTER are set by field initializers
             crate.setHologramConfig(hc);
+            save();
             open();
             return;
         }
@@ -107,6 +113,7 @@ public class HologramEditorGui extends EditorGuiBase {
                     List<String> lines = finalHc.getLines() != null ? new ArrayList<>(finalHc.getLines()) : new ArrayList<>();
                     if (!lines.isEmpty()) lines.remove(lines.size() - 1);
                     finalHc.setLines(lines);
+                    save();
                     open();
                 } else {
                     requestSignInput("Hologram line", input -> {
@@ -136,11 +143,11 @@ public class HologramEditorGui extends EditorGuiBase {
                 if (shiftClick) {
                     float delta = rightClick ? -0.5f : 0.5f;
                     finalHc.setScale(Math.max(0.1f, finalHc.getScale() + delta));
-                    refreshHologram();
+                    save();
                     open();
                 } else if (rightClick) {
                     finalHc.setScale(Math.max(0.1f, finalHc.getScale() - 0.1f));
-                    refreshHologram();
+                    save();
                     open();
                 } else {
                     requestSignInput("Scale (e.g. 1.5)", input -> {
@@ -157,12 +164,12 @@ public class HologramEditorGui extends EditorGuiBase {
                         ? (idx - 1 + BILLBOARD_OPTIONS.size()) % BILLBOARD_OPTIONS.size()
                         : (idx + 1) % BILLBOARD_OPTIONS.size();
                 finalHc.setBillboard(BILLBOARD_OPTIONS.get(newIdx));
-                refreshHologram();
+                save();
                 open();
             }
             case 28 -> {
                 finalHc.setSeeThrough(!finalHc.isSeeThrough());
-                refreshHologram();
+                save();
                 open();
             }
             case 30 -> requestSignInput("Background ARGB int (-1=default)", input -> {
@@ -171,11 +178,6 @@ public class HologramEditorGui extends EditorGuiBase {
                 open();
             });
             case 45 -> new CrateEditorGui(player, plugin, crate).open();
-            case 49 -> {
-                refreshHologram();
-                saveCrate(crate);
-                player.sendMessage(TextUtil.parse("<green>Hologram saved and refreshed!"));
-            }
         }
     }
 }
