@@ -44,7 +44,7 @@ public class RewardsListGui extends EditorGuiBase {
 
             ItemStack item;
             if (reward.getDisplay() != null) {
-                item = ItemBuilder.fromDisplay(reward.getDisplay());
+                item = ItemBuilder.fromDisplay(reward, crate);
             } else {
                 item = new ItemStack(Material.STONE);
             }

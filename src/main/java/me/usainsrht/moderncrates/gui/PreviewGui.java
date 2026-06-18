@@ -130,7 +130,7 @@ public class PreviewGui implements ModernCratesGui {
             if (reservedSlots.contains(slot)) continue;
             Reward reward = rewards.get(startIndex + rewardIdx);
             if (reward.getDisplay() != null) {
-                inventory.setItem(slot, ItemBuilder.fromDisplay(reward.getDisplay()));
+                inventory.setItem(slot, ItemBuilder.fromDisplay(reward, crate));
             }
             rewardIdx++;
         }

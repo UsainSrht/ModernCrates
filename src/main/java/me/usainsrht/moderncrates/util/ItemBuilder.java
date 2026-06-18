@@ -1,5 +1,7 @@
 package me.usainsrht.moderncrates.util;
 
+import me.usainsrht.moderncrates.api.crate.Crate;
+import me.usainsrht.moderncrates.api.reward.Reward;
 import me.usainsrht.moderncrates.api.animation.GuiItemConfig;
 import me.usainsrht.moderncrates.api.reward.RewardDisplay;
 import me.usainsrht.moderncrates.api.reward.RewardItem;
@@ -21,6 +23,30 @@ public final class ItemBuilder {
     private ItemBuilder() {}
 
     public static ItemStack fromDisplay(RewardDisplay display) {
+        return fromDisplay(display, 0.0);
+    }
+
+    public static ItemStack fromDisplay(Reward reward, Crate crate) {
+        if (reward == null) {
+            return new ItemStack(Material.STONE);
+        }
+        RewardDisplay display = reward.getDisplay();
+        if (display == null) {
+            return new ItemStack(Material.STONE);
+        }
+        double chancePercentage = 0.0;
+        if (crate != null) {
+            double totalWeight = crate.getTotalWeight();
+            if (totalWeight > 0) {
+                chancePercentage = (reward.getChance() / totalWeight) * 100.0;
+            }
+        } else {
+            chancePercentage = reward.getChance();
+        }
+        return fromDisplay(display, chancePercentage);
+    }
+
+    public static ItemStack fromDisplay(RewardDisplay display, double chancePercentage) {
         if (display == null || display.getMaterial() == null) {
             return new ItemStack(Material.STONE);
         }
@@ -31,11 +57,18 @@ public final class ItemBuilder {
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return item;
 
+        java.text.DecimalFormatSymbols symbols = new java.text.DecimalFormatSymbols(java.util.Locale.US);
+        java.text.DecimalFormat df = new java.text.DecimalFormat("#.##", symbols);
+        String formattedChance = df.format(chancePercentage);
+
         if (display.getName() != null) {
-            meta.displayName(TextUtil.parse(display.getName()));
+            meta.displayName(TextUtil.parse(display.getName()
+                    .replace("<chance>", formattedChance)
+                    .replace("%chance%", formattedChance)));
         }
         if (display.getLore() != null) {
             meta.lore(display.getLore().stream()
+                    .map(line -> line.replace("<chance>", formattedChance).replace("%chance%", formattedChance))
                     .map(TextUtil::parse)
                     .collect(Collectors.toList()));
         }
@@ -48,6 +81,7 @@ public final class ItemBuilder {
         item.setItemMeta(meta);
         return item;
     }
+
 
     public static ItemStack fromRewardItem(RewardItem rewardItem) {
         if (rewardItem == null || rewardItem.getMaterial() == null) {

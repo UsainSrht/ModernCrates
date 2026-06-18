@@ -841,7 +841,7 @@ public class AdminEditorGui implements ModernCratesGui {
 
             ItemStack item;
             if (reward.getDisplay() != null) {
-                item = ItemBuilder.fromDisplay(reward.getDisplay());
+                item = ItemBuilder.fromDisplay(reward, editingCrate);
             } else {
                 item = new ItemStack(Material.STONE);
             }
@@ -909,7 +909,7 @@ public class AdminEditorGui implements ModernCratesGui {
 
         // Display preview
         if (reward.getDisplay() != null) {
-            inventory.setItem(4, ItemBuilder.fromDisplay(reward.getDisplay()));
+            inventory.setItem(4, ItemBuilder.fromDisplay(reward, editingCrate));
         } else {
             inventory.setItem(4, ItemBuilder.create("STONE", "<gray>No display item", null));
         }

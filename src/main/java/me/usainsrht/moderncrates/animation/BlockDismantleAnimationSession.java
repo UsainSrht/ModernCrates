@@ -281,7 +281,7 @@ public class BlockDismantleAnimationSession implements AnimationSession {
         SoundUtil.play(player, animation.getDismantleRewardSounds());
 
         ItemStack displayItem = selectedReward.getDisplay() != null
-                ? ItemBuilder.fromDisplay(selectedReward.getDisplay())
+                ? ItemBuilder.fromDisplay(selectedReward, crate)
                 : new ItemStack(Material.STONE);
 
         double cx = blockLocation.getBlockX() + 0.5;

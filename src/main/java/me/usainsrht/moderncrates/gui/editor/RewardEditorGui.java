@@ -34,7 +34,7 @@ public class RewardEditorGui extends EditorGuiBase {
 
         // Display preview
         if (reward.getDisplay() != null) {
-            inventory.setItem(4, ItemBuilder.fromDisplay(reward.getDisplay()));
+            inventory.setItem(4, ItemBuilder.fromDisplay(reward, crate));
         } else {
             inventory.setItem(4, ItemBuilder.create("STONE", "<gray>No display item", null));
         }

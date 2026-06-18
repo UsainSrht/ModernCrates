@@ -114,12 +114,16 @@ public class AnimationManager {
     }
 
     private void announceReward(Player player, Crate crate, Reward reward) {
+        ItemStack displayItem = ItemBuilder.fromDisplay(reward, crate);
+        Component rewardDisplayName = displayItem.displayName().hoverEvent(displayItem.asHoverEvent());
+
         // Per-reward custom announcement
         if (reward.getAnnounce() != null) {
             String msg = reward.getAnnounce()
                     .replace("<player>", player.getName())
-                    .replace("<reward_name>", getRewardName(reward));
-            Component comp = TextUtil.parse(msg);
+                    .replace("<reward_name>", "%%REWARD_NAME%%");
+            Component comp = TextUtil.parse(msg)
+                    .replaceText(builder -> builder.matchLiteral("%%REWARD_NAME%%").replacement(rewardDisplayName));
             if (crate.getAnnounceConfig() != null && crate.getAnnounceConfig().isToEveryone()) {
                 Bukkit.getServer().sendMessage(comp);
             } else {
@@ -133,21 +137,15 @@ public class AnimationManager {
             var annConfig = crate.getAnnounceConfig();
             String msg = annConfig.getSingle()
                     .replace("<player>", player.getName())
-                    .replace("<reward_name>", getRewardName(reward));
-            Component comp = TextUtil.parse(msg);
+                    .replace("<reward_name>", "%%REWARD_NAME%%");
+            Component comp = TextUtil.parse(msg)
+                    .replaceText(builder -> builder.matchLiteral("%%REWARD_NAME%%").replacement(rewardDisplayName));
             if (annConfig.isToEveryone()) {
                 Bukkit.getServer().sendMessage(comp);
             } else {
                 player.sendMessage(comp);
             }
         }
-    }
-
-    private String getRewardName(Reward reward) {
-        if (reward.getDisplay() != null && reward.getDisplay().getName() != null) {
-            return reward.getDisplay().getName();
-        }
-        return reward.getId();
     }
 
     public void cancelAll() {

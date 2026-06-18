@@ -72,7 +72,7 @@ rewards:
       lore:
         - "<gray>A powerful diamond sword!"
         - ""
-        - "<yellow>Chance: <gold>5%"
+        - "<yellow>Chance: <gold><chance>%"
       enchantments:
         SHARPNESS: 3
         UNBREAKING: 2
@@ -93,7 +93,7 @@ rewards:
       lore:
         - "<gray>A stack of golden apples"
         - ""
-        - "<yellow>Chance: <gold>15%"
+        - "<yellow>Chance: <gold><chance>%"
     items:
       apples:
         material: "GOLDEN_APPLE"
@@ -107,7 +107,7 @@ rewards:
       lore:
         - "<gray>A full set of iron armor"
         - ""
-        - "<yellow>Chance: <gold>25%"
+        - "<yellow>Chance: <gold><chance>%"
     items:
       helmet:
         material: "IRON_HELMET"
@@ -129,7 +129,7 @@ rewards:
       lore:
         - "<gray>A nice sum of money"
         - ""
-        - "<yellow>Chance: <gold>30%"
+        - "<yellow>Chance: <gold><chance>%"
     commands:
       - "eco give <player> 1000"
   common_reward:
@@ -140,7 +140,7 @@ rewards:
       lore:
         - "<gray>Better luck next time!"
         - ""
-        - "<yellow>Chance: <gold>25%"
+        - "<yellow>Chance: <gold><chance>%"
     items:
       coal:
         material: "COAL"

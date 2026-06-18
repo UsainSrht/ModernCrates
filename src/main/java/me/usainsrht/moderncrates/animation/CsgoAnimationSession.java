@@ -295,7 +295,7 @@ public class CsgoAnimationSession implements AnimationSession, ModernCratesGui {
 
     private ItemStack buildRewardDisplay(Reward reward) {
         if (reward != null && reward.getDisplay() != null) {
-            return ItemBuilder.fromDisplay(reward.getDisplay());
+            return ItemBuilder.fromDisplay(reward, crate);
         }
         return new ItemStack(Material.STONE);
     }

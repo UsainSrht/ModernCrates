@@ -150,7 +150,7 @@ public class ItemRiseAnimationSession implements AnimationSession {
 
         Reward firstReward = cycleRewards.isEmpty() ? selectedReward : cycleRewards.get(0);
         ItemStack displayItem = firstReward.getDisplay() != null
-                ? ItemBuilder.fromDisplay(firstReward.getDisplay())
+                ? ItemBuilder.fromDisplay(firstReward, crate)
                 : new ItemStack(org.bukkit.Material.STONE);
         String displayName = getRewardName(firstReward);
 
@@ -200,7 +200,7 @@ public class ItemRiseAnimationSession implements AnimationSession {
             Reward current = cycleRewards.get(cycleIndex);
 
             if (itemDisplay != null && !itemDisplay.isDead() && current.getDisplay() != null) {
-                itemDisplay.setItemStack(ItemBuilder.fromDisplay(current.getDisplay()));
+                itemDisplay.setItemStack(ItemBuilder.fromDisplay(current, crate));
             }
             if (textDisplay != null && !textDisplay.isDead()) {
                 textDisplay.text(TextUtil.parse(getRewardName(current)));
@@ -249,7 +249,7 @@ public class ItemRiseAnimationSession implements AnimationSession {
     private void settleReward() {
         // Show final reward
         if (itemDisplay != null && !itemDisplay.isDead() && selectedReward.getDisplay() != null) {
-            itemDisplay.setItemStack(ItemBuilder.fromDisplay(selectedReward.getDisplay()));
+            itemDisplay.setItemStack(ItemBuilder.fromDisplay(selectedReward, crate));
         }
         if (textDisplay != null && !textDisplay.isDead()) {
             textDisplay.text(TextUtil.parse(getRewardName(selectedReward)));
@@ -310,7 +310,14 @@ public class ItemRiseAnimationSession implements AnimationSession {
 
     private String getRewardName(Reward reward) {
         if (reward.getDisplay() != null && reward.getDisplay().getName() != null) {
-            return reward.getDisplay().getName();
+            double totalWeight = crate.getTotalWeight();
+            double chancePercentage = totalWeight > 0 ? (reward.getChance() / totalWeight) * 100.0 : 0.0;
+            java.text.DecimalFormatSymbols symbols = new java.text.DecimalFormatSymbols(java.util.Locale.US);
+            java.text.DecimalFormat df = new java.text.DecimalFormat("#.##", symbols);
+            String formattedChance = df.format(chancePercentage);
+            return reward.getDisplay().getName()
+                    .replace("<chance>", formattedChance)
+                    .replace("%chance%", formattedChance);
         }
         return reward.getId();
     }
