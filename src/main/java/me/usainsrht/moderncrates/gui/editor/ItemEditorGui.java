@@ -76,12 +76,21 @@ public class ItemEditorGui extends EditorGuiBase {
 
         CrateItemConfig finalIc = ic;
         switch (slot) {
-            case 11 -> requestSignInput("Item material", input -> {
-                Material m = Material.matchMaterial(input.toUpperCase());
-                if (m != null) finalIc.setMaterial(input.toUpperCase());
-                else player.sendMessage(TextUtil.parse("<red>Invalid material: " + input));
-                open();
-            });
+            case 11 -> {
+                org.bukkit.inventory.ItemStack cursor = event.getCursor();
+                if (cursor != null && cursor.getType() != Material.AIR) {
+                    finalIc.setMaterial(cursor.getType().name());
+                    save();
+                    open();
+                } else {
+                    requestSignInput("Item material", input -> {
+                        Material m = Material.matchMaterial(input.toUpperCase());
+                        if (m != null) finalIc.setMaterial(input.toUpperCase());
+                        else player.sendMessage(TextUtil.parse("<red>Invalid material: " + input));
+                        open();
+                    });
+                }
+            }
             case 13 -> requestSignInput("Display name", input -> {
                 finalIc.setName(input);
                 open();

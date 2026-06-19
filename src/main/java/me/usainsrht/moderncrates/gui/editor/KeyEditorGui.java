@@ -107,12 +107,21 @@ public class KeyEditorGui extends EditorGuiBase {
 
         switch (slot) {
             case 10 -> { kc.setRequired(!kc.isRequired()); save(); open(); }
-            case 12 -> requestSignInput("Key material", input -> {
-                Material m = Material.matchMaterial(input.toUpperCase());
-                if (m != null) kc.setMaterial(input.toUpperCase());
-                else player.sendMessage(TextUtil.parse("<red>Invalid material: " + input));
-                open();
-            });
+            case 12 -> {
+                org.bukkit.inventory.ItemStack cursor = event.getCursor();
+                if (cursor != null && cursor.getType() != Material.AIR) {
+                    kc.setMaterial(cursor.getType().name());
+                    save();
+                    open();
+                } else {
+                    requestSignInput("Key material", input -> {
+                        Material m = Material.matchMaterial(input.toUpperCase());
+                        if (m != null) kc.setMaterial(input.toUpperCase());
+                        else player.sendMessage(TextUtil.parse("<red>Invalid material: " + input));
+                        open();
+                    });
+                }
+            }
             case 14 -> {
                 int delta = rightClick ? -1 : 1;
                 if (shiftClick) delta *= 5;

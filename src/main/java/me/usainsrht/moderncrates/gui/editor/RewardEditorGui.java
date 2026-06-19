@@ -101,10 +101,19 @@ public class RewardEditorGui extends EditorGuiBase {
         if (reward == null) return;
 
         switch (slot) {
-            case 19 -> requestSignInput("Display material", input -> {
-                ensureDisplay(reward).setMaterial(input.toUpperCase());
-                open();
-            });
+            case 19 -> {
+                org.bukkit.inventory.ItemStack cursor = event.getCursor();
+                if (cursor != null && cursor.getType() != org.bukkit.Material.AIR) {
+                    ensureDisplay(reward).setMaterial(cursor.getType().name());
+                    save();
+                    open();
+                } else {
+                    requestSignInput("Display material", input -> {
+                        ensureDisplay(reward).setMaterial(input.toUpperCase());
+                        open();
+                    });
+                }
+            }
             case 20 -> requestSignInput("Display name", input -> {
                 ensureDisplay(reward).setName(input);
                 open();

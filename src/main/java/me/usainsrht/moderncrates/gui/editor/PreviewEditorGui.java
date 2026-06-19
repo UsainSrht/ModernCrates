@@ -93,17 +93,33 @@ public class PreviewEditorGui extends EditorGuiBase {
                 save();
                 open();
             }
-            case 14 -> requestSignInput("Fill material", input -> {
-                if (finalPc.getFill() == null) {
-                    PreviewConfig.GuiItem fill = new PreviewConfig.GuiItem();
-                    fill.setMaterial(input.toUpperCase());
-                    fill.setName(" ");
-                    finalPc.setFill(fill);
+            case 14 -> {
+                org.bukkit.inventory.ItemStack cursor = event.getCursor();
+                if (cursor != null && cursor.getType() != org.bukkit.Material.AIR) {
+                    if (finalPc.getFill() == null) {
+                        PreviewConfig.GuiItem fill = new PreviewConfig.GuiItem();
+                        fill.setMaterial(cursor.getType().name());
+                        fill.setName(" ");
+                        finalPc.setFill(fill);
+                    } else {
+                        finalPc.getFill().setMaterial(cursor.getType().name());
+                    }
+                    save();
+                    open();
                 } else {
-                    finalPc.getFill().setMaterial(input.toUpperCase());
+                    requestSignInput("Fill material", input -> {
+                        if (finalPc.getFill() == null) {
+                            PreviewConfig.GuiItem fill = new PreviewConfig.GuiItem();
+                            fill.setMaterial(input.toUpperCase());
+                            fill.setName(" ");
+                            finalPc.setFill(fill);
+                        } else {
+                            finalPc.getFill().setMaterial(input.toUpperCase());
+                        }
+                        open();
+                    });
                 }
-                open();
-            });
+            }
             case 19 -> editSlotItem("Close Button", finalPc.getCloseButton(), item -> {
                 finalPc.setCloseButton(item);
                 open();

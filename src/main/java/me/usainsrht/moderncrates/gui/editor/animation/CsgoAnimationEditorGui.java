@@ -124,13 +124,25 @@ public class CsgoAnimationEditorGui extends EditorGuiBase {
                 save();
                 open();
             }
-            case 16 -> requestSignInput("Fill material", input -> {
-                GuiItemConfig fill = animation.getGuiFill() != null ? animation.getGuiFill() : new GuiItemConfig();
-                fill.setMaterial(input.toUpperCase());
-                if (fill.getName() == null) fill.setName(" ");
-                animation.setGuiFill(fill);
-                open();
-            });
+            case 16 -> {
+                org.bukkit.inventory.ItemStack cursor = event.getCursor();
+                if (cursor != null && cursor.getType() != org.bukkit.Material.AIR) {
+                    GuiItemConfig fill = animation.getGuiFill() != null ? animation.getGuiFill() : new GuiItemConfig();
+                    fill.setMaterial(cursor.getType().name());
+                    if (fill.getName() == null) fill.setName(" ");
+                    animation.setGuiFill(fill);
+                    save();
+                    open();
+                } else {
+                    requestSignInput("Fill material", input -> {
+                        GuiItemConfig fill = animation.getGuiFill() != null ? animation.getGuiFill() : new GuiItemConfig();
+                        fill.setMaterial(input.toUpperCase());
+                        if (fill.getName() == null) fill.setName(" ");
+                        animation.setGuiFill(fill);
+                        open();
+                    });
+                }
+            }
             case 19 -> { adjustInt(animation::getTotalTicks, animation::setTotalTicks, rightClick, shiftClick, 1, 999); save(); open(); }
             case 20 -> { adjustInt(animation::getStayOpenAfterRewardTicks, animation::setStayOpenAfterRewardTicks, rightClick, shiftClick, 0, 999); save(); open(); }
             case 21 -> { adjustInt(animation::getStartTickRate, animation::setStartTickRate, rightClick, shiftClick, 1, 100); save(); open(); }

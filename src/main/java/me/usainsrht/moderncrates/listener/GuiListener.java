@@ -30,6 +30,14 @@ public class GuiListener implements Listener {
 
         InventoryHolder holder = event.getInventory().getHolder();
         if (holder instanceof ModernCratesGui gui) {
+            if (holder instanceof me.usainsrht.moderncrates.gui.editor.EditorGuiBase) {
+                if (event.getRawSlot() >= event.getInventory().getSize()) {
+                    if (event.isShiftClick()) {
+                        event.setCancelled(true);
+                    }
+                    return;
+                }
+            }
             event.setCancelled(true);
             if (event.getRawSlot() >= 0 && event.getRawSlot() < event.getInventory().getSize()) {
                 gui.handleClick(event);

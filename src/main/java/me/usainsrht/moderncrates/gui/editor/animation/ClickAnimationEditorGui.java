@@ -117,13 +117,25 @@ public class ClickAnimationEditorGui extends EditorGuiBase {
                 save();
                 open();
             }
-            case 16 -> requestSignInput("Fill material", input -> {
-                GuiItemConfig fill = animation.getGuiFill() != null ? animation.getGuiFill() : new GuiItemConfig();
-                fill.setMaterial(input.toUpperCase());
-                if (fill.getName() == null) fill.setName(" ");
-                animation.setGuiFill(fill);
-                open();
-            });
+            case 16 -> {
+                org.bukkit.inventory.ItemStack cursor = event.getCursor();
+                if (cursor != null && cursor.getType() != org.bukkit.Material.AIR) {
+                    GuiItemConfig fill = animation.getGuiFill() != null ? animation.getGuiFill() : new GuiItemConfig();
+                    fill.setMaterial(cursor.getType().name());
+                    if (fill.getName() == null) fill.setName(" ");
+                    animation.setGuiFill(fill);
+                    save();
+                    open();
+                } else {
+                    requestSignInput("Fill material", input -> {
+                        GuiItemConfig fill = animation.getGuiFill() != null ? animation.getGuiFill() : new GuiItemConfig();
+                        fill.setMaterial(input.toUpperCase());
+                        if (fill.getName() == null) fill.setName(" ");
+                        animation.setGuiFill(fill);
+                        open();
+                    });
+                }
+            }
             case 19 -> { adjustInt(animation::getShuffleAmount, animation::setShuffleAmount, rightClick, shiftClick, 1, 100); save(); open(); }
             case 20 -> { adjustInt(animation::getShuffleTicks, animation::setShuffleTicks, rightClick, shiftClick, 1, 100); save(); open(); }
             case 22 -> { adjustInt(animation::getRewardAmount, animation::setRewardAmount, rightClick, shiftClick, 1, 100); save(); open(); }
@@ -137,12 +149,21 @@ public class ClickAnimationEditorGui extends EditorGuiBase {
                         open();
                     });
                 } else {
-                    requestSignInput("Hide item mat", input -> {
+                    org.bukkit.inventory.ItemStack cursor = event.getCursor();
+                    if (cursor != null && cursor.getType() != org.bukkit.Material.AIR) {
                         GuiItemConfig hi = animation.getRewardHideItem() != null ? animation.getRewardHideItem() : new GuiItemConfig();
-                        hi.setMaterial(input.toUpperCase());
+                        hi.setMaterial(cursor.getType().name());
                         animation.setRewardHideItem(hi);
+                        save();
                         open();
-                    });
+                    } else {
+                        requestSignInput("Hide item mat", input -> {
+                            GuiItemConfig hi = animation.getRewardHideItem() != null ? animation.getRewardHideItem() : new GuiItemConfig();
+                            hi.setMaterial(input.toUpperCase());
+                            animation.setRewardHideItem(hi);
+                            open();
+                        });
+                    }
                 }
             }
             case 28 -> requestSignInput("Reward slots", input -> {
