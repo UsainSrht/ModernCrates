@@ -66,10 +66,15 @@ public class HologramEditorGui extends EditorGuiBase {
                     "<yellow><bold>See-Through: <white>" + (hc.isSeeThrough() ? "Yes" : "No"),
                     List.of("<gray>Click to toggle")));
 
+            // Text shadow
+            inventory.setItem(29, ItemBuilder.create(hc.isShadowed() ? "GLOW_INK_SAC" : "INK_SAC",
+                    "<yellow><bold>Text Shadow: <white>" + (hc.isShadowed() ? "Yes" : "No"),
+                    List.of("<gray>Click to toggle")));
+
             // Background color
             inventory.setItem(30, ItemBuilder.create("CYAN_DYE",
-                    "<yellow><bold>Background Color: <white>" + (hc.getBackgroundColor() == -1 ? "default" : "0x" + Integer.toHexString(hc.getBackgroundColor()).toUpperCase()),
-                    List.of("<gray>Click to set ARGB int (-1 = vanilla default)")));
+                    "<yellow><bold>Background Color: <white>" + (hc.getBackgroundColor() == -1 ? "default (transparent)" : "0x" + Integer.toHexString(hc.getBackgroundColor()).toUpperCase()),
+                    List.of("<gray>Click to set ARGB int (-1 = default transparent)")));
         }
 
         inventory.setItem(45, ItemBuilder.create("ARROW", "<red><bold>Back", List.of("<gray>Return to crate editor")));
@@ -169,6 +174,11 @@ public class HologramEditorGui extends EditorGuiBase {
             }
             case 28 -> {
                 finalHc.setSeeThrough(!finalHc.isSeeThrough());
+                save();
+                open();
+            }
+            case 29 -> {
+                finalHc.setShadowed(!finalHc.isShadowed());
                 save();
                 open();
             }

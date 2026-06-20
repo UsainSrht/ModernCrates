@@ -16,6 +16,7 @@ public class HologramConfig {
     private float scale = 1.0f;
     private String billboard = "CENTER";
     private boolean seeThrough = true;
+    private boolean shadowed = true;
     /** ARGB background color. -1 means use the default (vanilla semi-transparent black). */
     private int backgroundColor = -1;
 
@@ -81,5 +82,13 @@ public class HologramConfig {
 
     public void setBackgroundColor(int backgroundColor) {
         this.backgroundColor = backgroundColor;
+    }
+
+    public boolean isShadowed() {
+        return shadowed;
+    }
+
+    public void setShadowed(boolean shadowed) {
+        this.shadowed = shadowed;
     }
 }

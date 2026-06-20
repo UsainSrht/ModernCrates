@@ -32,7 +32,7 @@ public class PluginConfig {
         yaml = YamlConfiguration.loadConfiguration(file);
 
         prefix = yaml.getString("prefix", "<gold>MC <gray>> ");
-        hologramSystem = yaml.getString("hologram-system", "VANILLA");
+        hologramSystem = yaml.getString("hologram-system", "FANCY_HOLOGRAMS");
         giveFullInventoryDrop = yaml.getBoolean("give-full-inventory-drop", true);
         allowShiftLeftClickRemove = yaml.getBoolean("allow-shift-left-click-remove", true);
 
@@ -90,7 +90,7 @@ public class PluginConfig {
             file.getParentFile().mkdirs();
             yaml = new YamlConfiguration();
             prefix = "<gold>MC <dark_gray>> ";
-            hologramSystem = "VANILLA";
+            hologramSystem = "FANCY_HOLOGRAMS";
             giveFullInventoryDrop = true;
             allowShiftLeftClickRemove = true;
             messages = Map.of(

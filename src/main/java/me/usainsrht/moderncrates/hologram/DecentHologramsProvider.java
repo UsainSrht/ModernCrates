@@ -36,7 +36,7 @@ public class DecentHologramsProvider implements HologramProvider {
         }
 
         String name = PREFIX + crateId;
-        Hologram hologram = DHAPI.createHologram(name, holoLoc, legacyLines);
+        Hologram hologram = DHAPI.createHologram(name, holoLoc, false, legacyLines);
         holograms.put(crateId, hologram);
     }
 

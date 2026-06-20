@@ -4,7 +4,10 @@ import de.oliver.fancyholograms.api.FancyHologramsPlugin;
 import de.oliver.fancyholograms.api.data.TextHologramData;
 import de.oliver.fancyholograms.api.hologram.Hologram;
 import me.usainsrht.moderncrates.api.crate.HologramConfig;
+import org.bukkit.Color;
 import org.bukkit.Location;
+import org.bukkit.entity.Display;
+import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +39,36 @@ public class FancyHologramsProvider implements HologramProvider {
             lines.addAll(config.getLines());
         }
         data.setText(lines);
+        
+        // Disable persistence to prevent saving to FancyHolograms' database/config
+        data.setPersistent(false);
+
+        // Apply visual properties
+        data.setSeeThrough(config.isSeeThrough());
+        data.setTextShadow(config.isShadowed());
+
+        float scale = config.getScale() <= 0 ? 1.0f : config.getScale();
+        data.setScale(new Vector3f(scale, scale, scale));
+
+        Display.Billboard billboard;
+        try {
+            billboard = Display.Billboard.valueOf(
+                    config.getBillboard() != null ? config.getBillboard().toUpperCase() : "CENTER");
+        } catch (IllegalArgumentException e) {
+            billboard = Display.Billboard.CENTER;
+        }
+        data.setBillboard(billboard);
+
+        int bgColor = config.getBackgroundColor();
+        if (bgColor == -1) {
+            data.setBackground(Color.fromARGB(0, 0, 0, 0)); // Transparent by default
+        } else {
+            data.setBackground(Color.fromARGB(
+                    (bgColor >> 24) & 0xFF,
+                    (bgColor >> 16) & 0xFF,
+                    (bgColor >> 8) & 0xFF,
+                    bgColor & 0xFF));
+        }
 
         var manager = FancyHologramsPlugin.get().getHologramManager();
         Hologram hologram = manager.create(data);

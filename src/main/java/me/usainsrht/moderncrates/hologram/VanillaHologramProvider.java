@@ -70,9 +70,11 @@ public class VanillaHologramProvider implements HologramProvider {
                     d.text(TextUtil.parse(line));
                     d.setBillboard(finalBillboard);
                     d.setSeeThrough(seeThrough);
+                    d.setShadowed(config.isShadowed());
                     d.setPersistent(false);
                     if (bgColor == -1) {
-                        d.setDefaultBackground(true);
+                        d.setDefaultBackground(false);
+                        d.setBackgroundColor(Color.fromARGB(0, 0, 0, 0));
                     } else {
                         d.setDefaultBackground(false);
                         d.setBackgroundColor(Color.fromARGB(

@@ -133,6 +133,7 @@ public class CrateConfigParser {
             holoConfig.setScale((float) holoSection.getDouble("scale", 1.0));
             holoConfig.setBillboard(holoSection.getString("billboard", "CENTER"));
             holoConfig.setSeeThrough(holoSection.getBoolean("see_through", true));
+            holoConfig.setShadowed(holoSection.getBoolean("shadowed", true));
             holoConfig.setBackgroundColor(holoSection.getInt("background_color", -1));
             crate.setHologramConfig(holoConfig);
         }
@@ -342,6 +343,7 @@ public class CrateConfigParser {
             yaml.set("hologram.scale", (double) holo.getScale());
             yaml.set("hologram.billboard", holo.getBillboard());
             yaml.set("hologram.see_through", holo.isSeeThrough());
+            yaml.set("hologram.shadowed", holo.isShadowed());
             yaml.set("hologram.background_color", holo.getBackgroundColor());
         }
 
