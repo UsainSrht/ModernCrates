@@ -37,6 +37,12 @@ public class ScratchcardAnimationSession implements AnimationSession, ModernCrat
     private ScheduledTask shuffleTask;
     private final AtomicBoolean finished = new AtomicBoolean(false);
     private final AtomicBoolean cancelled = new AtomicBoolean(false);
+    private final AtomicBoolean transitioning = new AtomicBoolean(false);
+
+    @Override
+    public boolean isTransitioning() {
+        return transitioning.get();
+    }
 
     @Override
     public boolean isNotCloseable() { return animation.isNotCloseable(); }
@@ -136,7 +142,12 @@ public class ScratchcardAnimationSession implements AnimationSession, ModernCrat
 
         SoundUtil.play(player, animation.getHideSounds());
         inventory = newInv;
-        player.openInventory(inventory);
+        transitioning.set(true);
+        try {
+            player.openInventory(inventory);
+        } finally {
+            transitioning.set(false);
+        }
     }
 
     private void handleScratch(int slot) {
@@ -162,6 +173,10 @@ public class ScratchcardAnimationSession implements AnimationSession, ModernCrat
     }
 
     private void evaluateResult() {
+        evaluateResult(true);
+    }
+
+    private void evaluateResult(boolean openResultGui) {
         phase = Phase.DONE;
 
         // Count reward occurrences among revealed slots
@@ -196,24 +211,33 @@ public class ScratchcardAnimationSession implements AnimationSession, ModernCrat
             SoundUtil.play(player, animation.getLoseSounds());
         }
 
-        // Update title to show result
-        String resultTitle = won
-                ? (animation.getWinTitle() != null ? animation.getWinTitle() : "<green><bold>YOU WIN!")
-                : (animation.getLoseTitle() != null ? animation.getLoseTitle() : "<red><bold>Better luck next time!");
+        if (openResultGui) {
+            // Update title to show result
+            String resultTitle = won
+                    ? (animation.getWinTitle() != null ? animation.getWinTitle() : "<green><bold>YOU WIN!")
+                    : (animation.getLoseTitle() != null ? animation.getLoseTitle() : "<red><bold>Better luck next time!");
 
-        Inventory newInv = Bukkit.createInventory(this, animation.getGuiRows() * 9, TextUtil.parse(resultTitle));
-        for (int i = 0; i < inventory.getSize(); i++) {
-            newInv.setItem(i, inventory.getItem(i));
+            Inventory newInv = Bukkit.createInventory(this, animation.getGuiRows() * 9, TextUtil.parse(resultTitle));
+            for (int i = 0; i < inventory.getSize(); i++) {
+                newInv.setItem(i, inventory.getItem(i));
+            }
+            inventory = newInv;
+            transitioning.set(true);
+            try {
+                player.openInventory(inventory);
+            } finally {
+                transitioning.set(false);
+            }
+
+            // Auto-close after delay
+            type.getScheduler().entitySpecificScheduler(player)
+                    .runDelayed(() -> {
+                        finished.set(true);
+                        player.closeInventory();
+                    }, null, Math.max(1, animation.getShowRevealedItemsFor()));
+        } else {
+            finished.set(true);
         }
-        inventory = newInv;
-        player.openInventory(inventory);
-
-        // Auto-close after delay
-        type.getScheduler().entitySpecificScheduler(player)
-                .runDelayed(() -> {
-                    finished.set(true);
-                    player.closeInventory();
-                }, null, Math.max(1, animation.getShowRevealedItemsFor()));
     }
 
     private void updateTitle() {
@@ -225,7 +249,12 @@ public class ScratchcardAnimationSession implements AnimationSession, ModernCrat
             newInv.setItem(i, inventory.getItem(i));
         }
         inventory = newInv;
-        player.openInventory(inventory);
+        transitioning.set(true);
+        try {
+            player.openInventory(inventory);
+        } finally {
+            transitioning.set(false);
+        }
     }
 
     private void fillBackground(Inventory inv) {
@@ -265,7 +294,16 @@ public class ScratchcardAnimationSession implements AnimationSession, ModernCrat
         if (event.getReason() == InventoryCloseEvent.Reason.OPEN_NEW) return;
         if (!finished.get()) {
             cleanup();
-            finished.set(true);
+            if (scratchesRemaining > 0) {
+                List<Integer> unrevealedRewardSlots = new ArrayList<>(slotRewardMap.keySet());
+                unrevealedRewardSlots.removeAll(revealedSlots);
+                Collections.shuffle(unrevealedRewardSlots);
+                for (int i = 0; i < scratchesRemaining && i < unrevealedRewardSlots.size(); i++) {
+                    revealedSlots.add(unrevealedRewardSlots.get(i));
+                }
+                scratchesRemaining = 0;
+            }
+            evaluateResult(false);
         }
     }
 

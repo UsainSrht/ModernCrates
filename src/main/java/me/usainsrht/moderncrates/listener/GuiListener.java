@@ -56,7 +56,7 @@ public class GuiListener implements Listener {
 
         // Handle animation session close
         if (holder instanceof AnimationSession session) {
-            if (event.getReason() == InventoryCloseEvent.Reason.OPEN_NEW) {
+            if (event.getReason() == InventoryCloseEvent.Reason.OPEN_NEW || session.isTransitioning()) {
                 return; // Session is transitioning (e.g. click animation title update)
             }
 

@@ -36,6 +36,12 @@ public class ClickAnimationSession implements AnimationSession, ModernCratesGui 
     private ScheduledTask shuffleTask;
     private final AtomicBoolean finished = new AtomicBoolean(false);
     private final AtomicBoolean cancelled = new AtomicBoolean(false);
+    private final AtomicBoolean transitioning = new AtomicBoolean(false);
+
+    @Override
+    public boolean isTransitioning() {
+        return transitioning.get();
+    }
 
     @Override
     public boolean isNotCloseable() { return animation.isNotCloseable(); }
@@ -147,7 +153,12 @@ public class ClickAnimationSession implements AnimationSession, ModernCratesGui 
 
         SoundUtil.play(player, animation.getHideSounds());
         inventory = newInv;
-        player.openInventory(inventory);
+        transitioning.set(true);
+        try {
+            player.openInventory(inventory);
+        } finally {
+            transitioning.set(false);
+        }
     }
 
     /**
@@ -196,7 +207,12 @@ public class ClickAnimationSession implements AnimationSession, ModernCratesGui 
             newInv.setItem(i, inventory.getItem(i));
         }
         inventory = newInv;
-        player.openInventory(inventory);
+        transitioning.set(true);
+        try {
+            player.openInventory(inventory);
+        } finally {
+            transitioning.set(false);
+        }
     }
 
     private void fillBackground() {
@@ -244,6 +260,14 @@ public class ClickAnimationSession implements AnimationSession, ModernCratesGui 
         return fallbackReward;
     }
 
+    @Override
+    public List<Reward> getSelectedRewards() {
+        if (!revealedSlots.isEmpty()) {
+            return getRevealedRewards();
+        }
+        return fallbackReward != null ? List.of(fallbackReward) : List.of();
+    }
+
     /**
      * Gets all revealed rewards (click type can have multiple).
      */
@@ -264,6 +288,15 @@ public class ClickAnimationSession implements AnimationSession, ModernCratesGui 
             cleanup();
             if (revealedSlots.isEmpty()) {
                 fallbackReward = RewardSelector.selectWeighted(crate);
+            } else if (clicksRemaining > 0) {
+                // Auto-reveal the remaining clicks randomly
+                List<Integer> unrevealedRewardSlots = new ArrayList<>(slotRewardMap.keySet());
+                unrevealedRewardSlots.removeAll(revealedSlots);
+                Collections.shuffle(unrevealedRewardSlots);
+                for (int i = 0; i < clicksRemaining && i < unrevealedRewardSlots.size(); i++) {
+                    revealedSlots.add(unrevealedRewardSlots.get(i));
+                }
+                clicksRemaining = 0;
             }
             finished.set(true);
         }

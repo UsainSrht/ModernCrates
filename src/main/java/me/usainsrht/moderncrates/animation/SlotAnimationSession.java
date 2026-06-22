@@ -486,7 +486,10 @@ public class SlotAnimationSession implements AnimationSession, ModernCratesGui {
         if (!finished.get()) {
             cancelAllTasks();
             if (selectedReward == null) {
-                selectedReward = RewardSelector.selectWeighted(crate);
+                selectedReward = willMatch ? matchReward : RewardSelector.selectWeighted(crate);
+                if (selectedReward == null) {
+                    selectedReward = RewardSelector.selectWeighted(crate);
+                }
             }
             SoundUtil.play(player, animation.getRewardSounds());
             finished.set(true);

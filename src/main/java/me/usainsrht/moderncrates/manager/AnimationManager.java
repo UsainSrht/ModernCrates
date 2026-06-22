@@ -72,9 +72,11 @@ public class AnimationManager {
         Crate actualCrate = crate != null ? crate : sessionCrate;
 
         // Grant rewards
-        Reward reward = session.getSelectedReward();
-        if (reward != null && actualCrate != null) {
-            grantReward(player, actualCrate, reward);
+        List<Reward> rewards = session.getSelectedRewards();
+        if (rewards != null && !rewards.isEmpty() && actualCrate != null) {
+            for (Reward reward : rewards) {
+                grantReward(player, actualCrate, reward);
+            }
         }
     }
 

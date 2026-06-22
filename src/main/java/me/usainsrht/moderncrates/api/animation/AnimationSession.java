@@ -31,6 +31,24 @@ public interface AnimationSession {
     Reward getSelectedReward();
 
     /**
+     * Gets all rewards selected by this animation.
+     * For animations that select a single reward, this returns a list containing that reward.
+     * For animations that support multiple rewards (like the click type), this returns all of them.
+     */
+    default java.util.List<Reward> getSelectedRewards() {
+        Reward single = getSelectedReward();
+        return single != null ? java.util.List.of(single) : java.util.List.of();
+    }
+
+    /**
+     * Returns true if the session is currently transitioning inventories (e.g. updating title).
+     * Used to prevent closing/ending the session during transitions.
+     */
+    default boolean isTransitioning() {
+        return false;
+    }
+
+    /**
      * Returns true when the player should not be able to close this GUI manually.
      * GUI-based sessions (CSGO, click, etc.) check the animation's not_closeable flag.
      */
