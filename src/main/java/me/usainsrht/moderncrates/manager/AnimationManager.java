@@ -77,6 +77,7 @@ public class AnimationManager {
             for (Reward reward : rewards) {
                 grantReward(player, actualCrate, reward);
             }
+            announceRewards(player, actualCrate, rewards);
         }
     }
 
@@ -110,9 +111,6 @@ public class AnimationManager {
                         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), parsed));
             }
         }
-
-        // Announce
-        announceReward(player, crate, reward);
     }
 
     private void announceReward(Player player, Crate crate, Reward reward) {
@@ -146,6 +144,74 @@ public class AnimationManager {
                 Bukkit.getServer().sendMessage(comp);
             } else {
                 player.sendMessage(comp);
+            }
+        }
+    }
+
+    private void announceRewards(Player player, Crate crate, List<Reward> rewards) {
+        if (crate.getAnnounceConfig() == null) return;
+        var annConfig = crate.getAnnounceConfig();
+
+        if (rewards.size() == 1) {
+            announceReward(player, crate, rewards.get(0));
+            return;
+        }
+
+        // Fallback to single announcements if multiple is not configured
+        String multipleHeader = annConfig.getMultiple();
+        if (multipleHeader == null || multipleHeader.isEmpty()) {
+            for (Reward reward : rewards) {
+                announceReward(player, crate, reward);
+            }
+            return;
+        }
+
+        // Send custom announcements for any rewards that have custom overrides
+        for (Reward reward : rewards) {
+            if (reward.getAnnounce() != null) {
+                ItemStack displayItem = ItemBuilder.fromDisplay(reward, crate);
+                Component rewardDisplayName = displayItem.displayName().hoverEvent(displayItem.asHoverEvent());
+                String msg = reward.getAnnounce()
+                        .replace("<player>", player.getName())
+                        .replace("<reward_name>", "%%REWARD_NAME%%");
+                Component comp = TextUtil.parse(msg)
+                        .replaceText(builder -> builder.matchLiteral("%%REWARD_NAME%%").replacement(rewardDisplayName));
+                if (annConfig.isToEveryone()) {
+                    Bukkit.getServer().sendMessage(comp);
+                } else {
+                    player.sendMessage(comp);
+                }
+            }
+        }
+
+        // Send the multiple rewards announcement
+        String headerMsg = multipleHeader.replace("<player>", player.getName());
+        Component headerComp = TextUtil.parse(headerMsg);
+
+        List<Component> messageLines = new ArrayList<>();
+        messageLines.add(headerComp);
+
+        String multipleItemFormat = annConfig.getMultipleItem();
+        if (multipleItemFormat != null && !multipleItemFormat.isEmpty()) {
+            for (Reward reward : rewards) {
+                ItemStack displayItem = ItemBuilder.fromDisplay(reward, crate);
+                Component rewardDisplayName = displayItem.displayName().hoverEvent(displayItem.asHoverEvent());
+                String itemMsg = multipleItemFormat
+                        .replace("<player>", player.getName())
+                        .replace("<reward_name>", "%%REWARD_NAME%%");
+                Component itemComp = TextUtil.parse(itemMsg)
+                        .replaceText(builder -> builder.matchLiteral("%%REWARD_NAME%%").replacement(rewardDisplayName));
+                messageLines.add(itemComp);
+            }
+        }
+
+        if (annConfig.isToEveryone()) {
+            for (Component line : messageLines) {
+                Bukkit.getServer().sendMessage(line);
+            }
+        } else {
+            for (Component line : messageLines) {
+                player.sendMessage(line);
             }
         }
     }
