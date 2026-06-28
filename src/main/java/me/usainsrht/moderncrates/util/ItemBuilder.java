@@ -75,8 +75,15 @@ public final class ItemBuilder {
         if (display.getEnchantments() != null) {
             applyEnchantments(meta, display.getEnchantments());
         }
+        if (display.getStoredEnchantments() != null) {
+            applyStoredEnchantments(meta, display.getStoredEnchantments());
+        }
         if (display.getItemFlags() != null) {
             applyItemFlags(meta, display.getItemFlags());
+        }
+        if (display.isHideEnchantments()) {
+            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+            meta.addItemFlags(ItemFlag.HIDE_STORED_ENCHANTS);
         }
         meta.setHideTooltip(display.isHideTooltip());
         item.setItemMeta(meta);
@@ -106,8 +113,15 @@ public final class ItemBuilder {
         if (rewardItem.getEnchantments() != null) {
             applyEnchantments(meta, rewardItem.getEnchantments());
         }
+        if (rewardItem.getStoredEnchantments() != null) {
+            applyStoredEnchantments(meta, rewardItem.getStoredEnchantments());
+        }
         if (rewardItem.getItemFlags() != null) {
             applyItemFlags(meta, rewardItem.getItemFlags());
+        }
+        if (rewardItem.isHideEnchantments()) {
+            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+            meta.addItemFlags(ItemFlag.HIDE_STORED_ENCHANTS);
         }
         meta.setHideTooltip(rewardItem.isHideTooltip());
         item.setItemMeta(meta);
@@ -205,7 +219,23 @@ public final class ItemBuilder {
         for (var entry : enchantments.entrySet()) {
             Enchantment ench = Enchantment.getByName(entry.getKey().toUpperCase());
             if (ench != null) {
-                meta.addEnchant(ench, entry.getValue(), true);
+                if (meta instanceof org.bukkit.inventory.meta.EnchantmentStorageMeta bookMeta) {
+                    bookMeta.addStoredEnchant(ench, entry.getValue(), true);
+                } else {
+                    meta.addEnchant(ench, entry.getValue(), true);
+                }
+            }
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    private static void applyStoredEnchantments(ItemMeta meta, Map<String, Integer> storedEnchantments) {
+        if (meta instanceof org.bukkit.inventory.meta.EnchantmentStorageMeta bookMeta) {
+            for (var entry : storedEnchantments.entrySet()) {
+                Enchantment ench = Enchantment.getByName(entry.getKey().toUpperCase());
+                if (ench != null) {
+                    bookMeta.addStoredEnchant(ench, entry.getValue(), true);
+                }
             }
         }
     }

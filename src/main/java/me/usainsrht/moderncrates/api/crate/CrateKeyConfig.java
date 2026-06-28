@@ -83,4 +83,14 @@ public class CrateKeyConfig {
     public void setHideTooltip(boolean hideTooltip) {
         this.hideTooltip = hideTooltip;
     }
+
+    private Map<String, Integer> storedEnchantments;
+
+    public Map<String, Integer> getStoredEnchantments() {
+        return storedEnchantments;
+    }
+
+    public void setStoredEnchantments(Map<String, Integer> storedEnchantments) {
+        this.storedEnchantments = storedEnchantments;
+    }
 }

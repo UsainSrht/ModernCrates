@@ -75,6 +75,19 @@ public class CrateConfigParser {
                 keyConfig.setEnchantments(enchants);
             }
 
+            // Stored Enchantments
+            ConfigurationSection storedEnchSection = keySection.getConfigurationSection("stored_enchantments");
+            if (storedEnchSection == null) {
+                storedEnchSection = keySection.getConfigurationSection("stored-enchantments");
+            }
+            if (storedEnchSection != null) {
+                Map<String, Integer> storedEnchants = new LinkedHashMap<>();
+                for (String key : storedEnchSection.getKeys(false)) {
+                    storedEnchants.put(key, storedEnchSection.getInt(key));
+                }
+                keyConfig.setStoredEnchantments(storedEnchants);
+            }
+
             keyConfig.setItemFlags(keySection.getStringList("item_flags"));
             keyConfig.setHideTooltip(keySection.getBoolean("hide-tooltip", keySection.getBoolean("hide_tooltip", false)));
             crate.setKeyConfig(keyConfig);
@@ -249,8 +262,21 @@ public class CrateConfigParser {
                     }
                     display.setEnchantments(enchants);
                 }
+
+                ConfigurationSection storedEnchSection = displaySection.getConfigurationSection("stored_enchantments");
+                if (storedEnchSection == null) {
+                    storedEnchSection = displaySection.getConfigurationSection("stored-enchantments");
+                }
+                if (storedEnchSection != null) {
+                    Map<String, Integer> storedEnchants = new LinkedHashMap<>();
+                    for (String ek : storedEnchSection.getKeys(false)) {
+                        storedEnchants.put(ek, storedEnchSection.getInt(ek));
+                    }
+                    display.setStoredEnchantments(storedEnchants);
+                }
                 display.setItemFlags(displaySection.getStringList("item_flags"));
                 display.setHideTooltip(displaySection.getBoolean("hide-tooltip", displaySection.getBoolean("hide_tooltip", false)));
+                display.setHideEnchantments(displaySection.getBoolean("hide-enchantments", displaySection.getBoolean("hide_enchantments", false)));
                 reward.setDisplay(display);
             }
 
@@ -275,8 +301,21 @@ public class CrateConfigParser {
                             }
                             rewardItem.setEnchantments(enchants);
                         }
+
+                        ConfigurationSection riStoredEnch = itemSection.getConfigurationSection("stored_enchantments");
+                        if (riStoredEnch == null) {
+                            riStoredEnch = itemSection.getConfigurationSection("stored-enchantments");
+                        }
+                        if (riStoredEnch != null) {
+                            Map<String, Integer> storedEnchants = new LinkedHashMap<>();
+                            for (String ek : riStoredEnch.getKeys(false)) {
+                                storedEnchants.put(ek, riStoredEnch.getInt(ek));
+                            }
+                            rewardItem.setStoredEnchantments(storedEnchants);
+                        }
                         rewardItem.setItemFlags(itemSection.getStringList("item_flags"));
                         rewardItem.setHideTooltip(itemSection.getBoolean("hide-tooltip", itemSection.getBoolean("hide_tooltip", false)));
+                        rewardItem.setHideEnchantments(itemSection.getBoolean("hide-enchantments", itemSection.getBoolean("hide_enchantments", false)));
                         items.put(itemKey, rewardItem);
                     }
                 }
@@ -310,6 +349,11 @@ public class CrateConfigParser {
             if (key.getEnchantments() != null) {
                 for (var e : key.getEnchantments().entrySet()) {
                     yaml.set("key.enchantments." + e.getKey(), e.getValue());
+                }
+            }
+            if (key.getStoredEnchantments() != null) {
+                for (var e : key.getStoredEnchantments().entrySet()) {
+                    yaml.set("key.stored_enchantments." + e.getKey(), e.getValue());
                 }
             }
             if (key.getItemFlags() != null) yaml.set("key.item_flags", key.getItemFlags());
@@ -408,9 +452,15 @@ public class CrateConfigParser {
                 if (d.getName() != null) yaml.set(rewardKey + ".display.name", d.getName());
                 if (d.getLore() != null && !d.getLore().isEmpty()) yaml.set(rewardKey + ".display.lore", d.getLore());
                 yaml.set(rewardKey + ".display.hide-tooltip", d.isHideTooltip());
+                yaml.set(rewardKey + ".display.hide-enchantments", d.isHideEnchantments());
                 if (d.getEnchantments() != null) {
                     for (var e : d.getEnchantments().entrySet()) {
                         yaml.set(rewardKey + ".display.enchantments." + e.getKey(), e.getValue());
+                    }
+                }
+                if (d.getStoredEnchantments() != null) {
+                    for (var e : d.getStoredEnchantments().entrySet()) {
+                        yaml.set(rewardKey + ".display.stored_enchantments." + e.getKey(), e.getValue());
                     }
                 }
             }
@@ -424,6 +474,20 @@ public class CrateConfigParser {
                     if (ri.getName() != null) yaml.set(itemKey + ".name", ri.getName());
                     if (ri.getLore() != null) yaml.set(itemKey + ".lore", ri.getLore());
                     yaml.set(itemKey + ".hide-tooltip", ri.isHideTooltip());
+                    yaml.set(itemKey + ".hide-enchantments", ri.isHideEnchantments());
+                    if (ri.getEnchantments() != null) {
+                        for (var e : ri.getEnchantments().entrySet()) {
+                            yaml.set(itemKey + ".enchantments." + e.getKey(), e.getValue());
+                        }
+                    }
+                    if (ri.getStoredEnchantments() != null) {
+                        for (var e : ri.getStoredEnchantments().entrySet()) {
+                            yaml.set(itemKey + ".stored_enchantments." + e.getKey(), e.getValue());
+                        }
+                    }
+                    if (ri.getItemFlags() != null && !ri.getItemFlags().isEmpty()) {
+                        yaml.set(itemKey + ".item_flags", ri.getItemFlags());
+                    }
                 }
             }
 

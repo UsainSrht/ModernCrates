@@ -72,4 +72,24 @@ public class RewardDisplay {
     public void setHideTooltip(boolean hideTooltip) {
         this.hideTooltip = hideTooltip;
     }
+
+    private boolean hideEnchantments;
+
+    public boolean isHideEnchantments() {
+        return hideEnchantments;
+    }
+
+    public void setHideEnchantments(boolean hideEnchantments) {
+        this.hideEnchantments = hideEnchantments;
+    }
+
+    private java.util.Map<String, Integer> storedEnchantments;
+
+    public java.util.Map<String, Integer> getStoredEnchantments() {
+        return storedEnchantments;
+    }
+
+    public void setStoredEnchantments(java.util.Map<String, Integer> storedEnchantments) {
+        this.storedEnchantments = storedEnchantments;
+    }
 }

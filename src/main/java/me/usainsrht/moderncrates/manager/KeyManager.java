@@ -44,7 +44,21 @@ public class KeyManager {
             for (var entry : config.getEnchantments().entrySet()) {
                 Enchantment ench = Enchantment.getByName(entry.getKey().toUpperCase());
                 if (ench != null) {
-                    meta.addEnchant(ench, entry.getValue(), true);
+                    if (meta instanceof org.bukkit.inventory.meta.EnchantmentStorageMeta bookMeta) {
+                        bookMeta.addStoredEnchant(ench, entry.getValue(), true);
+                    } else {
+                        meta.addEnchant(ench, entry.getValue(), true);
+                    }
+                }
+            }
+        }
+        if (config.getStoredEnchantments() != null) {
+            if (meta instanceof org.bukkit.inventory.meta.EnchantmentStorageMeta bookMeta) {
+                for (var entry : config.getStoredEnchantments().entrySet()) {
+                    Enchantment ench = Enchantment.getByName(entry.getKey().toUpperCase());
+                    if (ench != null) {
+                        bookMeta.addStoredEnchant(ench, entry.getValue(), true);
+                    }
                 }
             }
         }
