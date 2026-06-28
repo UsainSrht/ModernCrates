@@ -19,6 +19,9 @@ import org.bukkit.entity.BlockDisplay;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.TextDisplay;
+import net.kyori.adventure.text.Component;
+import org.bukkit.Color;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Transformation;
 import org.joml.AxisAngle4f;
@@ -84,6 +87,7 @@ public class BlockDismantleAnimationSession implements AnimationSession {
     /** 0=bottom, 1=top, 2=north, 3=south, 4=west, 5=east */
     private final List<BlockDisplay> faceDisplays   = new ArrayList<>();
     private final List<ItemDisplay>  rewardDisplays = new ArrayList<>();
+    private final List<TextDisplay>  rewardTextDisplays = new ArrayList<>();
 
     private ScheduledTask dismantleTask;
     private ScheduledTask topFallTask;
@@ -295,6 +299,12 @@ public class BlockDismantleAnimationSession implements AnimationSession {
             e.setViewRange(48);
         }));
 
+        rewardTextDisplays.add(world.spawn(new Location(world, cx, cy + 0.6, cz), TextDisplay.class, e -> {
+            e.text(ItemBuilder.getRewardComponent(selectedReward, crate));
+            e.setBillboard(Display.Billboard.CENTER);
+            e.setBackgroundColor(Color.fromARGB(0, 0, 0, 0));
+        }));
+
         SoundUtil.play(player, animation.getDismantleSettleSounds());
         beginCleanup();
     }
@@ -404,6 +414,8 @@ public class BlockDismantleAnimationSession implements AnimationSession {
         faceDisplays.clear();
         for (ItemDisplay d : rewardDisplays) { if (d != null && !d.isDead()) d.remove(); }
         rewardDisplays.clear();
+        for (TextDisplay d : rewardTextDisplays) { if (d != null && !d.isDead()) d.remove(); }
+        rewardTextDisplays.clear();
         if (blockLocation != null && savedBlockData != null) {
             blockLocation.getBlock().setBlockData(savedBlockData, false);
             savedBlockData = null;

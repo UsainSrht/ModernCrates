@@ -167,7 +167,7 @@ public class AnimationConfigParser {
         config.setMaterial(section.getString("material"));
         config.setName(section.getString("name"));
         config.setLore(section.getStringList("lore"));
-        config.setHideTooltip(section.getBoolean("hide_tooltip", false));
+        config.setHideTooltip(section.getBoolean("hide-tooltip", section.getBoolean("hide_tooltip", false)));
         if (section.contains("nbt")) {
             config.setNbt(sectionToMap(section.getConfigurationSection("nbt")));
         }
@@ -222,7 +222,7 @@ public class AnimationConfigParser {
         config.setMaterial(section.getString("material"));
         config.setName(section.getString("name"));
         config.setLore(section.getStringList("lore"));
-        config.setHideTooltip(section.getBoolean("hide_tooltip", false));
+        config.setHideTooltip(section.getBoolean("hide-tooltip", section.getBoolean("hide_tooltip", false)));
         if (section.contains("nbt")) {
             config.setNbt(sectionToMap(section.getConfigurationSection("nbt")));
         }
@@ -277,6 +277,7 @@ public class AnimationConfigParser {
         if (animation.getGuiFill() != null) {
             yaml.set("gui_fill.material", animation.getGuiFill().getMaterial());
             yaml.set("gui_fill.name", animation.getGuiFill().getName());
+            yaml.set("gui_fill.hide-tooltip", animation.getGuiFill().isHideTooltip());
         }
 
         yaml.set("reward_index", animation.getRewardIndex());

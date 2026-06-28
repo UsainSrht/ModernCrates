@@ -76,6 +76,7 @@ public class CrateConfigParser {
             }
 
             keyConfig.setItemFlags(keySection.getStringList("item_flags"));
+            keyConfig.setHideTooltip(keySection.getBoolean("hide-tooltip", keySection.getBoolean("hide_tooltip", false)));
             crate.setKeyConfig(keyConfig);
         }
 
@@ -86,6 +87,7 @@ public class CrateConfigParser {
             itemConfig.setMaterial(itemSection.getString("material", "CHEST"));
             itemConfig.setName(itemSection.getString("name"));
             itemConfig.setLore(itemSection.getStringList("lore"));
+            itemConfig.setHideTooltip(itemSection.getBoolean("hide-tooltip", itemSection.getBoolean("hide_tooltip", false)));
             crate.setItemConfig(itemConfig);
         }
 
@@ -176,6 +178,7 @@ public class CrateConfigParser {
             PreviewConfig.GuiItem fill = new PreviewConfig.GuiItem();
             fill.setMaterial(fillSection.getString("material", "BLACK_STAINED_GLASS_PANE"));
             fill.setName(fillSection.getString("name", " "));
+            fill.setHideTooltip(fillSection.getBoolean("hide-tooltip", fillSection.getBoolean("hide_tooltip", false)));
             config.setFill(fill);
         }
 
@@ -197,6 +200,7 @@ public class CrateConfigParser {
                         item.setMaterial(slotSection.getString("material"));
                         item.setName(slotSection.getString("name"));
                         item.setLore(slotSection.getStringList("lore"));
+                        item.setHideTooltip(slotSection.getBoolean("hide-tooltip", slotSection.getBoolean("hide_tooltip", false)));
                         customSlots.put(slot, item);
                     }
                 } catch (NumberFormatException ignored) {
@@ -215,6 +219,7 @@ public class CrateConfigParser {
         item.setMaterial(section.getString("material"));
         item.setName(section.getString("name"));
         item.setLore(section.getStringList("lore"));
+        item.setHideTooltip(section.getBoolean("hide-tooltip", section.getBoolean("hide_tooltip", false)));
         return item;
     }
 
@@ -245,6 +250,7 @@ public class CrateConfigParser {
                     display.setEnchantments(enchants);
                 }
                 display.setItemFlags(displaySection.getStringList("item_flags"));
+                display.setHideTooltip(displaySection.getBoolean("hide-tooltip", displaySection.getBoolean("hide_tooltip", false)));
                 reward.setDisplay(display);
             }
 
@@ -270,6 +276,7 @@ public class CrateConfigParser {
                             rewardItem.setEnchantments(enchants);
                         }
                         rewardItem.setItemFlags(itemSection.getStringList("item_flags"));
+                        rewardItem.setHideTooltip(itemSection.getBoolean("hide-tooltip", itemSection.getBoolean("hide_tooltip", false)));
                         items.put(itemKey, rewardItem);
                     }
                 }
@@ -308,6 +315,7 @@ public class CrateConfigParser {
             if (key.getItemFlags() != null) yaml.set("key.item_flags", key.getItemFlags());
             if (key.getName() != null) yaml.set("key.name", key.getName());
             if (key.getLore() != null) yaml.set("key.lore", key.getLore());
+            yaml.set("key.hide-tooltip", key.isHideTooltip());
         }
 
         // Item
@@ -316,6 +324,7 @@ public class CrateConfigParser {
             yaml.set("item.material", item.getMaterial());
             if (item.getName() != null) yaml.set("item.name", item.getName());
             if (item.getLore() != null) yaml.set("item.lore", item.getLore());
+            yaml.set("item.hide-tooltip", item.isHideTooltip());
         }
 
         // Locations
@@ -355,21 +364,25 @@ public class CrateConfigParser {
             if (prev.getFill() != null) {
                 yaml.set("preview.fill.material", prev.getFill().getMaterial());
                 yaml.set("preview.fill.name", prev.getFill().getName());
+                yaml.set("preview.fill.hide-tooltip", prev.getFill().isHideTooltip());
             }
             if (prev.getCloseButton() != null) {
                 yaml.set("preview.close.slot", prev.getCloseButton().getSlot());
                 yaml.set("preview.close.material", prev.getCloseButton().getMaterial());
                 yaml.set("preview.close.name", prev.getCloseButton().getName());
+                yaml.set("preview.close.hide-tooltip", prev.getCloseButton().isHideTooltip());
             }
             if (prev.getNextButton() != null) {
                 yaml.set("preview.next.slot", prev.getNextButton().getSlot());
                 yaml.set("preview.next.material", prev.getNextButton().getMaterial());
                 yaml.set("preview.next.name", prev.getNextButton().getName());
+                yaml.set("preview.next.hide-tooltip", prev.getNextButton().isHideTooltip());
             }
             if (prev.getPreviousButton() != null) {
                 yaml.set("preview.previous.slot", prev.getPreviousButton().getSlot());
                 yaml.set("preview.previous.material", prev.getPreviousButton().getMaterial());
                 yaml.set("preview.previous.name", prev.getPreviousButton().getName());
+                yaml.set("preview.previous.hide-tooltip", prev.getPreviousButton().isHideTooltip());
             }
             if (prev.getSounds() != null) yaml.set("preview.sound", prev.getSounds());
         }
@@ -394,6 +407,7 @@ public class CrateConfigParser {
                 yaml.set(rewardKey + ".display.material", d.getMaterial());
                 if (d.getName() != null) yaml.set(rewardKey + ".display.name", d.getName());
                 if (d.getLore() != null && !d.getLore().isEmpty()) yaml.set(rewardKey + ".display.lore", d.getLore());
+                yaml.set(rewardKey + ".display.hide-tooltip", d.isHideTooltip());
                 if (d.getEnchantments() != null) {
                     for (var e : d.getEnchantments().entrySet()) {
                         yaml.set(rewardKey + ".display.enchantments." + e.getKey(), e.getValue());
@@ -409,6 +423,7 @@ public class CrateConfigParser {
                     if (ri.getAmount() > 1) yaml.set(itemKey + ".amount", ri.getAmount());
                     if (ri.getName() != null) yaml.set(itemKey + ".name", ri.getName());
                     if (ri.getLore() != null) yaml.set(itemKey + ".lore", ri.getLore());
+                    yaml.set(itemKey + ".hide-tooltip", ri.isHideTooltip());
                 }
             }
 

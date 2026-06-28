@@ -95,6 +95,10 @@ public class PreviewConfig {
         public void setName(String name) { this.name = name; }
         public List<String> getLore() { return lore; }
         public void setLore(List<String> lore) { this.lore = lore; }
+
+        private boolean hideTooltip;
+        public boolean isHideTooltip() { return hideTooltip; }
+        public void setHideTooltip(boolean hideTooltip) { this.hideTooltip = hideTooltip; }
     }
 
     /**

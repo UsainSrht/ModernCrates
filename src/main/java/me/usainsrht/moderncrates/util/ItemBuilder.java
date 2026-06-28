@@ -78,6 +78,7 @@ public final class ItemBuilder {
         if (display.getItemFlags() != null) {
             applyItemFlags(meta, display.getItemFlags());
         }
+        meta.setHideTooltip(display.isHideTooltip());
         item.setItemMeta(meta);
         return item;
     }
@@ -108,6 +109,7 @@ public final class ItemBuilder {
         if (rewardItem.getItemFlags() != null) {
             applyItemFlags(meta, rewardItem.getItemFlags());
         }
+        meta.setHideTooltip(rewardItem.isHideTooltip());
         item.setItemMeta(meta);
         return item;
     }
@@ -151,6 +153,51 @@ public final class ItemBuilder {
         }
         item.setItemMeta(meta);
         return item;
+    }
+
+    public static ItemStack create(String material, String name, List<String> lore, boolean hideTooltip) {
+        ItemStack item = create(material, name, lore);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setHideTooltip(hideTooltip);
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+    public static ItemStack withHideTooltip(ItemStack item) {
+        if (item == null) return null;
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setHideTooltip(true);
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+    public static net.kyori.adventure.text.Component getRewardComponent(Reward reward, Crate crate) {
+        if (reward == null) {
+            return net.kyori.adventure.text.Component.empty();
+        }
+        if (reward.getDisplay() != null && reward.getDisplay().getName() != null) {
+            double totalWeight = crate != null ? crate.getTotalWeight() : 0.0;
+            double chancePercentage = totalWeight > 0 ? (reward.getChance() / totalWeight) * 100.0 : 0.0;
+            java.text.DecimalFormatSymbols symbols = new java.text.DecimalFormatSymbols(java.util.Locale.US);
+            java.text.DecimalFormat df = new java.text.DecimalFormat("#.##", symbols);
+            String formattedChance = df.format(chancePercentage);
+            String rawName = reward.getDisplay().getName()
+                    .replace("<chance>", formattedChance)
+                    .replace("%chance%", formattedChance);
+            return TextUtil.parse(rawName);
+        }
+        if (reward.getDisplay() != null && reward.getDisplay().getMaterial() != null) {
+            org.bukkit.Material mat = org.bukkit.Material.matchMaterial(reward.getDisplay().getMaterial().toUpperCase());
+            if (mat != null) {
+                return net.kyori.adventure.text.Component.translatable(mat.translationKey())
+                        .decoration(net.kyori.adventure.text.format.TextDecoration.ITALIC, false);
+            }
+        }
+        return net.kyori.adventure.text.Component.text(reward.getId());
     }
 
     @SuppressWarnings("deprecation")

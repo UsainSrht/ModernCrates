@@ -71,4 +71,14 @@ public class RewardItem {
     public void setNbt(Map<String, Object> nbt) {
         this.nbt = nbt;
     }
+
+    private boolean hideTooltip;
+
+    public boolean isHideTooltip() {
+        return hideTooltip;
+    }
+
+    public void setHideTooltip(boolean hideTooltip) {
+        this.hideTooltip = hideTooltip;
+    }
 }

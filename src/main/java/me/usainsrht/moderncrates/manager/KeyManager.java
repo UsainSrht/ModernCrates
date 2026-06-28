@@ -55,6 +55,7 @@ public class KeyManager {
                 } catch (IllegalArgumentException ignored) {}
             }
         }
+        meta.setHideTooltip(config.isHideTooltip());
 
         // Store crate ID in persistent data for identification
         meta.getPersistentDataContainer().set(
@@ -97,6 +98,7 @@ public class KeyManager {
                 crate.getId()
         );
 
+        meta.setHideTooltip(config.isHideTooltip());
         item.setItemMeta(meta);
         return item;
     }
@@ -168,6 +170,10 @@ public class KeyManager {
                 org.bukkit.persistence.PersistentDataType.STRING,
                 crate.getId()
         );
+
+        if (config != null) {
+            meta.setHideTooltip(config.isHideTooltip());
+        }
 
         item.setItemMeta(meta);
         return item;

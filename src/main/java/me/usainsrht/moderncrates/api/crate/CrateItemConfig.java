@@ -34,4 +34,14 @@ public class CrateItemConfig {
     public void setLore(List<String> lore) {
         this.lore = lore;
     }
+
+    private boolean hideTooltip;
+
+    public boolean isHideTooltip() {
+        return hideTooltip;
+    }
+
+    public void setHideTooltip(boolean hideTooltip) {
+        this.hideTooltip = hideTooltip;
+    }
 }

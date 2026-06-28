@@ -99,7 +99,7 @@ public class PreviewGui implements ModernCratesGui {
 
         // Fill background
         if (config != null && config.getFill() != null) {
-            ItemStack fill = ItemBuilder.create(config.getFill().getMaterial(), config.getFill().getName(), null);
+            ItemStack fill = ItemBuilder.create(config.getFill().getMaterial(), config.getFill().getName(), null, config.getFill().isHideTooltip());
             for (int i = 0; i < inventory.getSize(); i++) {
                 inventory.setItem(i, fill);
             }
@@ -111,7 +111,7 @@ public class PreviewGui implements ModernCratesGui {
                 int slot = entry.getKey();
                 var item = entry.getValue();
                 if (slot >= 0 && slot < inventory.getSize()) {
-                    inventory.setItem(slot, ItemBuilder.create(item.getMaterial(), item.getName(), item.getLore()));
+                    inventory.setItem(slot, ItemBuilder.create(item.getMaterial(), item.getName(), item.getLore(), item.isHideTooltip()));
                 }
             }
         }
@@ -138,7 +138,7 @@ public class PreviewGui implements ModernCratesGui {
 
     private void placeNavItem(PreviewConfig.SlotItem item) {
         if (item.getSlot() >= 0 && item.getSlot() < inventory.getSize()) {
-            inventory.setItem(item.getSlot(), ItemBuilder.create(item.getMaterial(), item.getName(), item.getLore()));
+            inventory.setItem(item.getSlot(), ItemBuilder.create(item.getMaterial(), item.getName(), item.getLore(), item.isHideTooltip()));
         }
     }
 

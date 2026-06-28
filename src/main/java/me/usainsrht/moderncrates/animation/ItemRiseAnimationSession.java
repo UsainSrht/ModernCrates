@@ -20,6 +20,7 @@ import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TextDisplay;
 import org.bukkit.inventory.ItemStack;
+import net.kyori.adventure.text.Component;
 import space.arim.morepaperlib.scheduling.ScheduledTask;
 
 import java.util.ArrayList;
@@ -152,7 +153,7 @@ public class ItemRiseAnimationSession implements AnimationSession {
         ItemStack displayItem = firstReward.getDisplay() != null
                 ? ItemBuilder.fromDisplay(firstReward, crate)
                 : new ItemStack(org.bukkit.Material.STONE);
-        String displayName = getRewardName(firstReward);
+        Component rewardComponent = ItemBuilder.getRewardComponent(firstReward, crate);
 
         Location spawnLoc = new Location(world, baseX, currentY, baseZ);
 
@@ -163,7 +164,7 @@ public class ItemRiseAnimationSession implements AnimationSession {
         });
 
         textDisplay = world.spawn(spawnLoc.clone().add(0, 0.6, 0), TextDisplay.class, entity -> {
-            entity.text(TextUtil.parse(displayName));
+            entity.text(rewardComponent);
             entity.setBillboard(Display.Billboard.CENTER);
             entity.setBackgroundColor(Color.fromARGB(0, 0, 0, 0));
         });
@@ -203,7 +204,7 @@ public class ItemRiseAnimationSession implements AnimationSession {
                 itemDisplay.setItemStack(ItemBuilder.fromDisplay(current, crate));
             }
             if (textDisplay != null && !textDisplay.isDead()) {
-                textDisplay.text(TextUtil.parse(getRewardName(current)));
+                textDisplay.text(ItemBuilder.getRewardComponent(current, crate));
             }
             SoundUtil.play(player, animation.getTickSounds());
         }
@@ -252,7 +253,7 @@ public class ItemRiseAnimationSession implements AnimationSession {
             itemDisplay.setItemStack(ItemBuilder.fromDisplay(selectedReward, crate));
         }
         if (textDisplay != null && !textDisplay.isDead()) {
-            textDisplay.text(TextUtil.parse(getRewardName(selectedReward)));
+            textDisplay.text(ItemBuilder.getRewardComponent(selectedReward, crate));
         }
 
         SoundUtil.play(player, animation.getSettleSounds());
@@ -308,19 +309,7 @@ public class ItemRiseAnimationSession implements AnimationSession {
         return cycle;
     }
 
-    private String getRewardName(Reward reward) {
-        if (reward.getDisplay() != null && reward.getDisplay().getName() != null) {
-            double totalWeight = crate.getTotalWeight();
-            double chancePercentage = totalWeight > 0 ? (reward.getChance() / totalWeight) * 100.0 : 0.0;
-            java.text.DecimalFormatSymbols symbols = new java.text.DecimalFormatSymbols(java.util.Locale.US);
-            java.text.DecimalFormat df = new java.text.DecimalFormat("#.##", symbols);
-            String formattedChance = df.format(chancePercentage);
-            return reward.getDisplay().getName()
-                    .replace("<chance>", formattedChance)
-                    .replace("%chance%", formattedChance);
-        }
-        return reward.getId();
-    }
+
 
     @Override
     public void cancel() {

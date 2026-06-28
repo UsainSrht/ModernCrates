@@ -406,19 +406,19 @@ public class SlotAnimationSession implements AnimationSession, ModernCratesGui {
                     .map(ItemBuilder::fromGuiItemConfig).toList());
         } else {
             fillerItemStacks = List.of(
-                    new ItemStack(Material.WHITE_STAINED_GLASS_PANE),
-                    new ItemStack(Material.ORANGE_STAINED_GLASS_PANE),
-                    new ItemStack(Material.MAGENTA_STAINED_GLASS_PANE),
-                    new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE),
-                    new ItemStack(Material.YELLOW_STAINED_GLASS_PANE),
-                    new ItemStack(Material.LIME_STAINED_GLASS_PANE),
-                    new ItemStack(Material.PINK_STAINED_GLASS_PANE),
-                    new ItemStack(Material.CYAN_STAINED_GLASS_PANE),
-                    new ItemStack(Material.PURPLE_STAINED_GLASS_PANE),
-                    new ItemStack(Material.BLUE_STAINED_GLASS_PANE),
-                    new ItemStack(Material.GREEN_STAINED_GLASS_PANE),
-                    new ItemStack(Material.RED_STAINED_GLASS_PANE),
-                    new ItemStack(Material.BLACK_STAINED_GLASS_PANE)
+                    ItemBuilder.withHideTooltip(new ItemStack(Material.WHITE_STAINED_GLASS_PANE)),
+                    ItemBuilder.withHideTooltip(new ItemStack(Material.ORANGE_STAINED_GLASS_PANE)),
+                    ItemBuilder.withHideTooltip(new ItemStack(Material.MAGENTA_STAINED_GLASS_PANE)),
+                    ItemBuilder.withHideTooltip(new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE)),
+                    ItemBuilder.withHideTooltip(new ItemStack(Material.YELLOW_STAINED_GLASS_PANE)),
+                    ItemBuilder.withHideTooltip(new ItemStack(Material.LIME_STAINED_GLASS_PANE)),
+                    ItemBuilder.withHideTooltip(new ItemStack(Material.PINK_STAINED_GLASS_PANE)),
+                    ItemBuilder.withHideTooltip(new ItemStack(Material.CYAN_STAINED_GLASS_PANE)),
+                    ItemBuilder.withHideTooltip(new ItemStack(Material.PURPLE_STAINED_GLASS_PANE)),
+                    ItemBuilder.withHideTooltip(new ItemStack(Material.BLUE_STAINED_GLASS_PANE)),
+                    ItemBuilder.withHideTooltip(new ItemStack(Material.GREEN_STAINED_GLASS_PANE)),
+                    ItemBuilder.withHideTooltip(new ItemStack(Material.RED_STAINED_GLASS_PANE)),
+                    ItemBuilder.withHideTooltip(new ItemStack(Material.BLACK_STAINED_GLASS_PANE))
             );
         }
     }

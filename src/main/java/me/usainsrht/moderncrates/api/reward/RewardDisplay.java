@@ -62,4 +62,14 @@ public class RewardDisplay {
     public void setAmount(int amount) {
         this.amount = amount;
     }
+
+    private boolean hideTooltip;
+
+    public boolean isHideTooltip() {
+        return hideTooltip;
+    }
+
+    public void setHideTooltip(boolean hideTooltip) {
+        this.hideTooltip = hideTooltip;
+    }
 }

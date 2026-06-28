@@ -52,7 +52,7 @@ public class PlayerMenuGui implements ModernCratesGui {
             var itemConfig = crate.getItemConfig();
             ItemStack item;
             if (itemConfig != null) {
-                item = ItemBuilder.create(itemConfig.getMaterial(), itemConfig.getName(), itemConfig.getLore());
+                item = ItemBuilder.create(itemConfig.getMaterial(), itemConfig.getName(), itemConfig.getLore(), itemConfig.isHideTooltip());
             } else {
                 item = ItemBuilder.create("CHEST", "<gold>" + crate.getName(), null);
             }
