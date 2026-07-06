@@ -115,7 +115,7 @@ public class SlotAnimationSession implements AnimationSession, ModernCratesGui {
         // Pre-determine outcome
         willMatch = random.nextDouble() * 100 < animation.getMatchChance();
         if (willMatch) {
-            matchReward = RewardSelector.selectWeighted(crate);
+            matchReward = RewardSelector.selectWeighted(crate, player);
         }
 
         buildFillerItems();
@@ -320,12 +320,13 @@ public class SlotAnimationSession implements AnimationSession, ModernCratesGui {
         }
 
         boolean allMatch = winnerRewardIds.size() == 1 && firstWinnerReward != null;
+        boolean canWinMatch = allMatch && firstWinnerReward.canWin(player);
 
-        if (allMatch) {
+        if (canWinMatch) {
             selectedReward = firstWinnerReward;
             SoundUtil.play(player, animation.getWinSounds());
         } else {
-            selectedReward = RewardSelector.selectWeighted(crate);
+            selectedReward = RewardSelector.selectWeighted(crate, player);
             SoundUtil.play(player, animation.getLoseSounds());
         }
 
@@ -486,9 +487,9 @@ public class SlotAnimationSession implements AnimationSession, ModernCratesGui {
         if (!finished.get()) {
             cancelAllTasks();
             if (selectedReward == null) {
-                selectedReward = willMatch ? matchReward : RewardSelector.selectWeighted(crate);
+                selectedReward = willMatch ? matchReward : RewardSelector.selectWeighted(crate, player);
                 if (selectedReward == null) {
-                    selectedReward = RewardSelector.selectWeighted(crate);
+                    selectedReward = RewardSelector.selectWeighted(crate, player);
                 }
             }
             SoundUtil.play(player, animation.getRewardSounds());

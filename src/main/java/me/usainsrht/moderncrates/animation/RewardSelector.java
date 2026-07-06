@@ -2,6 +2,7 @@ package me.usainsrht.moderncrates.animation;
 
 import me.usainsrht.moderncrates.api.crate.Crate;
 import me.usainsrht.moderncrates.api.reward.Reward;
+import org.bukkit.entity.Player;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -14,24 +15,37 @@ public final class RewardSelector {
     private RewardSelector() {}
 
     /**
-     * Selects a single random reward based on weighted chances.
+     * Selects a single random reward based on weighted chances (all rewards — for display).
      */
     public static Reward selectWeighted(Crate crate) {
-        Map<String, Reward> rewards = crate.getRewards();
+        return selectWeighted(crate.getRewards().values());
+    }
+
+    /**
+     * Selects a single random reward the player is eligible to win.
+     */
+    public static Reward selectWeighted(Crate crate, Player player) {
+        return selectWeighted(getEligibleRewards(crate, player));
+    }
+
+    private static Reward selectWeighted(Collection<Reward> rewards) {
         if (rewards.isEmpty()) return null;
 
-        double totalWeight = crate.getTotalWeight();
+        double totalWeight = rewards.stream().mapToDouble(Reward::getChance).sum();
+        if (totalWeight <= 0) {
+            return rewards.iterator().next();
+        }
+
         double random = ThreadLocalRandom.current().nextDouble() * totalWeight;
         double cumulative = 0;
 
-        for (Reward reward : rewards.values()) {
+        for (Reward reward : rewards) {
             cumulative += reward.getChance();
             if (random < cumulative) {
                 return reward;
             }
         }
-        // Fallback to last reward
-        return rewards.values().stream().reduce((a, b) -> b).orElse(null);
+        return rewards.stream().reduce((a, b) -> b).orElse(null);
     }
 
     /**
@@ -44,6 +58,34 @@ public final class RewardSelector {
             if (r != null) selected.add(r);
         }
         return selected;
+    }
+
+    /**
+     * Selects multiple rewards the player is eligible to win.
+     */
+    public static List<Reward> selectMultiple(Crate crate, int count, Player player) {
+        List<Reward> selected = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            Reward r = selectWeighted(crate, player);
+            if (r != null) selected.add(r);
+        }
+        return selected;
+    }
+
+    public static List<Reward> getEligibleRewards(Crate crate, Player player) {
+        return crate.getRewards().values().stream()
+                .filter(r -> r.canWin(player))
+                .toList();
+    }
+
+    /**
+     * Returns the candidate if the player can win it, otherwise selects a weighted eligible reward.
+     */
+    public static Reward resolveWinner(Reward candidate, Player player, Crate crate) {
+        if (candidate != null && candidate.canWin(player)) {
+            return candidate;
+        }
+        return selectWeighted(crate, player);
     }
 
     /**

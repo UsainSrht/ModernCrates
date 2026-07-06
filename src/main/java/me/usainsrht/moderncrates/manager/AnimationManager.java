@@ -90,6 +90,8 @@ public class AnimationManager {
     }
 
     private void grantReward(Player player, Crate crate, Reward reward) {
+        if (!reward.canWin(player)) return;
+
         // Give items
         if (reward.hasItems()) {
             for (RewardItem item : reward.getItems().values()) {

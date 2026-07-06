@@ -263,9 +263,12 @@ public class ClickAnimationSession implements AnimationSession, ModernCratesGui 
     @Override
     public List<Reward> getSelectedRewards() {
         if (!revealedSlots.isEmpty()) {
-            return getRevealedRewards();
+            return getRevealedRewards().stream()
+                    .filter(r -> r.canWin(player))
+                    .toList();
         }
-        return fallbackReward != null ? List.of(fallbackReward) : List.of();
+        return fallbackReward != null && fallbackReward.canWin(player)
+                ? List.of(fallbackReward) : List.of();
     }
 
     /**
@@ -287,7 +290,7 @@ public class ClickAnimationSession implements AnimationSession, ModernCratesGui 
             // Player closed early â€” stop everything, ensure a reward is granted
             cleanup();
             if (revealedSlots.isEmpty()) {
-                fallbackReward = RewardSelector.selectWeighted(crate);
+                fallbackReward = RewardSelector.selectWeighted(crate, player);
             } else if (clicksRemaining > 0) {
                 // Auto-reveal the remaining clicks randomly
                 List<Integer> unrevealedRewardSlots = new ArrayList<>(slotRewardMap.keySet());

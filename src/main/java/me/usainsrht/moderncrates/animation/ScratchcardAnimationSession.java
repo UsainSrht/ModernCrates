@@ -203,9 +203,15 @@ public class ScratchcardAnimationSession implements AnimationSession, ModernCrat
         boolean won = bestCount >= animation.getMatchRequired();
 
         if (won && bestId != null) {
-            selectedReward = rewardById.get(bestId);
-            SoundUtil.play(player, animation.getWinSounds());
-            SoundUtil.play(player, animation.getRewardSounds());
+            Reward candidate = rewardById.get(bestId);
+            if (candidate != null && candidate.canWin(player)) {
+                selectedReward = candidate;
+                SoundUtil.play(player, animation.getWinSounds());
+                SoundUtil.play(player, animation.getRewardSounds());
+            } else {
+                selectedReward = null;
+                SoundUtil.play(player, animation.getLoseSounds());
+            }
         } else {
             selectedReward = null;
             SoundUtil.play(player, animation.getLoseSounds());

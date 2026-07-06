@@ -120,7 +120,7 @@ public class BlockDismantleAnimationSession implements AnimationSession {
         if (loc == null) { fallbackFinish(); return; }
         blockLocation = loc;
 
-        selectedReward = RewardSelector.selectWeighted(crate);
+        selectedReward = RewardSelector.selectWeighted(crate, player);
         if (selectedReward == null) { fallbackFinish(); return; }
 
         type.getScheduler().regionSpecificScheduler(blockLocation).run(this::spawnShell);
@@ -135,7 +135,7 @@ public class BlockDismantleAnimationSession implements AnimationSession {
         } else {
             cleanupAll();
         }
-        if (selectedReward == null) selectedReward = RewardSelector.selectWeighted(crate);
+        if (selectedReward == null) selectedReward = RewardSelector.selectWeighted(crate, player);
         finished.set(true);
     }
 
@@ -430,7 +430,7 @@ public class BlockDismantleAnimationSession implements AnimationSession {
     }
 
     private void fallbackFinish() {
-        if (selectedReward == null) selectedReward = RewardSelector.selectWeighted(crate);
+        if (selectedReward == null) selectedReward = RewardSelector.selectWeighted(crate, player);
         finished.set(true);
         type.getScheduler().entitySpecificScheduler(player)
                 .runDelayed(onComplete::run, null, 1L);

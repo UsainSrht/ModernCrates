@@ -328,6 +328,12 @@ public class CrateConfigParser {
             // Per-reward announce
             reward.setAnnounce(rewardSection.getString("announce"));
 
+            String requiredPermission = rewardSection.getString("required-permission");
+            if (requiredPermission == null) {
+                requiredPermission = rewardSection.getString("required_permission");
+            }
+            reward.setRequiredPermission(requiredPermission);
+
             rewards.put(key, reward);
         }
         return rewards;
@@ -493,6 +499,9 @@ public class CrateConfigParser {
 
             if (reward.getCommands() != null) yaml.set(rewardKey + ".commands", reward.getCommands());
             if (reward.getAnnounce() != null) yaml.set(rewardKey + ".announce", reward.getAnnounce());
+            if (reward.getRequiredPermission() != null) {
+                yaml.set(rewardKey + ".required-permission", reward.getRequiredPermission());
+            }
         }
 
         yaml.save(file);

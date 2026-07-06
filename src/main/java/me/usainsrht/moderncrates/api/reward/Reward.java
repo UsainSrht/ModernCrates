@@ -1,5 +1,7 @@
 package me.usainsrht.moderncrates.api.reward;
 
+import org.bukkit.entity.Player;
+
 import java.util.List;
 import java.util.Map;
 
@@ -14,6 +16,7 @@ public class Reward {
     private Map<String, RewardItem> items;
     private List<String> commands;
     private String announce;
+    private String requiredPermission;
 
     public Reward(String id) {
         this.id = id;
@@ -61,6 +64,22 @@ public class Reward {
 
     public void setAnnounce(String announce) {
         this.announce = announce;
+    }
+
+    public String getRequiredPermission() {
+        return requiredPermission;
+    }
+
+    public void setRequiredPermission(String requiredPermission) {
+        this.requiredPermission = requiredPermission;
+    }
+
+    public boolean hasRequiredPermission() {
+        return requiredPermission != null && !requiredPermission.isEmpty();
+    }
+
+    public boolean canWin(Player player) {
+        return !hasRequiredPermission() || player.hasPermission(requiredPermission);
     }
 
     public boolean hasItems() {

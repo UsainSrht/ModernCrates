@@ -196,12 +196,11 @@ public class CsgoAnimationSession implements AnimationSession, ModernCratesGui {
     private void finishAnimation() {
         // Determine the winning reward from the pointer position
         int rewardIndex = animation.getRewardIndex() - 1; // 1-based to 0-based
-        if (rewardIndex >= 0 && rewardIndex < displayedRewards.length && displayedRewards[rewardIndex] != null) {
-            selectedReward = displayedRewards[rewardIndex];
-        } else {
-            // Fallback: select a random weighted reward
-            selectedReward = RewardSelector.selectWeighted(crate);
+        Reward landed = null;
+        if (rewardIndex >= 0 && rewardIndex < displayedRewards.length) {
+            landed = displayedRewards[rewardIndex];
         }
+        selectedReward = RewardSelector.resolveWinner(landed, player, crate);
 
         // Play reward sound
         SoundUtil.play(player, animation.getRewardSounds());
@@ -358,12 +357,11 @@ public class CsgoAnimationSession implements AnimationSession, ModernCratesGui {
             cancelAllTasks();
             if (selectedReward == null) {
                 int ri = animation.getRewardIndex() - 1;
-                if (displayedRewards != null && ri >= 0 && ri < displayedRewards.length
-                        && displayedRewards[ri] != null) {
-                    selectedReward = displayedRewards[ri];
-                } else {
-                    selectedReward = RewardSelector.selectWeighted(crate);
+                Reward landed = null;
+                if (displayedRewards != null && ri >= 0 && ri < displayedRewards.length) {
+                    landed = displayedRewards[ri];
                 }
+                selectedReward = RewardSelector.resolveWinner(landed, player, crate);
             }
             SoundUtil.play(player, animation.getRewardSounds());
             finished.set(true);

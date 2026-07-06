@@ -108,7 +108,7 @@ public class ItemRiseAnimationSession implements AnimationSession {
         this.liddedBlock = lidded;
 
         // Pre-select reward
-        selectedReward = RewardSelector.selectWeighted(crate);
+        selectedReward = RewardSelector.selectWeighted(crate, player);
         if (selectedReward == null) {
             fallbackFinish();
             return;
@@ -277,7 +277,7 @@ public class ItemRiseAnimationSession implements AnimationSession {
 
     private void fallbackFinish() {
         if (selectedReward == null) {
-            selectedReward = RewardSelector.selectWeighted(crate);
+            selectedReward = RewardSelector.selectWeighted(crate, player);
         }
         finished.set(true);
         // Schedule onComplete for next tick to avoid re-entrant issues
@@ -333,7 +333,7 @@ public class ItemRiseAnimationSession implements AnimationSession {
             cleanupEntities();
         }
         if (selectedReward == null) {
-            selectedReward = RewardSelector.selectWeighted(crate);
+            selectedReward = RewardSelector.selectWeighted(crate, player);
         }
         finished.set(true);
     }
