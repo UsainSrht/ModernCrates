@@ -7,6 +7,7 @@ import me.usainsrht.moderncrates.api.crate.Crate;
 import org.bukkit.Location;
 import me.usainsrht.moderncrates.api.reward.Reward;
 import me.usainsrht.moderncrates.api.reward.RewardItem;
+import me.usainsrht.moderncrates.util.BlockKey;
 import me.usainsrht.moderncrates.util.ItemBuilder;
 import me.usainsrht.moderncrates.util.TextUtil;
 import net.kyori.adventure.text.Component;
@@ -27,6 +28,9 @@ public class AnimationManager {
 
     private final Map<UUID, AnimationSession> activeSessions = new ConcurrentHashMap<>();
     private final Map<UUID, Crate> sessionCrates = new ConcurrentHashMap<>();
+    /** Blocks currently being animated (prevents concurrent opens on the same physical crate). */
+    private final Map<BlockKey, UUID> activeBlocks = new ConcurrentHashMap<>();
+    private final Map<UUID, BlockKey> playerBlocks = new ConcurrentHashMap<>();
 
     public AnimationManager(GracefulScheduling scheduling) {
         this.scheduling = scheduling;
@@ -44,24 +48,48 @@ public class AnimationManager {
         return sessionCrates.get(player.getUniqueId());
     }
 
-    public void startSession(Player player, Crate crate, AnimationType type, Animation animation) {
-        startSession(player, crate, type, animation, null);
+    public boolean startSession(Player player, Crate crate, AnimationType type, Animation animation) {
+        return startSession(player, crate, type, animation, null);
     }
 
-    public void startSession(Player player, Crate crate, AnimationType type, Animation animation, Location interactedLocation) {
-        if (hasActiveSession(player)) return;
+    public boolean isBlockInUse(Location location) {
+        if (location == null || location.getWorld() == null) return false;
+        return activeBlocks.containsKey(BlockKey.from(location));
+    }
+
+    public boolean startSession(Player player, Crate crate, AnimationType type, Animation animation, Location interactedLocation) {
+        if (hasActiveSession(player)) return false;
+
+        BlockKey blockKey = null;
+        if (interactedLocation != null && interactedLocation.getWorld() != null) {
+            blockKey = BlockKey.from(interactedLocation);
+            UUID existing = activeBlocks.putIfAbsent(blockKey, player.getUniqueId());
+            if (existing != null) return false;
+        }
 
         AnimationSession session = interactedLocation != null
                 ? type.createSession(player, crate, animation, interactedLocation)
                 : type.createSession(player, crate, animation);
         activeSessions.put(player.getUniqueId(), session);
         sessionCrates.put(player.getUniqueId(), crate);
+        if (blockKey != null) {
+            playerBlocks.put(player.getUniqueId(), blockKey);
+        }
         session.start();
+        return true;
+    }
+
+    private void releaseBlock(UUID playerId) {
+        BlockKey blockKey = playerBlocks.remove(playerId);
+        if (blockKey != null) {
+            activeBlocks.remove(blockKey, playerId);
+        }
     }
 
     public void endSession(Player player, Crate crate) {
         AnimationSession session = activeSessions.remove(player.getUniqueId());
         Crate sessionCrate = sessionCrates.remove(player.getUniqueId());
+        releaseBlock(player.getUniqueId());
         if (session == null) return;
 
         if (!session.isFinished()) {
@@ -84,6 +112,7 @@ public class AnimationManager {
     public void cancelSession(Player player) {
         AnimationSession session = activeSessions.remove(player.getUniqueId());
         sessionCrates.remove(player.getUniqueId());
+        releaseBlock(player.getUniqueId());
         if (session != null) {
             session.cancel();
         }
@@ -222,5 +251,7 @@ public class AnimationManager {
         activeSessions.values().forEach(AnimationSession::cancel);
         activeSessions.clear();
         sessionCrates.clear();
+        activeBlocks.clear();
+        playerBlocks.clear();
     }
 }

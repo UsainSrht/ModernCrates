@@ -112,9 +112,7 @@ public class ClickAnimationSession implements AnimationSession, ModernCratesGui 
         for (int slot : rewardSlots) {
             if (slot >= 0 && slot < inventory.getSize() && !pool.isEmpty()) {
                 Reward r = pool.get(rand.nextInt(pool.size()));
-                if (r.getDisplay() != null) {
-                    inventory.setItem(slot, ItemBuilder.fromDisplay(r, crate));
-                }
+                inventory.setItem(slot, ItemBuilder.fromDisplay(r, crate));
             }
         }
 
@@ -175,9 +173,7 @@ public class ClickAnimationSession implements AnimationSession, ModernCratesGui 
         revealedSlots.add(slot);
         clicksRemaining--;
 
-        if (reward.getDisplay() != null) {
-            inventory.setItem(slot, ItemBuilder.fromDisplay(reward, crate));
-        }
+        inventory.setItem(slot, ItemBuilder.fromDisplay(reward, crate));
         SoundUtil.play(player, animation.getRevealSounds());
 
         if (clicksRemaining <= 0) {

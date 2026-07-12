@@ -58,6 +58,11 @@ public class CrateEditorGui extends EditorGuiBase {
         inventory.setItem(30, ItemBuilder.create("DIAMOND", "<gold><bold>Rewards (" + crate.getRewards().size() + ")",
                 List.of("<gray>Click to manage rewards")));
 
+        inventory.setItem(34, ItemBuilder.create(crate.isAutoShowChanceOnLore() ? "LIME_DYE" : "GRAY_DYE",
+                "<yellow><bold>Auto Chance Lore: <white>" + (crate.isAutoShowChanceOnLore() ? "On" : "Off"),
+                List.of("<gray>Appends chance-lore-template to reward lore",
+                        "<gray>Click to toggle")));
+
         // Location
         List<String> locLore = new ArrayList<>();
         locLore.add("<gray>Left-click: <white>get placement item (place to add location)");
@@ -152,6 +157,14 @@ public class CrateEditorGui extends EditorGuiBase {
             case 25 -> new PreviewEditorGui(player, plugin, crate).open();
             case 28 -> new AnnounceEditorGui(player, plugin, crate).open();
             case 30 -> new RewardsListGui(player, plugin, crate).open();
+            case 34 -> {
+                crate.setAutoShowChanceOnLore(!crate.isAutoShowChanceOnLore());
+                if (crate.getChanceLoreTemplate().isEmpty()) {
+                    crate.setChanceLoreTemplate(List.of("", " <yellow>%<chance> ", ""));
+                }
+                save();
+                open();
+            }
             case 32 -> {
                 if (shiftClick && !rightClick) {
                     // Shift-left: clear ALL locations

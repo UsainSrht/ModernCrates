@@ -105,9 +105,7 @@ public class ScratchcardAnimationSession implements AnimationSession, ModernCrat
         for (int slot : rewardSlots) {
             if (slot >= 0 && slot < inventory.getSize() && !pool.isEmpty()) {
                 Reward r = pool.get(rand.nextInt(pool.size()));
-                if (r.getDisplay() != null) {
-                    inventory.setItem(slot, ItemBuilder.fromDisplay(r, crate));
-                }
+                inventory.setItem(slot, ItemBuilder.fromDisplay(r, crate));
             }
         }
 
@@ -160,9 +158,7 @@ public class ScratchcardAnimationSession implements AnimationSession, ModernCrat
         revealedSlots.add(slot);
         scratchesRemaining--;
 
-        if (reward.getDisplay() != null) {
-            inventory.setItem(slot, ItemBuilder.fromDisplay(reward, crate));
-        }
+        inventory.setItem(slot, ItemBuilder.fromDisplay(reward, crate));
         SoundUtil.play(player, animation.getRevealSounds());
 
         if (scratchesRemaining <= 0) {

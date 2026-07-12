@@ -273,19 +273,24 @@ public class ModernCratesPlugin extends JavaPlugin {
      * @return true when an animation session is started, false otherwise.
      */
     public boolean tryOpenCrate(Player player, Crate crate, Location interactedLocation) {
-        // Check if player already has an active session
         if (animationManager.hasActiveSession(player)) {
-            player.sendMessage(TextUtil.parse("<red>You already have a crate open!"));
+            String msg = pluginConfig.getPrefix() + pluginConfig.getMessage("crate_already_open");
+            player.sendMessage(TextUtil.parse(msg));
             return false;
         }
 
-        // Check for key requirement
+        if (interactedLocation != null && animationManager.isBlockInUse(interactedLocation)) {
+            String msg = pluginConfig.getPrefix() + pluginConfig.getMessage("crate_in_use");
+            player.sendMessage(TextUtil.parse(msg));
+            return false;
+        }
+
+        boolean usePhysicalKey = false;
         if (crate.requiresKey()) {
-            // Try physical key first
             if (keyManager.hasKey(player, crate)) {
-                keyManager.removeKey(player, crate);
+                usePhysicalKey = true;
             } else if (virtualKeyManager.getKeys(player, crate.getId()) > 0) {
-                virtualKeyManager.removeKey(player, crate.getId());
+                usePhysicalKey = false;
             } else {
                 String msg = pluginConfig.getPrefix()
                         + pluginConfig.getMessage("no_key").replace("<crate>", crate.getName());
@@ -295,22 +300,36 @@ public class ModernCratesPlugin extends JavaPlugin {
             }
         }
 
-        // Find animation
         Animation animation = animationRegistry.get(crate.getAnimationId());
         if (animation == null) {
-            player.sendMessage(TextUtil.parse("<red>Animation not found: " + crate.getAnimationId()));
+            String msg = pluginConfig.getPrefix()
+                    + pluginConfig.getMessage("animation_not_found").replace("<animation>", crate.getAnimationId());
+            player.sendMessage(TextUtil.parse(msg));
             return false;
         }
 
-        // Find animation type
         AnimationType type = animationTypeRegistry.get(animation.getTypeId());
         if (type == null) {
-            player.sendMessage(TextUtil.parse("<red>Animation type not found: " + animation.getTypeId()));
+            String msg = pluginConfig.getPrefix()
+                    + pluginConfig.getMessage("animation_type_not_found").replace("<type>", animation.getTypeId());
+            player.sendMessage(TextUtil.parse(msg));
             return false;
         }
 
-        // Start animation
-        animationManager.startSession(player, crate, type, animation, interactedLocation);
+        if (!animationManager.startSession(player, crate, type, animation, interactedLocation)) {
+            String msg = pluginConfig.getPrefix() + pluginConfig.getMessage("crate_in_use");
+            player.sendMessage(TextUtil.parse(msg));
+            return false;
+        }
+
+        if (crate.requiresKey()) {
+            if (usePhysicalKey) {
+                keyManager.removeKey(player, crate);
+            } else {
+                virtualKeyManager.removeKey(player, crate.getId());
+            }
+        }
+
         return true;
     }
 

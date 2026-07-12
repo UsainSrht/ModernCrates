@@ -22,6 +22,8 @@ public class Crate {
     private PreviewConfig previewConfig;
     private AnnounceConfig announceConfig;
     private Map<String, Reward> rewards;
+    private boolean autoShowChanceOnLore;
+    private List<String> chanceLoreTemplate = new ArrayList<>();
 
     public Crate(String id) {
         this.id = id;
@@ -128,6 +130,22 @@ public class Crate {
 
     public void setRewards(Map<String, Reward> rewards) {
         this.rewards = rewards;
+    }
+
+    public boolean isAutoShowChanceOnLore() {
+        return autoShowChanceOnLore;
+    }
+
+    public void setAutoShowChanceOnLore(boolean autoShowChanceOnLore) {
+        this.autoShowChanceOnLore = autoShowChanceOnLore;
+    }
+
+    public List<String> getChanceLoreTemplate() {
+        return chanceLoreTemplate;
+    }
+
+    public void setChanceLoreTemplate(List<String> chanceLoreTemplate) {
+        this.chanceLoreTemplate = chanceLoreTemplate != null ? chanceLoreTemplate : new ArrayList<>();
     }
 
     public boolean isPhysical() {

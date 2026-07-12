@@ -93,16 +93,20 @@ public class PluginConfig {
             hologramSystem = "FANCY_HOLOGRAMS";
             giveFullInventoryDrop = true;
             allowShiftLeftClickRemove = true;
-            messages = Map.of(
-                    "reload", "<green>reloaded!",
-                    "no_key", "<red>You don't have a <dark_red><crate> <red>key to open this crate!",
-                    "no_crate", "<red>No crate named <dark_red><crate><red>!",
-                    "no_player", "<red>No player named <dark_red><player><red>!",
-                    "crate_given", "<green>Crate <dark_green><crate> <green>given to <dark_green><player><green>!",
-                    "key_given", "<green>Crate <dark_green><crate> <green>key given to <dark_green><player><green>!",
-                    "inventory_full_dropped", "<yellow>Your inventory was full! The crate <gold><crate> <yellow>was dropped at your feet.",
-                    "inventory_full_virtual_key", "<yellow>Your inventory was full! A virtual key for <gold><crate> <yellow>was added to your account instead.",
-                    "inventory_full_no_space", "<red>Your inventory is full! The item for <dark_red><crate> <red>could not be given."
+            messages = Map.ofEntries(
+                    Map.entry("reload", "<green>reloaded!"),
+                    Map.entry("crate_already_open", "<red>You already have a crate open!"),
+                    Map.entry("crate_in_use", "<red>This crate is currently in use!"),
+                    Map.entry("animation_not_found", "<red>Animation not found: <dark_red><animation>"),
+                    Map.entry("animation_type_not_found", "<red>Animation type not found: <dark_red><type>"),
+                    Map.entry("no_key", "<red>You don't have a <dark_red><crate> <red>key to open this crate!"),
+                    Map.entry("no_crate", "<red>No crate named <dark_red><crate><red>!"),
+                    Map.entry("no_player", "<red>No player named <dark_red><player><red>!"),
+                    Map.entry("crate_given", "<green>Crate <dark_green><crate> <green>given to <dark_green><player><green>!"),
+                    Map.entry("key_given", "<green>Crate <dark_green><crate> <green>key given to <dark_green><player><green>!"),
+                    Map.entry("inventory_full_dropped", "<yellow>Your inventory was full! The crate <gold><crate> <yellow>was dropped at your feet."),
+                    Map.entry("inventory_full_virtual_key", "<yellow>Your inventory was full! A virtual key for <gold><crate> <yellow>was added to your account instead."),
+                    Map.entry("inventory_full_no_space", "<red>Your inventory is full! The item for <dark_red><crate> <red>could not be given.")
             );
             sounds = Map.of(
                     "reload", "ui.button.click",

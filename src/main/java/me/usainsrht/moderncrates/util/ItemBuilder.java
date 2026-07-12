@@ -5,12 +5,17 @@ import me.usainsrht.moderncrates.api.reward.Reward;
 import me.usainsrht.moderncrates.api.animation.GuiItemConfig;
 import me.usainsrht.moderncrates.api.reward.RewardDisplay;
 import me.usainsrht.moderncrates.api.reward.RewardItem;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -19,6 +24,8 @@ import java.util.stream.Collectors;
  * Utility for building ItemStacks from configuration data.
  */
 public final class ItemBuilder {
+
+    private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
 
     private ItemBuilder() {}
 
@@ -30,20 +37,22 @@ public final class ItemBuilder {
         if (reward == null) {
             return new ItemStack(Material.STONE);
         }
-        RewardDisplay display = reward.getDisplay();
-        if (display == null) {
+
+        double chancePercentage = calculateChancePercentage(reward, crate);
+        ItemStack item;
+
+        if (reward.getDisplay() != null) {
+            item = fromDisplay(reward.getDisplay(), chancePercentage);
+        } else if (reward.hasItems()) {
+            RewardItem firstItem = reward.getItems().values().iterator().next();
+            item = fromRewardItem(firstItem);
+            item = applyChancePlaceholdersToItem(item, chancePercentage);
+        } else {
             return new ItemStack(Material.STONE);
         }
-        double chancePercentage = 0.0;
-        if (crate != null) {
-            double totalWeight = crate.getTotalWeight();
-            if (totalWeight > 0) {
-                chancePercentage = (reward.getChance() / totalWeight) * 100.0;
-            }
-        } else {
-            chancePercentage = reward.getChance();
-        }
-        return fromDisplay(display, chancePercentage);
+
+        appendChanceLoreTemplate(item, crate, chancePercentage);
+        return item;
     }
 
     public static ItemStack fromDisplay(RewardDisplay display, double chancePercentage) {
@@ -57,18 +66,14 @@ public final class ItemBuilder {
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return item;
 
-        java.text.DecimalFormatSymbols symbols = new java.text.DecimalFormatSymbols(java.util.Locale.US);
-        java.text.DecimalFormat df = new java.text.DecimalFormat("#.##", symbols);
-        String formattedChance = df.format(chancePercentage);
+        String formattedChance = formatChance(chancePercentage);
 
         if (display.getName() != null) {
-            meta.displayName(TextUtil.parse(display.getName()
-                    .replace("<chance>", formattedChance)
-                    .replace("%chance%", formattedChance)));
+            meta.displayName(TextUtil.parse(replaceChancePlaceholders(display.getName(), formattedChance)));
         }
         if (display.getLore() != null) {
             meta.lore(display.getLore().stream()
-                    .map(line -> line.replace("<chance>", formattedChance).replace("%chance%", formattedChance))
+                    .map(line -> replaceChancePlaceholders(line, formattedChance))
                     .map(TextUtil::parse)
                     .collect(Collectors.toList()));
         }
@@ -90,6 +95,97 @@ public final class ItemBuilder {
         return item;
     }
 
+    public static RewardItem toRewardItem(ItemStack stack) {
+        RewardItem rewardItem = new RewardItem();
+        if (stack == null || stack.getType() == Material.AIR) {
+            return rewardItem;
+        }
+
+        rewardItem.setMaterial(stack.getType().name());
+        rewardItem.setAmount(stack.getAmount());
+
+        ItemMeta meta = stack.getItemMeta();
+        if (meta == null) {
+            return rewardItem;
+        }
+
+        if (meta.hasDisplayName()) {
+            rewardItem.setName(componentToMiniMessage(meta.displayName()));
+        }
+        if (meta.hasLore() && meta.lore() != null) {
+            rewardItem.setLore(meta.lore().stream()
+                    .map(ItemBuilder::componentToMiniMessage)
+                    .collect(Collectors.toList()));
+        }
+
+        Map<String, Integer> enchantments = extractEnchantments(meta);
+        if (!enchantments.isEmpty()) {
+            rewardItem.setEnchantments(enchantments);
+        }
+
+        Map<String, Integer> storedEnchantments = extractStoredEnchantments(meta);
+        if (!storedEnchantments.isEmpty()) {
+            rewardItem.setStoredEnchantments(storedEnchantments);
+        }
+
+        if (!meta.getItemFlags().isEmpty()) {
+            rewardItem.setItemFlags(meta.getItemFlags().stream()
+                    .map(ItemFlag::name)
+                    .collect(Collectors.toList()));
+        }
+
+        rewardItem.setHideTooltip(meta.isHideTooltip());
+        rewardItem.setHideEnchantments(meta.hasItemFlag(ItemFlag.HIDE_ENCHANTS)
+                || meta.hasItemFlag(ItemFlag.HIDE_STORED_ENCHANTS));
+
+        return rewardItem;
+    }
+
+    public static RewardDisplay toRewardDisplay(ItemStack stack) {
+        RewardDisplay display = new RewardDisplay();
+        if (stack == null || stack.getType() == Material.AIR) {
+            return display;
+        }
+
+        display.setMaterial(stack.getType().name());
+        display.setAmount(stack.getAmount());
+
+        ItemMeta meta = stack.getItemMeta();
+        if (meta == null) {
+            return display;
+        }
+
+        if (meta.hasDisplayName()) {
+            display.setName(componentToMiniMessage(meta.displayName()));
+        }
+        if (meta.hasLore() && meta.lore() != null) {
+            display.setLore(meta.lore().stream()
+                    .map(ItemBuilder::componentToMiniMessage)
+                    .collect(Collectors.toList()));
+        }
+
+        Map<String, Integer> enchantments = extractEnchantments(meta);
+        if (!enchantments.isEmpty()) {
+            display.setEnchantments(enchantments);
+        }
+
+        Map<String, Integer> storedEnchantments = extractStoredEnchantments(meta);
+        if (!storedEnchantments.isEmpty()) {
+            display.setStoredEnchantments(storedEnchantments);
+        }
+
+        if (!meta.getItemFlags().isEmpty()) {
+            display.setItemFlags(meta.getItemFlags().stream()
+                    .map(ItemFlag::name)
+                    .collect(Collectors.toList()));
+        }
+
+        display.setHideTooltip(meta.isHideTooltip());
+        display.setHideEnchantments(meta.hasItemFlag(ItemFlag.HIDE_ENCHANTS)
+                || meta.hasItemFlag(ItemFlag.HIDE_STORED_ENCHANTS));
+
+        return display;
+    }
 
     public static ItemStack fromRewardItem(RewardItem rewardItem) {
         if (rewardItem == null || rewardItem.getMaterial() == null) {
@@ -193,25 +289,118 @@ public final class ItemBuilder {
         if (reward == null) {
             return net.kyori.adventure.text.Component.empty();
         }
+
+        String formattedChance = formatChance(calculateChancePercentage(reward, crate));
+
         if (reward.getDisplay() != null && reward.getDisplay().getName() != null) {
-            double totalWeight = crate != null ? crate.getTotalWeight() : 0.0;
-            double chancePercentage = totalWeight > 0 ? (reward.getChance() / totalWeight) * 100.0 : 0.0;
-            java.text.DecimalFormatSymbols symbols = new java.text.DecimalFormatSymbols(java.util.Locale.US);
-            java.text.DecimalFormat df = new java.text.DecimalFormat("#.##", symbols);
-            String formattedChance = df.format(chancePercentage);
-            String rawName = reward.getDisplay().getName()
-                    .replace("<chance>", formattedChance)
-                    .replace("%chance%", formattedChance);
-            return TextUtil.parse(rawName);
+            return TextUtil.parse(replaceChancePlaceholders(reward.getDisplay().getName(), formattedChance));
         }
+
+        if (reward.hasItems()) {
+            RewardItem firstItem = reward.getItems().values().iterator().next();
+            if (firstItem.getName() != null) {
+                return TextUtil.parse(replaceChancePlaceholders(firstItem.getName(), formattedChance));
+            }
+            if (firstItem.getMaterial() != null) {
+                Material mat = Material.matchMaterial(firstItem.getMaterial().toUpperCase());
+                if (mat != null) {
+                    return net.kyori.adventure.text.Component.translatable(mat.translationKey())
+                            .decoration(net.kyori.adventure.text.format.TextDecoration.ITALIC, false);
+                }
+            }
+        }
+
         if (reward.getDisplay() != null && reward.getDisplay().getMaterial() != null) {
-            org.bukkit.Material mat = org.bukkit.Material.matchMaterial(reward.getDisplay().getMaterial().toUpperCase());
+            Material mat = Material.matchMaterial(reward.getDisplay().getMaterial().toUpperCase());
             if (mat != null) {
                 return net.kyori.adventure.text.Component.translatable(mat.translationKey())
                         .decoration(net.kyori.adventure.text.format.TextDecoration.ITALIC, false);
             }
         }
+
         return net.kyori.adventure.text.Component.text(reward.getId());
+    }
+
+    private static void appendChanceLoreTemplate(ItemStack item, Crate crate, double chancePercentage) {
+        if (crate == null || !crate.isAutoShowChanceOnLore()) return;
+        List<String> template = crate.getChanceLoreTemplate();
+        if (template == null || template.isEmpty()) return;
+
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return;
+
+        String formattedChance = formatChance(chancePercentage);
+        List<Component> lore = meta.lore() != null ? new ArrayList<>(meta.lore()) : new ArrayList<>();
+        for (String line : template) {
+            lore.add(TextUtil.parse(replaceChancePlaceholders(line, formattedChance)));
+        }
+        meta.lore(lore);
+        item.setItemMeta(meta);
+    }
+
+    private static ItemStack applyChancePlaceholdersToItem(ItemStack item, double chancePercentage) {
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return item;
+
+        String formattedChance = formatChance(chancePercentage);
+        if (meta.hasDisplayName()) {
+            meta.displayName(TextUtil.parse(
+                    replaceChancePlaceholders(componentToMiniMessage(meta.displayName()), formattedChance)));
+        }
+        if (meta.hasLore() && meta.lore() != null) {
+            meta.lore(meta.lore().stream()
+                    .map(ItemBuilder::componentToMiniMessage)
+                    .map(line -> replaceChancePlaceholders(line, formattedChance))
+                    .map(TextUtil::parse)
+                    .collect(Collectors.toList()));
+        }
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    private static double calculateChancePercentage(Reward reward, Crate crate) {
+        if (crate != null) {
+            double totalWeight = crate.getTotalWeight();
+            if (totalWeight > 0) {
+                return (reward.getChance() / totalWeight) * 100.0;
+            }
+        }
+        return reward.getChance();
+    }
+
+    private static String formatChance(double chancePercentage) {
+        java.text.DecimalFormatSymbols symbols = new java.text.DecimalFormatSymbols(java.util.Locale.US);
+        java.text.DecimalFormat df = new java.text.DecimalFormat("#.##", symbols);
+        return df.format(chancePercentage);
+    }
+
+    private static String replaceChancePlaceholders(String text, String formattedChance) {
+        return text.replace("<chance>", formattedChance).replace("%chance%", formattedChance);
+    }
+
+    private static String componentToMiniMessage(Component component) {
+        if (component == null) return "";
+        return MINI_MESSAGE.serialize(component);
+    }
+
+    @SuppressWarnings("deprecation")
+    private static Map<String, Integer> extractEnchantments(ItemMeta meta) {
+        Map<String, Integer> enchantments = new LinkedHashMap<>();
+        for (Map.Entry<Enchantment, Integer> entry : meta.getEnchants().entrySet()) {
+            enchantments.put(entry.getKey().getKey().getKey().toUpperCase(), entry.getValue());
+        }
+        return enchantments;
+    }
+
+    @SuppressWarnings("deprecation")
+    private static Map<String, Integer> extractStoredEnchantments(ItemMeta meta) {
+        Map<String, Integer> storedEnchantments = new LinkedHashMap<>();
+        if (meta instanceof EnchantmentStorageMeta bookMeta) {
+            for (Map.Entry<Enchantment, Integer> entry : bookMeta.getStoredEnchants().entrySet()) {
+                storedEnchantments.put(entry.getKey().getKey().getKey().toUpperCase(), entry.getValue());
+            }
+        }
+        return storedEnchantments;
     }
 
     @SuppressWarnings("deprecation")
@@ -219,7 +408,7 @@ public final class ItemBuilder {
         for (var entry : enchantments.entrySet()) {
             Enchantment ench = Enchantment.getByName(entry.getKey().toUpperCase());
             if (ench != null) {
-                if (meta instanceof org.bukkit.inventory.meta.EnchantmentStorageMeta bookMeta) {
+                if (meta instanceof EnchantmentStorageMeta bookMeta) {
                     bookMeta.addStoredEnchant(ench, entry.getValue(), true);
                 } else {
                     meta.addEnchant(ench, entry.getValue(), true);
@@ -230,7 +419,7 @@ public final class ItemBuilder {
 
     @SuppressWarnings("deprecation")
     private static void applyStoredEnchantments(ItemMeta meta, Map<String, Integer> storedEnchantments) {
-        if (meta instanceof org.bukkit.inventory.meta.EnchantmentStorageMeta bookMeta) {
+        if (meta instanceof EnchantmentStorageMeta bookMeta) {
             for (var entry : storedEnchantments.entrySet()) {
                 Enchantment ench = Enchantment.getByName(entry.getKey().toUpperCase());
                 if (ench != null) {

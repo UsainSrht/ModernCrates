@@ -150,9 +150,7 @@ public class ItemRiseAnimationSession implements AnimationSession {
         risePerTick = animation.getRiseHeight() / animation.getRiseTicks();
 
         Reward firstReward = cycleRewards.isEmpty() ? selectedReward : cycleRewards.get(0);
-        ItemStack displayItem = firstReward.getDisplay() != null
-                ? ItemBuilder.fromDisplay(firstReward, crate)
-                : new ItemStack(org.bukkit.Material.STONE);
+        ItemStack displayItem = ItemBuilder.fromDisplay(firstReward, crate);
         Component rewardComponent = ItemBuilder.getRewardComponent(firstReward, crate);
 
         Location spawnLoc = new Location(world, baseX, currentY, baseZ);
@@ -200,7 +198,7 @@ public class ItemRiseAnimationSession implements AnimationSession {
             cycleIndex = (cycleIndex + 1) % cycleRewards.size();
             Reward current = cycleRewards.get(cycleIndex);
 
-            if (itemDisplay != null && !itemDisplay.isDead() && current.getDisplay() != null) {
+            if (itemDisplay != null && !itemDisplay.isDead()) {
                 itemDisplay.setItemStack(ItemBuilder.fromDisplay(current, crate));
             }
             if (textDisplay != null && !textDisplay.isDead()) {
@@ -249,7 +247,7 @@ public class ItemRiseAnimationSession implements AnimationSession {
 
     private void settleReward() {
         // Show final reward
-        if (itemDisplay != null && !itemDisplay.isDead() && selectedReward.getDisplay() != null) {
+        if (itemDisplay != null && !itemDisplay.isDead()) {
             itemDisplay.setItemStack(ItemBuilder.fromDisplay(selectedReward, crate));
         }
         if (textDisplay != null && !textDisplay.isDead()) {

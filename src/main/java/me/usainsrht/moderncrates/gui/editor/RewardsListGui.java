@@ -7,7 +7,6 @@ import me.usainsrht.moderncrates.api.reward.RewardDisplay;
 import me.usainsrht.moderncrates.util.ItemBuilder;
 import me.usainsrht.moderncrates.util.TextUtil;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
@@ -42,12 +41,7 @@ public class RewardsListGui extends EditorGuiBase {
             var entry = rewardsList.get(i);
             Reward reward = entry.getValue();
 
-            ItemStack item;
-            if (reward.getDisplay() != null) {
-                item = ItemBuilder.fromDisplay(reward, crate);
-            } else {
-                item = new ItemStack(Material.STONE);
-            }
+            ItemStack item = ItemBuilder.fromDisplay(reward, crate);
 
             ItemMeta meta = item.getItemMeta();
             List<net.kyori.adventure.text.Component> lore = new ArrayList<>();

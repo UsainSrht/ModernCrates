@@ -134,6 +134,17 @@ public class CrateConfigParser {
 
         crate.setBounceBack(yaml.getBoolean("bounce_back", false));
 
+        crate.setAutoShowChanceOnLore(yaml.getBoolean("auto_show_chance_on_lore",
+                yaml.getBoolean("auto-show-chance-on-lore", false)));
+        List<String> chanceLoreTemplate = yaml.getStringList("chance-lore-template");
+        if (chanceLoreTemplate.isEmpty()) {
+            chanceLoreTemplate = yaml.getStringList("chance_lore_template");
+        }
+        if (chanceLoreTemplate.isEmpty()) {
+            chanceLoreTemplate = defaultChanceLoreTemplate();
+        }
+        crate.setChanceLoreTemplate(chanceLoreTemplate);
+
         // Hologram
         ConfigurationSection holoSection = yaml.getConfigurationSection("hologram");
         if (holoSection != null) {
@@ -393,6 +404,10 @@ public class CrateConfigParser {
         }
 
         yaml.set("bounce_back", crate.isBounceBack());
+        yaml.set("auto_show_chance_on_lore", crate.isAutoShowChanceOnLore());
+        if (crate.getChanceLoreTemplate() != null && !crate.getChanceLoreTemplate().isEmpty()) {
+            yaml.set("chance-lore-template", crate.getChanceLoreTemplate());
+        }
 
         // Hologram
         HologramConfig holo = crate.getHologramConfig();
@@ -505,5 +520,9 @@ public class CrateConfigParser {
         }
 
         yaml.save(file);
+    }
+
+    private static List<String> defaultChanceLoreTemplate() {
+        return List.of("", " <yellow>%<chance> ", "");
     }
 }
