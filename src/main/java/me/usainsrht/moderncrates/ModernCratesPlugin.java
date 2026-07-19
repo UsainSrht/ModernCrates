@@ -279,7 +279,16 @@ public class ModernCratesPlugin extends JavaPlugin {
             return false;
         }
 
-        if (interactedLocation != null && animationManager.isBlockInUse(interactedLocation)) {
+        Animation animation = animationRegistry.get(crate.getAnimationId());
+        if (animation == null) {
+            String msg = pluginConfig.getPrefix()
+                    + pluginConfig.getMessage("animation_not_found").replace("<animation>", crate.getAnimationId());
+            player.sendMessage(TextUtil.parse(msg));
+            return false;
+        }
+
+        if (interactedLocation != null && animation.isLocksPhysicalBlock()
+                && animationManager.isBlockInUse(interactedLocation)) {
             String msg = pluginConfig.getPrefix() + pluginConfig.getMessage("crate_in_use");
             player.sendMessage(TextUtil.parse(msg));
             return false;
@@ -298,14 +307,6 @@ public class ModernCratesPlugin extends JavaPlugin {
                 SoundUtil.play(player, pluginConfig.getSound("no_key"));
                 return false;
             }
-        }
-
-        Animation animation = animationRegistry.get(crate.getAnimationId());
-        if (animation == null) {
-            String msg = pluginConfig.getPrefix()
-                    + pluginConfig.getMessage("animation_not_found").replace("<animation>", crate.getAnimationId());
-            player.sendMessage(TextUtil.parse(msg));
-            return false;
         }
 
         AnimationType type = animationTypeRegistry.get(animation.getTypeId());

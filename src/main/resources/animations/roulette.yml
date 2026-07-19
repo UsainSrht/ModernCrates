@@ -15,6 +15,12 @@
 # Built-in types: csgo, click, scratchcard, slot, item_rise, block_dismantle
 type: CSGO
 
+# Physical block behaviour (when opened via a placed crate block):
+# locks_physical_block — reserve the block while animating (crate_in_use). Default false for GUI types.
+# open_lid — open chest/barrel/shulker lids at the block location during the animation.
+locks_physical_block: false
+open_lid: false
+
 # Title shown in the inventory while the animation is running.
 # Supports MiniMessage formatting: <gold>, <bold>, <rainbow>, etc.
 gui_title: "<aqua><bold>⚡ Roulette Crate ⚡"

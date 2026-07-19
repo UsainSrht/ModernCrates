@@ -15,6 +15,9 @@
 # Built-in types: csgo, click, scratchcard, slot, item_rise, block_dismantle
 type: CLICK
 
+locks_physical_block: false
+open_lid: false
+
 # Title shown while the player is clicking to reveal rewards.
 # Supports MiniMessage formatting: <gold>, <bold>, <rainbow>, etc.
 gui_title: "<gold><bold>Click to Reveal"

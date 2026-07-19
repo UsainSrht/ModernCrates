@@ -16,6 +16,9 @@
 # Built-in types: csgo, click, scratchcard, slot, item_rise, block_dismantle
 type: block_dismantle
 
+# Reserves the physical block while animating (default true for physical animations).
+locks_physical_block: true
+
 # ── Shell appearance ──────────────────────────────────────────────
 
 # The block material used for the six shell face displays.

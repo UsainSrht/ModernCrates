@@ -158,6 +158,12 @@ public class AnimationConfigParser {
         // Not-closeable
         anim.setNotCloseable(yaml.getBoolean("not_closeable", false));
 
+        // Physical block behaviour — defaults depend on animation type
+        boolean defaultLocksPhysicalBlock = "item_rise".equals(anim.getTypeId())
+                || "block_dismantle".equals(anim.getTypeId());
+        anim.setLocksPhysicalBlock(yaml.getBoolean("locks_physical_block", defaultLocksPhysicalBlock));
+        anim.setOpenLid(yaml.getBoolean("open_lid", false));
+
         return anim;
     }
 
@@ -287,6 +293,8 @@ public class AnimationConfigParser {
         if (animation.getTickSounds() != null) yaml.set("tick_sound", animation.getTickSounds());
         if (animation.getRewardSounds() != null) yaml.set("reward_sound", animation.getRewardSounds());
         yaml.set("not_closeable", animation.isNotCloseable());
+        yaml.set("locks_physical_block", animation.isLocksPhysicalBlock());
+        yaml.set("open_lid", animation.isOpenLid());
 
         yaml.save(file);
     }

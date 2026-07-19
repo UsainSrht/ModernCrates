@@ -15,6 +15,9 @@
 # Built-in types: csgo, click, scratchcard, slot, item_rise, block_dismantle
 type: csgo
 
+locks_physical_block: false
+open_lid: false
+
 # ── GUI ───────────────────────────────────────────────────────────
 
 # Title shown in the inventory while the animation is running.

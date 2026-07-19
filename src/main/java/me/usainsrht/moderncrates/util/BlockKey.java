@@ -1,6 +1,8 @@
 package me.usainsrht.moderncrates.util;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 
 import java.util.Objects;
 
@@ -28,6 +30,12 @@ public final class BlockKey {
                 location.getBlockY(),
                 location.getBlockZ()
         );
+    }
+
+    public Location toLocation() {
+        World bukkitWorld = Bukkit.getWorld(world);
+        if (bukkitWorld == null) return null;
+        return new Location(bukkitWorld, x, y, z);
     }
 
     @Override

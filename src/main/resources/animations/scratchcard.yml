@@ -16,6 +16,9 @@
 # Built-in types: csgo, click, scratchcard, slot, item_rise, block_dismantle
 type: scratchcard
 
+locks_physical_block: false
+open_lid: false
+
 # Title shown while scratch panels are available.
 # <amount> is replaced with the number of remaining scratchable panels.
 gui_title: "<gold><bold>Scratchcard - <amount> left"

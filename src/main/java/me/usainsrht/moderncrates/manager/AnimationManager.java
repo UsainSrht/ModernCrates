@@ -9,6 +9,7 @@ import me.usainsrht.moderncrates.api.reward.Reward;
 import me.usainsrht.moderncrates.api.reward.RewardItem;
 import me.usainsrht.moderncrates.util.BlockKey;
 import me.usainsrht.moderncrates.util.ItemBuilder;
+import me.usainsrht.moderncrates.util.LiddedBlockUtil;
 import me.usainsrht.moderncrates.util.TextUtil;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -31,6 +32,8 @@ public class AnimationManager {
     /** Blocks currently being animated (prevents concurrent opens on the same physical crate). */
     private final Map<BlockKey, UUID> activeBlocks = new ConcurrentHashMap<>();
     private final Map<UUID, BlockKey> playerBlocks = new ConcurrentHashMap<>();
+    /** Lidded blocks opened by open_lid for cleanup on session end. */
+    private final Map<UUID, BlockKey> openedLids = new ConcurrentHashMap<>();
 
     public AnimationManager(GracefulScheduling scheduling) {
         this.scheduling = scheduling;
@@ -61,7 +64,7 @@ public class AnimationManager {
         if (hasActiveSession(player)) return false;
 
         BlockKey blockKey = null;
-        if (interactedLocation != null && interactedLocation.getWorld() != null) {
+        if (interactedLocation != null && interactedLocation.getWorld() != null && animation.isLocksPhysicalBlock()) {
             blockKey = BlockKey.from(interactedLocation);
             UUID existing = activeBlocks.putIfAbsent(blockKey, player.getUniqueId());
             if (existing != null) return false;
@@ -75,8 +78,32 @@ public class AnimationManager {
         if (blockKey != null) {
             playerBlocks.put(player.getUniqueId(), blockKey);
         }
+        openLidIfConfigured(player, animation, interactedLocation);
         session.start();
         return true;
+    }
+
+    private void openLidIfConfigured(Player player, Animation animation, Location interactedLocation) {
+        if (!animation.isOpenLid() || interactedLocation == null) return;
+        // item_rise manages its own lid timing as part of the animation
+        if ("item_rise".equals(animation.getTypeId())) return;
+        if (!LiddedBlockUtil.isLidded(interactedLocation)) return;
+
+        BlockKey lidKey = BlockKey.from(interactedLocation);
+        openedLids.put(player.getUniqueId(), lidKey);
+        scheduling.regionSpecificScheduler(interactedLocation)
+                .run(() -> LiddedBlockUtil.open(interactedLocation));
+    }
+
+    private void releaseLid(UUID playerId) {
+        BlockKey lidKey = openedLids.remove(playerId);
+        if (lidKey == null) return;
+
+        Location location = lidKey.toLocation();
+        if (location == null) return;
+
+        scheduling.regionSpecificScheduler(location)
+                .run(() -> LiddedBlockUtil.close(location));
     }
 
     private void releaseBlock(UUID playerId) {
@@ -84,6 +111,7 @@ public class AnimationManager {
         if (blockKey != null) {
             activeBlocks.remove(blockKey, playerId);
         }
+        releaseLid(playerId);
     }
 
     public void endSession(Player player, Crate crate) {
@@ -251,6 +279,14 @@ public class AnimationManager {
         activeSessions.values().forEach(AnimationSession::cancel);
         activeSessions.clear();
         sessionCrates.clear();
+        for (BlockKey lidKey : openedLids.values()) {
+            Location location = lidKey.toLocation();
+            if (location != null) {
+                scheduling.regionSpecificScheduler(location)
+                        .run(() -> LiddedBlockUtil.close(location));
+            }
+        }
+        openedLids.clear();
         activeBlocks.clear();
         playerBlocks.clear();
     }

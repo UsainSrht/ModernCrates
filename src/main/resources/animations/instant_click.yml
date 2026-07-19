@@ -11,6 +11,9 @@
 # Built-in types: csgo, click, scratchcard, slot, item_rise, block_dismantle
 type: CLICK
 
+locks_physical_block: false
+open_lid: false
+
 # Title shown while the player waits to click their single panel.
 # Supports MiniMessage formatting: <gold>, <bold>, <rainbow>, etc.
 gui_title: "<gold><bold>⭐ Instant Crate ⭐"

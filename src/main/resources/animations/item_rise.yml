@@ -17,6 +17,9 @@
 # Built-in types: csgo, click, scratchcard, slot, item_rise, block_dismantle
 type: item_rise
 
+# Reserves the physical block while animating (default true for physical animations).
+locks_physical_block: true
+
 # ── Rise arc ──────────────────────────────────────────────────────
 
 # How high (in blocks) above the container the item floats at peak.

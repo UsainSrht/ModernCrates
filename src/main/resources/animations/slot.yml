@@ -15,6 +15,9 @@
 # Built-in types: csgo, click, scratchcard, slot, item_rise, block_dismantle
 type: slot
 
+locks_physical_block: false
+open_lid: false
+
 # Title shown in the inventory while the animation is running.
 # Supports MiniMessage formatting: <gold>, <bold>, <rainbow>, etc.
 gui_title: "<gold><bold>Slot Machine"

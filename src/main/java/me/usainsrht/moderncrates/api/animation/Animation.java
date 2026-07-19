@@ -91,6 +91,12 @@ public class Animation {
     // Not-closeable flag: prevents players from closing the GUI while animating
     private boolean notCloseable;
 
+    /** When true, opening via a physical block location reserves that block for the session. */
+    private boolean locksPhysicalBlock;
+
+    /** When true, opens lidded container blocks (chest, barrel, shulker) at the physical location during the session. */
+    private boolean openLid;
+
     // BlockDismantle-type fields
     private String dismantleBlockType;
     private int dismantleFallDurationTicks;
@@ -269,6 +275,12 @@ public class Animation {
 
     public boolean isNotCloseable() { return notCloseable; }
     public void setNotCloseable(boolean notCloseable) { this.notCloseable = notCloseable; }
+
+    public boolean isLocksPhysicalBlock() { return locksPhysicalBlock; }
+    public void setLocksPhysicalBlock(boolean locksPhysicalBlock) { this.locksPhysicalBlock = locksPhysicalBlock; }
+
+    public boolean isOpenLid() { return openLid; }
+    public void setOpenLid(boolean openLid) { this.openLid = openLid; }
 
     public int getDismantleFallDurationTicks() { return dismantleFallDurationTicks; }
     public void setDismantleFallDurationTicks(int dismantleFallDurationTicks) { this.dismantleFallDurationTicks = dismantleFallDurationTicks; }

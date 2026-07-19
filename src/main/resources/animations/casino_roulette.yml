@@ -20,6 +20,9 @@
 # Built-in types: csgo, click, scratchcard, slot, item_rise, block_dismantle
 type: CSGO
 
+locks_physical_block: false
+open_lid: false
+
 # Title shown in the inventory while spinning.
 # Supports MiniMessage formatting: <gold>, <bold>, <rainbow>, etc.
 gui_title: "<dark_red><bold>  Casino Roulette  "
