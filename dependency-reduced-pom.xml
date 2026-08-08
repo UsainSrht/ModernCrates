@@ -38,6 +38,10 @@
                   <pattern>space.arim.morepaperlib</pattern>
                   <shadedPattern>me.usainsrht.moderncrates.lib.morepaperlib</shadedPattern>
                 </relocation>
+                <relocation>
+                  <pattern>me.usainsrht.itemapi</pattern>
+                  <shadedPattern>me.usainsrht.moderncrates.lib.itemapi</shadedPattern>
+                </relocation>
               </relocations>
               <filters>
                 <filter>
@@ -130,6 +134,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <paper.version>1.21.11-R0.1-SNAPSHOT</paper.version>
+    <itemtext.version>1.0.3</itemtext.version>
     <java.version>25</java.version>
     <morepaperlib.version>0.4.4</morepaperlib.version>
   </properties>

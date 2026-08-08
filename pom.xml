@@ -17,6 +17,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <paper.version>1.21.11-R0.1-SNAPSHOT</paper.version>
         <morepaperlib.version>0.4.4</morepaperlib.version>
+        <itemtext.version>1.0.3</itemtext.version>
     </properties>
 
     <repositories>
@@ -56,6 +57,13 @@
             <groupId>space.arim.morepaperlib</groupId>
             <artifactId>morepaperlib</artifactId>
             <version>${morepaperlib.version}</version>
+        </dependency>
+
+        <!-- ItemText: ItemStack → Adventure Component (shaded) -->
+        <dependency>
+            <groupId>me.usainsrht.itemapi</groupId>
+            <artifactId>itemtext</artifactId>
+            <version>${itemtext.version}</version>
         </dependency>
 
         <!-- SnakeYAML (provided by Paper) -->
@@ -132,6 +140,10 @@
                                 <relocation>
                                     <pattern>space.arim.morepaperlib</pattern>
                                     <shadedPattern>me.usainsrht.moderncrates.lib.morepaperlib</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>me.usainsrht.itemapi</pattern>
+                                    <shadedPattern>me.usainsrht.moderncrates.lib.itemapi</shadedPattern>
                                 </relocation>
                             </relocations>
                             <filters>

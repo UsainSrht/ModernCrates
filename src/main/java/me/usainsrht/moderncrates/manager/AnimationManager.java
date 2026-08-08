@@ -11,6 +11,7 @@ import me.usainsrht.moderncrates.util.BlockKey;
 import me.usainsrht.moderncrates.util.ItemBuilder;
 import me.usainsrht.moderncrates.util.LiddedBlockUtil;
 import me.usainsrht.moderncrates.util.TextUtil;
+import me.usainsrht.itemapi.itemtext.ItemText;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -174,7 +175,7 @@ public class AnimationManager {
 
     private void announceReward(Player player, Crate crate, Reward reward) {
         ItemStack displayItem = ItemBuilder.fromDisplay(reward, crate);
-        Component rewardDisplayName = displayItem.displayName().hoverEvent(displayItem.asHoverEvent());
+        Component rewardDisplayName = ItemText.format(displayItem);
 
         // Per-reward custom announcement
         if (reward.getAnnounce() != null) {
@@ -229,7 +230,7 @@ public class AnimationManager {
         for (Reward reward : rewards) {
             if (reward.getAnnounce() != null) {
                 ItemStack displayItem = ItemBuilder.fromDisplay(reward, crate);
-                Component rewardDisplayName = displayItem.displayName().hoverEvent(displayItem.asHoverEvent());
+                Component rewardDisplayName = ItemText.format(displayItem);
                 String msg = reward.getAnnounce()
                         .replace("<player>", player.getName())
                         .replace("<reward_name>", "%%REWARD_NAME%%");
@@ -254,7 +255,7 @@ public class AnimationManager {
         if (multipleItemFormat != null && !multipleItemFormat.isEmpty()) {
             for (Reward reward : rewards) {
                 ItemStack displayItem = ItemBuilder.fromDisplay(reward, crate);
-                Component rewardDisplayName = displayItem.displayName().hoverEvent(displayItem.asHoverEvent());
+                Component rewardDisplayName = ItemText.format(displayItem);
                 String itemMsg = multipleItemFormat
                         .replace("<player>", player.getName())
                         .replace("<reward_name>", "%%REWARD_NAME%%");
