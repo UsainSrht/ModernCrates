@@ -6,11 +6,17 @@ import io.github.miniplaceholders.api.placeholder.AudiencePlaceholder;
 import io.github.miniplaceholders.api.resolver.AudienceTagResolver;
 import me.usainsrht.moderncrates.api.crate.Crate;
 import me.usainsrht.moderncrates.api.reward.Reward;
+import me.usainsrht.moderncrates.hook.LuckPermsHook;
+import me.usainsrht.moderncrates.util.TextUtil;
 import me.usainsrht.yamlmessage.YamlMessage;
+import me.usainsrht.yamlmessage.model.SoundData;
 import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -219,5 +225,97 @@ public final class PlaceholderUtil {
         if (message == null || message.isEmpty() || audience == null) return;
         TagResolver[] combined = combine(audience, resolvers);
         message.send(audience, combined);
+    }
+
+    /**
+     * Dispatches pre-parsed Adventure components and sounds to a single {@link Audience}.
+     */
+    public static void sendParsed(
+            @Nullable Audience audience,
+            @NotNull List<Component> chatComponents,
+            @Nullable Component actionbarComponent,
+            @Nullable Title title,
+            @NotNull List<Sound> sounds) {
+        if (audience == null) return;
+        for (Component component : chatComponents) {
+            audience.sendMessage(component);
+        }
+        if (actionbarComponent != null) {
+            audience.sendActionBar(actionbarComponent);
+        }
+        if (title != null) {
+            audience.showTitle(title);
+        }
+        for (Sound sound : sounds) {
+            audience.playSound(sound);
+        }
+    }
+
+    /**
+     * Broadcasts an announcement parsed ONCE using the opener's context and resolvers,
+     * delivering the pre-parsed components to the opener, console, and unmuted viewers.
+     *
+     * @param message    The {@link YamlMessage} announcement.
+     * @param opener     The player opening the crate.
+     * @param toEveryone Whether the announcement should be broadcast to console and online players.
+     * @param prefix     Optional message prefix.
+     * @param muteKey    Metadata key used to check if viewers muted crate announcements.
+     * @param resolvers  Custom tag resolvers for the announcement.
+     */
+    public static void broadcastAnnouncement(
+            @Nullable YamlMessage message,
+            @NotNull Player opener,
+            boolean toEveryone,
+            @Nullable String prefix,
+            @Nullable String muteKey,
+            @NotNull TagResolver... resolvers) {
+        if (message == null || message.isEmpty() || opener == null) return;
+
+        TagResolver[] combined = combine(opener, resolvers);
+
+        List<Component> chatComponents = new ArrayList<>();
+        if (message.chat() != null && !message.chat().isEmpty()) {
+            boolean hasPrefix = prefix != null && !prefix.isEmpty();
+            for (String raw : message.chat()) {
+                String formatted = hasPrefix ? prefix + raw : raw;
+                chatComponents.add(MiniMessage.miniMessage().deserialize(formatted, combined));
+            }
+        }
+
+        Component actionbarComponent = null;
+        if (message.actionbar() != null && !message.actionbar().isEmpty()) {
+            actionbarComponent = MiniMessage.miniMessage().deserialize(message.actionbar(), combined);
+        }
+
+        Title title = null;
+        if (message.title() != null) {
+            title = message.title().toTitle(combined);
+        }
+
+        List<Sound> sounds = new ArrayList<>();
+        if (message.sounds() != null && !message.sounds().isEmpty()) {
+            for (SoundData soundData : message.sounds()) {
+                if (soundData != null) {
+                    sounds.add(soundData.toSound());
+                }
+            }
+        }
+
+        // Opener always sees their own announcement
+        sendParsed(opener, chatComponents, actionbarComponent, title, sounds);
+
+        if (!toEveryone) return;
+
+        // Console receives announcement
+        if (Bukkit.getServer() != null) {
+            sendParsed(Bukkit.getConsoleSender(), chatComponents, actionbarComponent, title, sounds);
+
+            for (Player viewer : Bukkit.getOnlinePlayers()) {
+                if (viewer.getUniqueId().equals(opener.getUniqueId())) continue;
+                if (muteKey != null && !muteKey.isBlank() && LuckPermsHook.isMuted(viewer, muteKey)) continue;
+
+                sendParsed(viewer, chatComponents, actionbarComponent, title, sounds);
+            }
+        }
     }
 }

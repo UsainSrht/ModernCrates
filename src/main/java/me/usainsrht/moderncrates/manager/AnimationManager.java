@@ -263,22 +263,8 @@ public class AnimationManager {
             TagResolver... resolvers) {
         if (message == null || message.isEmpty()) return;
 
-        // Opener always sees their own announcement
-        PlaceholderUtil.send(message, opener, prefix, resolvers);
-
-        if (!toEveryone) return;
-
-        // Console receives announcement
-        PlaceholderUtil.send(message, Bukkit.getConsoleSender(), prefix, resolvers);
-
-        // LuckPerms mute check for other players
         String muteKey = plugin != null ? plugin.getPluginConfig().getAnnouncementMuteMetaKey() : "mute-crate-announcements";
-        for (Player viewer : Bukkit.getOnlinePlayers()) {
-            if (viewer.getUniqueId().equals(opener.getUniqueId())) continue;
-            if (LuckPermsHook.isMuted(viewer, muteKey)) continue;
-
-            PlaceholderUtil.send(message, viewer, prefix, resolvers);
-        }
+        PlaceholderUtil.broadcastAnnouncement(message, opener, toEveryone, prefix, muteKey, resolvers);
     }
 
     public void cancelAll() {

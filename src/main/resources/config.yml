@@ -1,0 +1,65 @@
+# ╔══════════════════════════════════════════════════════════════╗
+# ║                 ModernCrates Main Configuration              ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+# Prefix prepended to plugin messages.
+# Supports MiniMessage formatting (e.g. <gold>, <gray>, <#HEX>).
+prefix: "<gold>MC <gray>> "
+
+# Hologram system provider to use.
+# Available options:
+#   - FANCY_HOLOGRAMS
+#   - DECENT_HOLOGRAMS
+#   - HOLOGRAMS
+#   - NONE (disables floating text displays)
+hologram-system: "FANCY_HOLOGRAMS"
+
+# If true, crates will drop at the player's feet when their inventory is full.
+# For keys, virtual keys will be granted instead if their inventory is full.
+give-full-inventory-drop: true
+
+# If true, players with 'moderncrates.admin' permission can shift-left-click
+# a placed crate block to quickly remove/delete it.
+allow-shift-left-click-remove: true
+
+# Player metadata key used to store announcement mute preferences.
+announcement-mute-meta-key: "mute-crate-announcements"
+
+# ── Main Command Settings ─────────────────────────────────────────
+command:
+  name: "moderncrates"
+  description: "ModernCrates command"
+  usage: "/moderncrates"
+  permission: "moderncrates.use"
+  aliases:
+    - "mc"
+    - "crate"
+    - "crates"
+
+# ── Messages ──────────────────────────────────────────────────────
+# Supports MiniMessage formatting and dynamic placeholders.
+# YamlMessage format supports single strings, lists, or structured objects with actions.
+messages:
+  reload: "<green>reloaded!"
+  crate_already_open: "<red>You already have a crate open!"
+  crate_in_use: "<red>This crate is currently in use!"
+  animation_not_found: "<red>Animation not found: <dark_red><animation>"
+  animation_type_not_found: "<red>Animation type not found: <dark_red><type>"
+  no_key: "<red>You don't have a <dark_red><crate> <red>key to open this crate!"
+  no_crate: "<red>No crate named <dark_red><crate><red>!"
+  no_player: "<red>No player named <dark_red><player><red>!"
+  crate_given: "<green>Crate <dark_green><crate> <green>given to <dark_green><player><green>!"
+  key_given: "<green>Crate <dark_green><crate> <green>key given to <dark_green><player><green>!"
+  inventory_full_dropped: "<yellow>Your inventory was full! The crate <gold><crate> <yellow>was dropped at your feet."
+  inventory_full_virtual_key: "<yellow>Your inventory was full! A virtual key for <gold><crate> <yellow>was added to your account instead."
+  inventory_full_no_space: "<red>Your inventory is full! The item for <dark_red><crate> <red>could not be given."
+
+# ── Sounds ────────────────────────────────────────────────────────
+# Minecraft sound identifiers played on specific plugin actions.
+sounds:
+  reload: "ui.button.click"
+  no_key: "entity.villager.no"
+  no_crate: "entity.villager.no"
+  no_player: "entity.villager.no"
+  crate_given: "entity.villager.yes"
+  key_given: "entity.villager.yes"

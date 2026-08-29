@@ -87,12 +87,8 @@ public class ModernCratesPlugin extends JavaPlugin {
         crateConfigParser = new CrateConfigParser(getLogger());
 
         // Load config
+        saveDefaultConfig();
         pluginConfig = new PluginConfig(getDataFolder());
-        try {
-            pluginConfig.createDefaults();
-        } catch (IOException e) {
-            getLogger().warning("Failed to create default config: " + e.getMessage());
-        }
         pluginConfig.load();
 
         // Resolve hologram provider from config

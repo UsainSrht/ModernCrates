@@ -32,7 +32,7 @@ public final class LuckPermsHook {
      *
      * @param player  The player to check.
      * @param metaKey The LuckPerms meta key.
-     * @return {@code true} if the meta tag is present and set to true/non-false; {@code false} otherwise.
+     * @return {@code true} if the meta tag is present and set to "true", "1", or "yes"; {@code false} otherwise.
      */
     public static boolean isMuted(Player player, String metaKey) {
         if (player == null || metaKey == null || metaKey.isBlank()) {
@@ -47,14 +47,26 @@ public final class LuckPermsHook {
             LuckPerms luckPerms = LuckPermsProvider.get();
             CachedMetaData metaData = luckPerms.getPlayerAdapter(Player.class).getMetaData(player);
             String val = metaData.getMetaValue(metaKey);
-            if (val != null) {
-                String trimmed = val.trim();
-                return "true".equalsIgnoreCase(trimmed) || (!trimmed.isEmpty() && !"false".equalsIgnoreCase(trimmed));
-            }
+            return isMuteValue(val);
         } catch (Throwable ignored) {
             // Fail-safe if LuckPerms API encounters an issue or is absent
         }
 
         return false;
+    }
+
+    /**
+     * Checks whether the metadata value represents a muted state.
+     * Muted when set to "true", "1", or "yes" (case-insensitive).
+     *
+     * @param val The meta value string.
+     * @return {@code true} if muted; {@code false} otherwise.
+     */
+    public static boolean isMuteValue(String val) {
+        if (val == null) {
+            return false;
+        }
+        String trimmed = val.trim();
+        return "true".equalsIgnoreCase(trimmed) || "1".equals(trimmed) || "yes".equalsIgnoreCase(trimmed);
     }
 }

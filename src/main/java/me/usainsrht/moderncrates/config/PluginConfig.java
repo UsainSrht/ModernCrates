@@ -116,58 +116,7 @@ public class PluginConfig {
         yaml.save(file);
     }
 
-    public void createDefaults() throws IOException {
-        if (!file.exists()) {
-            file.getParentFile().mkdirs();
-            yaml = new YamlConfiguration();
-            prefix = "<gold>MC <dark_gray>> ";
-            hologramSystem = "FANCY_HOLOGRAMS";
-            giveFullInventoryDrop = true;
-            allowShiftLeftClickRemove = true;
-            announcementMuteMetaKey = "mute-crate-announcements";
-            Map<String, String> defaultMessages = Map.ofEntries(
-                    Map.entry("reload", "<green>reloaded!"),
-                    Map.entry("crate_already_open", "<red>You already have a crate open!"),
-                    Map.entry("crate_in_use", "<red>This crate is currently in use!"),
-                    Map.entry("animation_not_found", "<red>Animation not found: <dark_red><animation>"),
-                    Map.entry("animation_type_not_found", "<red>Animation type not found: <dark_red><type>"),
-                    Map.entry("no_key", "<red>You don't have a <dark_red><crate> <red>key to open this crate!"),
-                    Map.entry("no_crate", "<red>No crate named <dark_red><crate><red>!"),
-                    Map.entry("no_player", "<red>No player named <dark_red><player><red>!"),
-                    Map.entry("crate_given", "<green>Crate <dark_green><crate> <green>given to <dark_green><player><green>!"),
-                    Map.entry("key_given", "<green>Crate <dark_green><crate> <green>key given to <dark_green><player><green>!"),
-                    Map.entry("inventory_full_dropped", "<yellow>Your inventory was full! The crate <gold><crate> <yellow>was dropped at your feet."),
-                    Map.entry("inventory_full_virtual_key", "<yellow>Your inventory was full! A virtual key for <gold><crate> <yellow>was added to your account instead."),
-                    Map.entry("inventory_full_no_space", "<red>Your inventory is full! The item for <dark_red><crate> <red>could not be given.")
-            );
-            Map<String, String> defaultSounds = Map.of(
-                    "reload", "ui.button.click",
-                    "no_key", "entity.villager.no",
-                    "no_crate", "entity.villager.no",
-                    "no_player", "entity.villager.no",
-                    "crate_given", "entity.villager.yes",
-                    "key_given", "entity.villager.yes"
-            );
 
-            rawMessages.putAll(defaultMessages);
-            for (var entry : defaultMessages.entrySet()) {
-                messages.put(entry.getKey(), YamlMessage.parse(entry.getValue()));
-            }
-
-            rawSounds.putAll(defaultSounds);
-            for (var entry : defaultSounds.entrySet()) {
-                sounds.put(entry.getKey(), parseSoundMessage(entry.getValue()));
-            }
-
-            commandConfig = new CommandConfig();
-            commandConfig.setName("moderncrates");
-            commandConfig.setDescription("ModernCrates command");
-            commandConfig.setUsage("/moderncrates");
-            commandConfig.setPermission("moderncrates.use");
-            commandConfig.setAliases(List.of("mc", "crate", "crates"));
-            save();
-        }
-    }
 
     public String getPrefix() { return prefix; }
     public String getHologramSystem() { return hologramSystem; }
@@ -198,11 +147,11 @@ public class PluginConfig {
     public YamlConfiguration getYaml() { return yaml; }
 
     public static class CommandConfig {
-        private String name;
-        private String description;
-        private String usage;
-        private String permission;
-        private List<String> aliases;
+        private String name = "moderncrates";
+        private String description = "ModernCrates command";
+        private String usage = "/moderncrates";
+        private String permission = "moderncrates.use";
+        private List<String> aliases = List.of("mc", "crate", "crates");
 
         public String getName() { return name; }
         public void setName(String name) { this.name = name; }
