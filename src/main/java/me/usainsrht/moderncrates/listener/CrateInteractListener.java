@@ -4,8 +4,10 @@ import me.usainsrht.moderncrates.ModernCratesPlugin;
 import me.usainsrht.moderncrates.api.crate.Crate;
 import me.usainsrht.moderncrates.api.crate.CrateLocation;
 import me.usainsrht.moderncrates.gui.PreviewGui;
+import me.usainsrht.moderncrates.util.PlaceholderUtil;
 import me.usainsrht.moderncrates.util.SoundUtil;
 import me.usainsrht.moderncrates.util.TextUtil;
+import me.usainsrht.yamlmessage.YamlMessage;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -79,7 +81,7 @@ public class CrateInteractListener implements Listener {
                 // Remove this specific crate location
                 boolean removed = removeCrateLocation(crate, block);
                 if (!removed) {
-                    player.sendMessage(TextUtil.parse("<red>Error: Could not find this crate location."));
+                    PlaceholderUtil.send(YamlMessage.chat("<red>Error: Could not find this crate location."), player);
                     return;
                 }
 
@@ -93,10 +95,11 @@ public class CrateInteractListener implements Listener {
                     plugin.getHologramManager().createHologram(crate);
                 }
 
-                player.sendMessage(TextUtil.parse(
-                        "<yellow>Removed crate location for <white>" + crate.getName()
-                        + "<yellow>. (" + crate.getCrateLocations().size() + " remaining)"
-                ));
+                PlaceholderUtil.send(YamlMessage.chat("<yellow>Removed crate location for <white><crate><yellow>. (<amount> remaining)"),
+                        player,
+                        PlaceholderUtil.combine(player,
+                                PlaceholderUtil.parsed("crate", crate.getName()),
+                                PlaceholderUtil.parsed("amount", String.valueOf(crate.getCrateLocations().size()))));
                 return;
             }
             
@@ -116,10 +119,8 @@ public class CrateInteractListener implements Listener {
             // Bounce back
             if (crate.isBounceBack() && !canOpen(player, crate)) {
                 bounceBack(player, block);
-                String msg = plugin.getPluginConfig().getPrefix()
-                        + plugin.getPluginConfig().getMessage("no_key")
-                                .replace("<crate>", crate.getName());
-                player.sendMessage(TextUtil.parse(msg));
+                PlaceholderUtil.send(plugin.getPluginConfig().getMessage("no_key"), player, plugin.getPluginConfig().getPrefix(),
+                        PlaceholderUtil.crateResolvers(player, crate));
                 SoundUtil.play(player, plugin.getPluginConfig().getSound("no_key"));
                 return;
             }
@@ -166,10 +167,11 @@ public class CrateInteractListener implements Listener {
         plugin.getHologramManager().removeHologram(crate.getId());
         plugin.getHologramManager().createHologram(crate);
 
-        event.getPlayer().sendMessage(TextUtil.parse(
-                "<green>Location added to crate <white>" + crate.getName()
-                + "<green>! (" + crate.getCrateLocations().size() + " total)"
-        ));
+        PlaceholderUtil.send(YamlMessage.chat("<green>Location added to crate <white><crate><green>! (<amount> total)"),
+                event.getPlayer(),
+                PlaceholderUtil.combine(event.getPlayer(),
+                        PlaceholderUtil.parsed("crate", crate.getName()),
+                        PlaceholderUtil.parsed("amount", String.valueOf(crate.getCrateLocations().size()))));
     }
 
     /**
@@ -201,10 +203,11 @@ public class CrateInteractListener implements Listener {
             plugin.getHologramManager().createHologram(crate);
         }
 
-        player.sendMessage(TextUtil.parse(
-                "<yellow>Removed crate location for <white>" + crate.getName()
-                + "<yellow>. (" + crate.getCrateLocations().size() + " remaining)"
-        ));
+        PlaceholderUtil.send(YamlMessage.chat("<yellow>Removed crate location for <white><crate><yellow>. (<amount> remaining)"),
+                player,
+                PlaceholderUtil.combine(player,
+                        PlaceholderUtil.parsed("crate", crate.getName()),
+                        PlaceholderUtil.parsed("amount", String.valueOf(crate.getCrateLocations().size()))));
     }
 
     private boolean removeCrateLocation(Crate crate, Block block) {

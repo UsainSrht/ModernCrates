@@ -1,24 +1,31 @@
 package me.usainsrht.moderncrates.manager;
 
+import me.usainsrht.itemapi.itemtext.ItemText;
+import me.usainsrht.moderncrates.ModernCratesPlugin;
 import me.usainsrht.moderncrates.api.animation.Animation;
 import me.usainsrht.moderncrates.api.animation.AnimationSession;
 import me.usainsrht.moderncrates.api.animation.AnimationType;
+import me.usainsrht.moderncrates.api.crate.AnnounceConfig;
 import me.usainsrht.moderncrates.api.crate.Crate;
-import org.bukkit.Location;
 import me.usainsrht.moderncrates.api.reward.Reward;
 import me.usainsrht.moderncrates.api.reward.RewardItem;
+import me.usainsrht.moderncrates.hook.LuckPermsHook;
 import me.usainsrht.moderncrates.util.BlockKey;
 import me.usainsrht.moderncrates.util.ItemBuilder;
 import me.usainsrht.moderncrates.util.LiddedBlockUtil;
-import me.usainsrht.moderncrates.util.TextUtil;
-import me.usainsrht.itemapi.itemtext.ItemText;
+import me.usainsrht.moderncrates.util.PlaceholderUtil;
+import me.usainsrht.yamlmessage.YamlMessage;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import space.arim.morepaperlib.scheduling.GracefulScheduling;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -26,6 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class AnimationManager {
 
+    private final ModernCratesPlugin plugin;
     private final GracefulScheduling scheduling;
 
     private final Map<UUID, AnimationSession> activeSessions = new ConcurrentHashMap<>();
@@ -36,8 +44,13 @@ public class AnimationManager {
     /** Lidded blocks opened by open_lid for cleanup on session end. */
     private final Map<UUID, BlockKey> openedLids = new ConcurrentHashMap<>();
 
-    public AnimationManager(GracefulScheduling scheduling) {
+    public AnimationManager(ModernCratesPlugin plugin, GracefulScheduling scheduling) {
+        this.plugin = plugin;
         this.scheduling = scheduling;
+    }
+
+    public AnimationManager(GracefulScheduling scheduling) {
+        this(ModernCratesPlugin.getPlugin(ModernCratesPlugin.class), scheduling);
     }
 
     public boolean hasActiveSession(Player player) {
@@ -176,41 +189,30 @@ public class AnimationManager {
     private void announceReward(Player player, Crate crate, Reward reward) {
         ItemStack displayItem = ItemBuilder.fromDisplay(reward, crate);
         Component rewardDisplayName = ItemText.format(displayItem);
+        TagResolver[] resolvers = PlaceholderUtil.rewardResolvers(player, crate, reward, rewardDisplayName);
+        String prefix = plugin != null ? plugin.getPluginConfig().getPrefix() : null;
 
         // Per-reward custom announcement
-        if (reward.getAnnounce() != null) {
-            String msg = reward.getAnnounce()
-                    .replace("<player>", player.getName())
-                    .replace("<reward_name>", "%%REWARD_NAME%%");
-            Component comp = TextUtil.parse(msg)
-                    .replaceText(builder -> builder.matchLiteral("%%REWARD_NAME%%").replacement(rewardDisplayName));
-            if (crate.getAnnounceConfig() != null && crate.getAnnounceConfig().isToEveryone()) {
-                Bukkit.getServer().sendMessage(comp);
-            } else {
-                player.sendMessage(comp);
-            }
+        YamlMessage rewardAnnounce = reward.getAnnounceMessage();
+        if (rewardAnnounce != null && !rewardAnnounce.isEmpty()) {
+            boolean toEveryone = crate.getAnnounceConfig() != null && crate.getAnnounceConfig().isToEveryone();
+            dispatchAnnouncement(rewardAnnounce, player, toEveryone, null, resolvers);
             return;
         }
 
         // Default crate announcement
         if (crate.getAnnounceConfig() != null) {
-            var annConfig = crate.getAnnounceConfig();
-            String msg = annConfig.getSingle()
-                    .replace("<player>", player.getName())
-                    .replace("<reward_name>", "%%REWARD_NAME%%");
-            Component comp = TextUtil.parse(msg)
-                    .replaceText(builder -> builder.matchLiteral("%%REWARD_NAME%%").replacement(rewardDisplayName));
-            if (annConfig.isToEveryone()) {
-                Bukkit.getServer().sendMessage(comp);
-            } else {
-                player.sendMessage(comp);
+            AnnounceConfig annConfig = crate.getAnnounceConfig();
+            YamlMessage singleMsg = annConfig.getSingleMessage();
+            if (!singleMsg.isEmpty()) {
+                dispatchAnnouncement(singleMsg, player, annConfig.isToEveryone(), null, resolvers);
             }
         }
     }
 
     private void announceRewards(Player player, Crate crate, List<Reward> rewards) {
         if (crate.getAnnounceConfig() == null) return;
-        var annConfig = crate.getAnnounceConfig();
+        AnnounceConfig annConfig = crate.getAnnounceConfig();
 
         if (rewards.size() == 1) {
             announceReward(player, crate, rewards.get(0));
@@ -218,8 +220,8 @@ public class AnimationManager {
         }
 
         // Fallback to single announcements if multiple is not configured
-        String multipleHeader = annConfig.getMultiple();
-        if (multipleHeader == null || multipleHeader.isEmpty()) {
+        YamlMessage multipleHeader = annConfig.getMultipleMessage();
+        if (multipleHeader.isEmpty()) {
             for (Reward reward : rewards) {
                 announceReward(player, crate, reward);
             }
@@ -228,51 +230,54 @@ public class AnimationManager {
 
         // Send custom announcements for any rewards that have custom overrides
         for (Reward reward : rewards) {
-            if (reward.getAnnounce() != null) {
+            YamlMessage rewardAnnounce = reward.getAnnounceMessage();
+            if (rewardAnnounce != null && !rewardAnnounce.isEmpty()) {
                 ItemStack displayItem = ItemBuilder.fromDisplay(reward, crate);
                 Component rewardDisplayName = ItemText.format(displayItem);
-                String msg = reward.getAnnounce()
-                        .replace("<player>", player.getName())
-                        .replace("<reward_name>", "%%REWARD_NAME%%");
-                Component comp = TextUtil.parse(msg)
-                        .replaceText(builder -> builder.matchLiteral("%%REWARD_NAME%%").replacement(rewardDisplayName));
-                if (annConfig.isToEveryone()) {
-                    Bukkit.getServer().sendMessage(comp);
-                } else {
-                    player.sendMessage(comp);
-                }
+                TagResolver[] resolvers = PlaceholderUtil.rewardResolvers(player, crate, reward, rewardDisplayName);
+                dispatchAnnouncement(rewardAnnounce, player, annConfig.isToEveryone(), null, resolvers);
             }
         }
 
-        // Send the multiple rewards announcement
-        String headerMsg = multipleHeader.replace("<player>", player.getName());
-        Component headerComp = TextUtil.parse(headerMsg);
+        // Send the multiple rewards announcement header
+        TagResolver[] crateResolvers = PlaceholderUtil.crateResolvers(player, crate);
+        dispatchAnnouncement(multipleHeader, player, annConfig.isToEveryone(), null, crateResolvers);
 
-        List<Component> messageLines = new ArrayList<>();
-        messageLines.add(headerComp);
-
-        String multipleItemFormat = annConfig.getMultipleItem();
-        if (multipleItemFormat != null && !multipleItemFormat.isEmpty()) {
+        // Send multiple item lines
+        YamlMessage itemMessage = annConfig.getMultipleItemMessage();
+        if (!itemMessage.isEmpty()) {
             for (Reward reward : rewards) {
                 ItemStack displayItem = ItemBuilder.fromDisplay(reward, crate);
                 Component rewardDisplayName = ItemText.format(displayItem);
-                String itemMsg = multipleItemFormat
-                        .replace("<player>", player.getName())
-                        .replace("<reward_name>", "%%REWARD_NAME%%");
-                Component itemComp = TextUtil.parse(itemMsg)
-                        .replaceText(builder -> builder.matchLiteral("%%REWARD_NAME%%").replacement(rewardDisplayName));
-                messageLines.add(itemComp);
+                TagResolver[] resolvers = PlaceholderUtil.rewardResolvers(player, crate, reward, rewardDisplayName);
+                dispatchAnnouncement(itemMessage, player, annConfig.isToEveryone(), null, resolvers);
             }
         }
+    }
 
-        if (annConfig.isToEveryone()) {
-            for (Component line : messageLines) {
-                Bukkit.getServer().sendMessage(line);
-            }
-        } else {
-            for (Component line : messageLines) {
-                player.sendMessage(line);
-            }
+    private void dispatchAnnouncement(
+            YamlMessage message,
+            Player opener,
+            boolean toEveryone,
+            String prefix,
+            TagResolver... resolvers) {
+        if (message == null || message.isEmpty()) return;
+
+        // Opener always sees their own announcement
+        PlaceholderUtil.send(message, opener, prefix, resolvers);
+
+        if (!toEveryone) return;
+
+        // Console receives announcement
+        PlaceholderUtil.send(message, Bukkit.getConsoleSender(), prefix, resolvers);
+
+        // LuckPerms mute check for other players
+        String muteKey = plugin != null ? plugin.getPluginConfig().getAnnouncementMuteMetaKey() : "mute-crate-announcements";
+        for (Player viewer : Bukkit.getOnlinePlayers()) {
+            if (viewer.getUniqueId().equals(opener.getUniqueId())) continue;
+            if (LuckPermsHook.isMuted(viewer, muteKey)) continue;
+
+            PlaceholderUtil.send(message, viewer, prefix, resolvers);
         }
     }
 

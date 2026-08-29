@@ -42,6 +42,10 @@
                   <pattern>me.usainsrht.itemapi</pattern>
                   <shadedPattern>me.usainsrht.moderncrates.lib.itemapi</shadedPattern>
                 </relocation>
+                <relocation>
+                  <pattern>me.usainsrht.yamlmessage</pattern>
+                  <shadedPattern>me.usainsrht.moderncrates.lib.yamlmessage</shadedPattern>
+                </relocation>
               </relocations>
               <filters>
                 <filter>
@@ -95,6 +99,10 @@
       <url>https://repo.codemc.io/repository/maven-public/</url>
     </repository>
     <repository>
+      <id>codemc-snapshots</id>
+      <url>https://repo.codemc.io/repository/maven-snapshots/</url>
+    </repository>
+    <repository>
       <id>fancyplugins</id>
       <url>https://repo.fancyplugins.de/releases</url>
     </repository>
@@ -104,6 +112,18 @@
       <groupId>io.papermc.paper</groupId>
       <artifactId>paper-api</artifactId>
       <version>1.21.11-R0.1-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.github.miniplaceholders</groupId>
+      <artifactId>miniplaceholders-api</artifactId>
+      <version>3.2.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>net.luckperms</groupId>
+      <artifactId>api</artifactId>
+      <version>5.4</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -130,12 +150,35 @@
       <version>2.9.1</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>5.10.2</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>junit-jupiter-api</artifactId>
+          <groupId>org.junit.jupiter</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>junit-jupiter-params</artifactId>
+          <groupId>org.junit.jupiter</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>junit-jupiter-engine</artifactId>
+          <groupId>org.junit.jupiter</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
   </dependencies>
   <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <paper.version>1.21.11-R0.1-SNAPSHOT</paper.version>
     <itemtext.version>1.0.3</itemtext.version>
     <java.version>25</java.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <paper.version>1.21.11-R0.1-SNAPSHOT</paper.version>
+    <miniplaceholders.version>3.2.0</miniplaceholders.version>
+    <yamlmessage.version>1.0.0</yamlmessage.version>
+    <luckperms.version>5.4</luckperms.version>
     <morepaperlib.version>0.4.4</morepaperlib.version>
   </properties>
 </project>

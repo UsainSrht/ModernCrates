@@ -18,6 +18,9 @@
         <paper.version>1.21.11-R0.1-SNAPSHOT</paper.version>
         <morepaperlib.version>0.4.4</morepaperlib.version>
         <itemtext.version>1.0.3</itemtext.version>
+        <yamlmessage.version>1.0.0</yamlmessage.version>
+        <miniplaceholders.version>3.2.0</miniplaceholders.version>
+        <luckperms.version>5.4</luckperms.version>
     </properties>
 
     <repositories>
@@ -36,6 +39,10 @@
         <repository>
             <id>codemc-repo</id>
             <url>https://repo.codemc.io/repository/maven-public/</url>
+        </repository>
+        <repository>
+            <id>codemc-snapshots</id>
+            <url>https://repo.codemc.io/repository/maven-snapshots/</url>
         </repository>
         <repository>
             <id>fancyplugins</id>
@@ -66,6 +73,29 @@
             <version>${itemtext.version}</version>
         </dependency>
 
+        <!-- YamlMessageAPI (shaded) -->
+        <dependency>
+            <groupId>me.usainsrht</groupId>
+            <artifactId>YamlMessageAPI</artifactId>
+            <version>${yamlmessage.version}</version>
+        </dependency>
+
+        <!-- MiniPlaceholders API (optional, provided) -->
+        <dependency>
+            <groupId>io.github.miniplaceholders</groupId>
+            <artifactId>miniplaceholders-api</artifactId>
+            <version>${miniplaceholders.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- LuckPerms API (optional, provided) -->
+        <dependency>
+            <groupId>net.luckperms</groupId>
+            <artifactId>api</artifactId>
+            <version>${luckperms.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
         <!-- SnakeYAML (provided by Paper) -->
         <dependency>
             <groupId>org.yaml</groupId>
@@ -92,6 +122,12 @@
             <artifactId>FancyHolograms</artifactId>
             <version>2.9.1</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.10.2</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -144,6 +180,10 @@
                                 <relocation>
                                     <pattern>me.usainsrht.itemapi</pattern>
                                     <shadedPattern>me.usainsrht.moderncrates.lib.itemapi</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>me.usainsrht.yamlmessage</pattern>
+                                    <shadedPattern>me.usainsrht.moderncrates.lib.yamlmessage</shadedPattern>
                                 </relocation>
                             </relocations>
                             <filters>

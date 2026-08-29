@@ -1,6 +1,8 @@
 package me.usainsrht.moderncrates.api.reward;
 
+import me.usainsrht.yamlmessage.YamlMessage;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -16,6 +18,7 @@ public class Reward {
     private Map<String, RewardItem> items;
     private List<String> commands;
     private String announce;
+    private YamlMessage announceMessage;
     private String requiredPermission;
 
     public Reward(String id) {
@@ -64,6 +67,25 @@ public class Reward {
 
     public void setAnnounce(String announce) {
         this.announce = announce;
+        this.announceMessage = announce != null ? YamlMessage.parse(announce) : null;
+    }
+
+    public @Nullable YamlMessage getAnnounceMessage() {
+        if (announceMessage != null) return announceMessage;
+        if (announce != null) {
+            this.announceMessage = YamlMessage.parse(announce);
+            return this.announceMessage;
+        }
+        return null;
+    }
+
+    public void setAnnounceMessage(@Nullable YamlMessage announceMessage) {
+        this.announceMessage = announceMessage;
+        if (announceMessage != null && announceMessage.chat() != null && !announceMessage.chat().isEmpty()) {
+            this.announce = String.join("\n", announceMessage.chat());
+        } else if (announceMessage == null) {
+            this.announce = null;
+        }
     }
 
     public String getRequiredPermission() {

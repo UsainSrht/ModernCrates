@@ -24,6 +24,7 @@ import me.usainsrht.moderncrates.manager.KeyManager;
 import me.usainsrht.moderncrates.manager.VirtualKeyManager;
 import me.usainsrht.moderncrates.hologram.HologramProvider;
 import me.usainsrht.moderncrates.hologram.VanillaHologramProvider;
+import me.usainsrht.moderncrates.util.PlaceholderUtil;
 import me.usainsrht.moderncrates.util.SoundUtil;
 import me.usainsrht.moderncrates.util.TextUtil;
 import org.bukkit.Location;
@@ -75,7 +76,7 @@ public class ModernCratesPlugin extends JavaPlugin {
         scheduling = morePaperLib.scheduling();
 
         // Managers
-        animationManager = new AnimationManager(scheduling);
+        animationManager = new AnimationManager(this, scheduling);
         keyManager = new KeyManager();
         virtualKeyManager = new VirtualKeyManager(getDataFolder(), getLogger());
         hologramManager = new HologramManager();
@@ -274,23 +275,25 @@ public class ModernCratesPlugin extends JavaPlugin {
      */
     public boolean tryOpenCrate(Player player, Crate crate, Location interactedLocation) {
         if (animationManager.hasActiveSession(player)) {
-            String msg = pluginConfig.getPrefix() + pluginConfig.getMessage("crate_already_open");
-            player.sendMessage(TextUtil.parse(msg));
+            PlaceholderUtil.send(pluginConfig.getMessage("crate_already_open"), player, pluginConfig.getPrefix(),
+                    PlaceholderUtil.crateResolvers(player, crate));
             return false;
         }
 
         Animation animation = animationRegistry.get(crate.getAnimationId());
         if (animation == null) {
-            String msg = pluginConfig.getPrefix()
-                    + pluginConfig.getMessage("animation_not_found").replace("<animation>", crate.getAnimationId());
-            player.sendMessage(TextUtil.parse(msg));
+            PlaceholderUtil.send(pluginConfig.getMessage("animation_not_found"), player, pluginConfig.getPrefix(),
+                    PlaceholderUtil.combine(player,
+                            PlaceholderUtil.parsed("animation", crate.getAnimationId()),
+                            PlaceholderUtil.parsed("crate", crate.getName()),
+                            PlaceholderUtil.component("crate_name", TextUtil.parse(crate.getName()))));
             return false;
         }
 
         if (interactedLocation != null && animation.isLocksPhysicalBlock()
                 && animationManager.isBlockInUse(interactedLocation)) {
-            String msg = pluginConfig.getPrefix() + pluginConfig.getMessage("crate_in_use");
-            player.sendMessage(TextUtil.parse(msg));
+            PlaceholderUtil.send(pluginConfig.getMessage("crate_in_use"), player, pluginConfig.getPrefix(),
+                    PlaceholderUtil.crateResolvers(player, crate));
             return false;
         }
 
@@ -301,9 +304,8 @@ public class ModernCratesPlugin extends JavaPlugin {
             } else if (virtualKeyManager.getKeys(player, crate.getId()) > 0) {
                 usePhysicalKey = false;
             } else {
-                String msg = pluginConfig.getPrefix()
-                        + pluginConfig.getMessage("no_key").replace("<crate>", crate.getName());
-                player.sendMessage(TextUtil.parse(msg));
+                PlaceholderUtil.send(pluginConfig.getMessage("no_key"), player, pluginConfig.getPrefix(),
+                        PlaceholderUtil.crateResolvers(player, crate));
                 SoundUtil.play(player, pluginConfig.getSound("no_key"));
                 return false;
             }
@@ -311,15 +313,17 @@ public class ModernCratesPlugin extends JavaPlugin {
 
         AnimationType type = animationTypeRegistry.get(animation.getTypeId());
         if (type == null) {
-            String msg = pluginConfig.getPrefix()
-                    + pluginConfig.getMessage("animation_type_not_found").replace("<type>", animation.getTypeId());
-            player.sendMessage(TextUtil.parse(msg));
+            PlaceholderUtil.send(pluginConfig.getMessage("animation_type_not_found"), player, pluginConfig.getPrefix(),
+                    PlaceholderUtil.combine(player,
+                            PlaceholderUtil.parsed("type", animation.getTypeId()),
+                            PlaceholderUtil.parsed("crate", crate.getName()),
+                            PlaceholderUtil.component("crate_name", TextUtil.parse(crate.getName()))));
             return false;
         }
 
         if (!animationManager.startSession(player, crate, type, animation, interactedLocation)) {
-            String msg = pluginConfig.getPrefix() + pluginConfig.getMessage("crate_in_use");
-            player.sendMessage(TextUtil.parse(msg));
+            PlaceholderUtil.send(pluginConfig.getMessage("crate_in_use"), player, pluginConfig.getPrefix(),
+                    PlaceholderUtil.crateResolvers(player, crate));
             return false;
         }
 

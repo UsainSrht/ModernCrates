@@ -6,20 +6,21 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
-import me.usainsrht.moderncrates.ModernCratesPlugin;
-import me.usainsrht.moderncrates.api.crate.Crate;
-import me.usainsrht.moderncrates.api.crate.CrateLocation;
-import me.usainsrht.moderncrates.gui.PlayerMenuGui;
-import me.usainsrht.moderncrates.gui.PreviewGui;
-import me.usainsrht.moderncrates.gui.editor.MainMenuGui;
-import me.usainsrht.moderncrates.util.SoundUtil;
-import me.usainsrht.moderncrates.util.TextUtil;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
 import io.papermc.paper.plugin.lifecycle.event.LifecycleEventManager;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
+import me.usainsrht.moderncrates.ModernCratesPlugin;
+import me.usainsrht.moderncrates.api.crate.Crate;
+import me.usainsrht.moderncrates.api.crate.CrateLocation;
+import me.usainsrht.moderncrates.gui.PlayerMenuGui;
+import me.usainsrht.moderncrates.gui.PreviewGui;
+import me.usainsrht.moderncrates.gui.editor.MainMenuGui;
+import me.usainsrht.moderncrates.util.PlaceholderUtil;
+import me.usainsrht.moderncrates.util.SoundUtil;
+import me.usainsrht.yamlmessage.YamlMessage;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -142,7 +143,7 @@ public class ModernCratesCommand {
 
     private int handleMenu(CommandContext<CommandSourceStack> ctx) {
         if (!(ctx.getSource().getSender() instanceof Player player)) {
-            ctx.getSource().getSender().sendMessage(TextUtil.parse("<red>This command can only be used by players."));
+            PlaceholderUtil.send(YamlMessage.chat("<red>This command can only be used by players."), ctx.getSource().getSender());
             return Command.SINGLE_SUCCESS;
         }
 
@@ -153,8 +154,8 @@ public class ModernCratesCommand {
 
     private int handleReload(CommandContext<CommandSourceStack> ctx) {
         plugin.reloadPlugin();
-        String msg = plugin.getPluginConfig().getPrefix() + plugin.getPluginConfig().getMessage("reload");
-        ctx.getSource().getSender().sendMessage(TextUtil.parse(msg));
+        PlaceholderUtil.send(plugin.getPluginConfig().getMessage("reload"),
+                ctx.getSource().getSender(), plugin.getPluginConfig().getPrefix());
         SoundUtil.play(ctx.getSource().getSender() instanceof Player p ? p : null,
                 plugin.getPluginConfig().getSound("reload"));
         return Command.SINGLE_SUCCESS;
@@ -162,7 +163,7 @@ public class ModernCratesCommand {
 
     private int handleEditor(CommandContext<CommandSourceStack> ctx) {
         if (!(ctx.getSource().getSender() instanceof Player player)) {
-            ctx.getSource().getSender().sendMessage(TextUtil.parse("<red>This command can only be used by players."));
+            PlaceholderUtil.send(YamlMessage.chat("<red>This command can only be used by players."), ctx.getSource().getSender());
             return Command.SINGLE_SUCCESS;
         }
 
@@ -173,7 +174,7 @@ public class ModernCratesCommand {
 
     private int handlePreview(CommandContext<CommandSourceStack> ctx) {
         if (!(ctx.getSource().getSender() instanceof Player player)) {
-            ctx.getSource().getSender().sendMessage(TextUtil.parse("<red>This command can only be used by players."));
+            PlaceholderUtil.send(YamlMessage.chat("<red>This command can only be used by players."), ctx.getSource().getSender());
             return Command.SINGLE_SUCCESS;
         }
 
@@ -194,7 +195,7 @@ public class ModernCratesCommand {
      */
     private int handleSet(CommandContext<CommandSourceStack> ctx) {
         if (!(ctx.getSource().getSender() instanceof Player player)) {
-            ctx.getSource().getSender().sendMessage(TextUtil.parse("<red>This command can only be used by players."));
+            PlaceholderUtil.send(YamlMessage.chat("<red>This command can only be used by players."), ctx.getSource().getSender());
             return Command.SINGLE_SUCCESS;
         }
 
@@ -207,7 +208,7 @@ public class ModernCratesCommand {
 
         Block target = player.getTargetBlockExact(10);
         if (target == null) {
-            player.sendMessage(TextUtil.parse("<red>No block in sight (max 10 blocks)."));
+            PlaceholderUtil.send(YamlMessage.chat("<red>No block in sight (max 10 blocks)."), player);
             return Command.SINGLE_SUCCESS;
         }
 
@@ -217,19 +218,22 @@ public class ModernCratesCommand {
         try {
             plugin.getCrateConfigParser().save(crate, new File(plugin.getDataFolder(), "crates"));
         } catch (Exception e) {
-            player.sendMessage(TextUtil.parse("<red>Failed to save: " + e.getMessage()));
+            PlaceholderUtil.send(YamlMessage.chat("<red>Failed to save: " + e.getMessage()), player);
         }
         plugin.getHologramManager().removeHologram(crateId);
         plugin.getHologramManager().createHologram(crate);
 
-        player.sendMessage(TextUtil.parse("<green>Location added to crate <white>" + crate.getName()
-                + "<green>! (" + crate.getCrateLocations().size() + " total)"));
+        PlaceholderUtil.send(YamlMessage.chat("<green>Location added to crate <white><crate><green>! (<amount> total)"),
+                player, plugin.getPluginConfig().getPrefix(),
+                PlaceholderUtil.combine(player,
+                        PlaceholderUtil.parsed("crate", crate.getName()),
+                        PlaceholderUtil.parsed("amount", String.valueOf(crate.getCrateLocations().size()))));
         return Command.SINGLE_SUCCESS;
     }
 
     private int handleOpen(CommandContext<CommandSourceStack> ctx) {
         if (!(ctx.getSource().getSender() instanceof Player player)) {
-            ctx.getSource().getSender().sendMessage(TextUtil.parse("<red>This command can only be used by players."));
+            PlaceholderUtil.send(YamlMessage.chat("<red>This command can only be used by players."), ctx.getSource().getSender());
             return Command.SINGLE_SUCCESS;
         }
 
@@ -263,7 +267,7 @@ public class ModernCratesCommand {
     // --- Give key (self) ---
     private int handleGiveKeySelf(CommandContext<CommandSourceStack> ctx) {
         if (!(ctx.getSource().getSender() instanceof Player player)) {
-            ctx.getSource().getSender().sendMessage(TextUtil.parse("<red>You must be a player or specify a target."));
+            PlaceholderUtil.send(YamlMessage.chat("<red>You must be a player or specify a target."), ctx.getSource().getSender());
             return Command.SINGLE_SUCCESS;
         }
         return giveKey(ctx, player, 1);
@@ -290,17 +294,11 @@ public class ModernCratesCommand {
                 if (plugin.getPluginConfig().isGiveFullInventoryDrop()) {
                     // Give as virtual keys instead of dropping the key item
                     plugin.getVirtualKeyManager().addKeys(target, crateId, leftoverAmount);
-                    String msg = plugin.getPluginConfig().getPrefix()
-                            + plugin.getPluginConfig().getMessage("inventory_full_virtual_key")
-                                    .replace("<crate>", crate.getName())
-                                    .replace("<player>", target.getName());
-                    target.sendMessage(TextUtil.parse(msg));
+                    PlaceholderUtil.send(plugin.getPluginConfig().getMessage("inventory_full_virtual_key"),
+                            target, plugin.getPluginConfig().getPrefix(), PlaceholderUtil.crateResolvers(target, crate));
                 } else {
-                    String msg = plugin.getPluginConfig().getPrefix()
-                            + plugin.getPluginConfig().getMessage("inventory_full_no_space")
-                                    .replace("<crate>", crate.getName())
-                                    .replace("<player>", target.getName());
-                    target.sendMessage(TextUtil.parse(msg));
+                    PlaceholderUtil.send(plugin.getPluginConfig().getMessage("inventory_full_no_space"),
+                            target, plugin.getPluginConfig().getPrefix(), PlaceholderUtil.crateResolvers(target, crate));
                 }
                 return Command.SINGLE_SUCCESS;
             }
@@ -312,7 +310,7 @@ public class ModernCratesCommand {
     // --- Give virtualkey (self) ---
     private int handleGiveVirtualKeySelf(CommandContext<CommandSourceStack> ctx) {
         if (!(ctx.getSource().getSender() instanceof Player player)) {
-            ctx.getSource().getSender().sendMessage(TextUtil.parse("<red>You must be a player or specify a target."));
+            PlaceholderUtil.send(YamlMessage.chat("<red>You must be a player or specify a target."), ctx.getSource().getSender());
             return Command.SINGLE_SUCCESS;
         }
         return giveVirtualKey(ctx, player, 1);
@@ -339,7 +337,7 @@ public class ModernCratesCommand {
     // --- Give crate item (self) ---
     private int handleGiveCrateSelf(CommandContext<CommandSourceStack> ctx) {
         if (!(ctx.getSource().getSender() instanceof Player player)) {
-            ctx.getSource().getSender().sendMessage(TextUtil.parse("<red>You must be a player or specify a target."));
+            PlaceholderUtil.send(YamlMessage.chat("<red>You must be a player or specify a target."), ctx.getSource().getSender());
             return Command.SINGLE_SUCCESS;
         }
         return giveCrate(ctx, player, 1);
@@ -364,26 +362,17 @@ public class ModernCratesCommand {
             if (!leftover.isEmpty()) {
                 if (plugin.getPluginConfig().isGiveFullInventoryDrop()) {
                     leftover.values().forEach(item -> target.getWorld().dropItemNaturally(target.getLocation(), item));
-                    String msg = plugin.getPluginConfig().getPrefix()
-                            + plugin.getPluginConfig().getMessage("inventory_full_dropped")
-                                    .replace("<crate>", crate.getName())
-                                    .replace("<player>", target.getName());
-                    target.sendMessage(TextUtil.parse(msg));
+                    PlaceholderUtil.send(plugin.getPluginConfig().getMessage("inventory_full_dropped"),
+                            target, plugin.getPluginConfig().getPrefix(), PlaceholderUtil.crateResolvers(target, crate));
                 } else {
-                    String msg = plugin.getPluginConfig().getPrefix()
-                            + plugin.getPluginConfig().getMessage("inventory_full_no_space")
-                                    .replace("<crate>", crate.getName())
-                                    .replace("<player>", target.getName());
-                    target.sendMessage(TextUtil.parse(msg));
+                    PlaceholderUtil.send(plugin.getPluginConfig().getMessage("inventory_full_no_space"),
+                            target, plugin.getPluginConfig().getPrefix(), PlaceholderUtil.crateResolvers(target, crate));
                 }
                 return Command.SINGLE_SUCCESS;
             }
         }
-        String msg = plugin.getPluginConfig().getPrefix()
-                + plugin.getPluginConfig().getMessage("crate_given")
-                        .replace("<crate>", crate.getName())
-                        .replace("<player>", target.getName());
-        ctx.getSource().getSender().sendMessage(TextUtil.parse(msg));
+        PlaceholderUtil.send(plugin.getPluginConfig().getMessage("crate_given"),
+                ctx.getSource().getSender(), plugin.getPluginConfig().getPrefix(), PlaceholderUtil.crateResolvers(target, crate));
         return Command.SINGLE_SUCCESS;
     }
 
@@ -404,22 +393,19 @@ public class ModernCratesCommand {
     }
 
     private void sendKeyGiven(CommandContext<CommandSourceStack> ctx, Crate crate, Player target) {
-        String msg = plugin.getPluginConfig().getPrefix()
-                + plugin.getPluginConfig().getMessage("key_given")
-                        .replace("<crate>", crate.getName())
-                        .replace("<player>", target.getName());
-        ctx.getSource().getSender().sendMessage(TextUtil.parse(msg));
+        PlaceholderUtil.send(plugin.getPluginConfig().getMessage("key_given"),
+                ctx.getSource().getSender(), plugin.getPluginConfig().getPrefix(), PlaceholderUtil.crateResolvers(target, crate));
     }
 
     private void sendNoCrate(CommandContext<CommandSourceStack> ctx, String crateId) {
-        String msg = plugin.getPluginConfig().getPrefix()
-                + plugin.getPluginConfig().getMessage("no_crate").replace("<crate>", crateId);
-        ctx.getSource().getSender().sendMessage(TextUtil.parse(msg));
+        PlaceholderUtil.send(plugin.getPluginConfig().getMessage("no_crate"),
+                ctx.getSource().getSender(), plugin.getPluginConfig().getPrefix(),
+                PlaceholderUtil.combine(PlaceholderUtil.parsed("crate", crateId)));
     }
 
     private void sendNoPlayer(CommandContext<CommandSourceStack> ctx, String playerArg) {
-        String msg = plugin.getPluginConfig().getPrefix()
-                + plugin.getPluginConfig().getMessage("no_player").replace("<player>", playerArg);
-        ctx.getSource().getSender().sendMessage(TextUtil.parse(msg));
+        PlaceholderUtil.send(plugin.getPluginConfig().getMessage("no_player"),
+                ctx.getSource().getSender(), plugin.getPluginConfig().getPrefix(),
+                PlaceholderUtil.combine(PlaceholderUtil.parsed("player", playerArg)));
     }
 }

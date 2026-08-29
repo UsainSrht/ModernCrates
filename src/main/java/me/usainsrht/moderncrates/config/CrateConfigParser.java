@@ -1,10 +1,10 @@
 package me.usainsrht.moderncrates.config;
 
 import me.usainsrht.moderncrates.api.crate.*;
-import me.usainsrht.moderncrates.api.crate.*;
 import me.usainsrht.moderncrates.api.reward.Reward;
 import me.usainsrht.moderncrates.api.reward.RewardDisplay;
 import me.usainsrht.moderncrates.api.reward.RewardItem;
+import me.usainsrht.yamlmessage.YamlMessage;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -175,9 +175,21 @@ public class CrateConfigParser {
         if (annSection != null) {
             AnnounceConfig ann = new AnnounceConfig();
             ann.setToEveryone(annSection.getBoolean("to_everyone", true));
-            ann.setSingle(annSection.getString("single", ""));
-            ann.setMultiple(annSection.getString("multiple", ""));
-            ann.setMultipleItem(annSection.getString("multiple_item", ""));
+            if (annSection.contains("single")) {
+                Object raw = annSection.get("single");
+                if (raw instanceof String s) ann.setSingle(s);
+                else ann.setSingleMessage(YamlMessage.parse(raw));
+            }
+            if (annSection.contains("multiple")) {
+                Object raw = annSection.get("multiple");
+                if (raw instanceof String s) ann.setMultiple(s);
+                else ann.setMultipleMessage(YamlMessage.parse(raw));
+            }
+            if (annSection.contains("multiple_item")) {
+                Object raw = annSection.get("multiple_item");
+                if (raw instanceof String s) ann.setMultipleItem(s);
+                else ann.setMultipleItemMessage(YamlMessage.parse(raw));
+            }
             crate.setAnnounceConfig(ann);
         }
 
@@ -337,7 +349,14 @@ public class CrateConfigParser {
             reward.setCommands(rewardSection.getStringList("commands"));
 
             // Per-reward announce
-            reward.setAnnounce(rewardSection.getString("announce"));
+            if (rewardSection.contains("announce")) {
+                Object rawAnn = rewardSection.get("announce");
+                if (rawAnn instanceof String s) {
+                    reward.setAnnounce(s);
+                } else {
+                    reward.setAnnounceMessage(YamlMessage.parse(rawAnn));
+                }
+            }
 
             String requiredPermission = rewardSection.getString("required-permission");
             if (requiredPermission == null) {

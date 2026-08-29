@@ -1,71 +1,44 @@
 package me.usainsrht.moderncrates.util;
 
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
+import me.usainsrht.moderncrates.config.PluginConfig;
+import me.usainsrht.yamlmessage.YamlMessage;
+import net.kyori.adventure.audience.Audience;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Utility for playing sounds from configuration strings.
+ * Utility for playing sounds exclusively created and dispatched via {@link YamlMessage}.
  */
 public final class SoundUtil {
 
-    private static final Map<String, String> LEGACY_ALIASES = Map.of();
-    private static final Set<String> WARNED_INVALID_SOUNDS = ConcurrentHashMap.newKeySet();
-
     private SoundUtil() {}
 
-    public static void play(Player player, List<String> sounds) {
-        if (sounds == null || sounds.isEmpty() || player == null) return;
-        for (String soundName : sounds) {
-            playInternal(player, soundName);
-        }
+    /**
+     * Plays a configured sound message to the target audience.
+     */
+    public static void play(@Nullable Audience audience, @Nullable YamlMessage soundMessage) {
+        if (audience == null || soundMessage == null || soundMessage.isEmpty()) return;
+        soundMessage.send(audience);
     }
 
-    public static void play(Player player, String soundName) {
-        if (soundName == null || player == null) return;
-        play(player, List.of(soundName));
+    /**
+     * Plays a list of raw sound strings/configurations to the target audience via YamlMessage.
+     */
+    public static void play(@Nullable Audience audience, @Nullable List<String> sounds) {
+        if (audience == null || sounds == null || sounds.isEmpty()) return;
+        YamlMessage message = PluginConfig.parseSoundMessage(sounds);
+        play(audience, message);
     }
 
-    private static void playInternal(Player player, String rawSoundName) {
-        if (rawSoundName == null) return;
-        String soundName = rawSoundName.trim();
-        if (soundName.isEmpty()) return;
-
-        for (String candidate : resolveCandidates(soundName)) {
-            try {
-                player.playSound(player.getLocation(), candidate, 1.0f, 1.0f);
-                return;
-            } catch (IllegalArgumentException ignored) {
-                // Try next candidate.
-            }
-        }
-
-        String warningKey = soundName.toLowerCase(Locale.ROOT);
-        if (WARNED_INVALID_SOUNDS.add(warningKey)) {
-            Bukkit.getLogger().warning("[ModernCrates] Unknown sound key in config: " + soundName);
-        }
-    }
-
-    private static List<String> resolveCandidates(String soundName) {
-        String normalized = LEGACY_ALIASES.getOrDefault(soundName.toUpperCase(Locale.ROOT), soundName);
-        LinkedHashSet<String> candidates = new LinkedHashSet<>();
-        candidates.add(normalized);
-        candidates.add(normalized.toLowerCase(Locale.ROOT));
-
-        if (!normalized.contains(":") && !normalized.contains(".")) {
-            String key = normalized.toLowerCase(Locale.ROOT).replace('_', '.');
-            candidates.add(key);
-            candidates.add("minecraft:" + key);
-        }
-
-        return new ArrayList<>(candidates);
+    /**
+     * Plays a single raw sound string/configuration to the target audience via YamlMessage.
+     */
+    public static void play(@Nullable Audience audience, @Nullable String soundName) {
+        if (audience == null || soundName == null || soundName.isBlank()) return;
+        YamlMessage message = PluginConfig.parseSoundMessage(soundName);
+        play(audience, message);
     }
 }
+
 

@@ -1,12 +1,15 @@
 package me.usainsrht.moderncrates.config;
 
+import me.usainsrht.yamlmessage.YamlMessage;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 /**
  * Main plugin configuration (config.yml).
@@ -20,8 +23,11 @@ public class PluginConfig {
     private String hologramSystem;
     private boolean giveFullInventoryDrop;
     private boolean allowShiftLeftClickRemove;
-    private Map<String, String> messages;
-    private Map<String, String> sounds;
+    private String announcementMuteMetaKey;
+    private final Map<String, YamlMessage> messages = new LinkedHashMap<>();
+    private final Map<String, YamlMessage> sounds = new LinkedHashMap<>();
+    private final Map<String, Object> rawMessages = new LinkedHashMap<>();
+    private final Map<String, Object> rawSounds = new LinkedHashMap<>();
     private CommandConfig commandConfig;
 
     public PluginConfig(File dataFolder) {
@@ -35,20 +41,27 @@ public class PluginConfig {
         hologramSystem = yaml.getString("hologram-system", "FANCY_HOLOGRAMS");
         giveFullInventoryDrop = yaml.getBoolean("give-full-inventory-drop", true);
         allowShiftLeftClickRemove = yaml.getBoolean("allow-shift-left-click-remove", true);
+        announcementMuteMetaKey = yaml.getString("announcement-mute-meta-key", "mute-crate-announcements");
 
-        messages = new java.util.HashMap<>();
+        messages.clear();
+        rawMessages.clear();
         var msgSection = yaml.getConfigurationSection("messages");
         if (msgSection != null) {
             for (String key : msgSection.getKeys(false)) {
-                messages.put(key, msgSection.getString(key, ""));
+                Object raw = msgSection.get(key);
+                rawMessages.put(key, raw);
+                messages.put(key, YamlMessage.parse(raw));
             }
         }
 
-        sounds = new java.util.HashMap<>();
+        sounds.clear();
+        rawSounds.clear();
         var soundSection = yaml.getConfigurationSection("sounds");
         if (soundSection != null) {
             for (String key : soundSection.getKeys(false)) {
-                sounds.put(key, soundSection.getString(key, ""));
+                Object raw = soundSection.get(key);
+                rawSounds.put(key, raw);
+                sounds.put(key, parseSoundMessage(raw));
             }
         }
 
@@ -63,16 +76,34 @@ public class PluginConfig {
         }
     }
 
+    public static @NotNull YamlMessage parseSoundMessage(Object raw) {
+        if (raw == null) return YamlMessage.empty();
+        if (raw instanceof ConfigurationSection section) {
+            if (section.contains("sound") || section.contains("sounds")) {
+                return YamlMessage.parse(section);
+            }
+            return YamlMessage.parse(Map.of("sound", section.getValues(false)));
+        }
+        if (raw instanceof Map<?, ?> map) {
+            if (map.containsKey("sound") || map.containsKey("sounds")) {
+                return YamlMessage.parse(map);
+            }
+            return YamlMessage.parse(Map.of("sound", map));
+        }
+        return YamlMessage.parse(Map.of("sounds", raw));
+    }
+
     public void save() throws IOException {
         yaml.set("prefix", prefix);
         yaml.set("hologram-system", hologramSystem);
         yaml.set("give-full-inventory-drop", giveFullInventoryDrop);
         yaml.set("allow-shift-left-click-remove", allowShiftLeftClickRemove);
+        yaml.set("announcement-mute-meta-key", announcementMuteMetaKey);
 
-        for (var entry : messages.entrySet()) {
+        for (var entry : rawMessages.entrySet()) {
             yaml.set("messages." + entry.getKey(), entry.getValue());
         }
-        for (var entry : sounds.entrySet()) {
+        for (var entry : rawSounds.entrySet()) {
             yaml.set("sounds." + entry.getKey(), entry.getValue());
         }
 
@@ -93,7 +124,8 @@ public class PluginConfig {
             hologramSystem = "FANCY_HOLOGRAMS";
             giveFullInventoryDrop = true;
             allowShiftLeftClickRemove = true;
-            messages = Map.ofEntries(
+            announcementMuteMetaKey = "mute-crate-announcements";
+            Map<String, String> defaultMessages = Map.ofEntries(
                     Map.entry("reload", "<green>reloaded!"),
                     Map.entry("crate_already_open", "<red>You already have a crate open!"),
                     Map.entry("crate_in_use", "<red>This crate is currently in use!"),
@@ -108,7 +140,7 @@ public class PluginConfig {
                     Map.entry("inventory_full_virtual_key", "<yellow>Your inventory was full! A virtual key for <gold><crate> <yellow>was added to your account instead."),
                     Map.entry("inventory_full_no_space", "<red>Your inventory is full! The item for <dark_red><crate> <red>could not be given.")
             );
-            sounds = Map.of(
+            Map<String, String> defaultSounds = Map.of(
                     "reload", "ui.button.click",
                     "no_key", "entity.villager.no",
                     "no_crate", "entity.villager.no",
@@ -116,6 +148,17 @@ public class PluginConfig {
                     "crate_given", "entity.villager.yes",
                     "key_given", "entity.villager.yes"
             );
+
+            rawMessages.putAll(defaultMessages);
+            for (var entry : defaultMessages.entrySet()) {
+                messages.put(entry.getKey(), YamlMessage.parse(entry.getValue()));
+            }
+
+            rawSounds.putAll(defaultSounds);
+            for (var entry : defaultSounds.entrySet()) {
+                sounds.put(entry.getKey(), parseSoundMessage(entry.getValue()));
+            }
+
             commandConfig = new CommandConfig();
             commandConfig.setName("moderncrates");
             commandConfig.setDescription("ModernCrates command");
@@ -130,8 +173,27 @@ public class PluginConfig {
     public String getHologramSystem() { return hologramSystem; }
     public boolean isGiveFullInventoryDrop() { return giveFullInventoryDrop; }
     public boolean isAllowShiftLeftClickRemove() { return allowShiftLeftClickRemove; }
-    public String getMessage(String key) { return messages.getOrDefault(key, ""); }
-    public String getSound(String key) { return sounds.getOrDefault(key, ""); }
+    public String getAnnouncementMuteMetaKey() { return announcementMuteMetaKey; }
+    public void setAnnouncementMuteMetaKey(String key) { this.announcementMuteMetaKey = key; }
+
+    public @NotNull YamlMessage getMessage(String key) {
+        return messages.getOrDefault(key, YamlMessage.empty());
+    }
+
+    public @NotNull YamlMessage getSound(String key) {
+        return sounds.getOrDefault(key, YamlMessage.empty());
+    }
+
+    public String getRawMessageString(String key) {
+        Object raw = rawMessages.get(key);
+        return raw != null ? String.valueOf(raw) : "";
+    }
+
+    public String getRawSoundString(String key) {
+        Object raw = rawSounds.get(key);
+        return raw != null ? String.valueOf(raw) : "";
+    }
+
     public CommandConfig getCommandConfig() { return commandConfig; }
     public YamlConfiguration getYaml() { return yaml; }
 
@@ -154,3 +216,4 @@ public class PluginConfig {
         public void setAliases(List<String> aliases) { this.aliases = aliases; }
     }
 }
+

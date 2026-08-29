@@ -299,7 +299,8 @@ public abstract class EditorGuiBase implements ModernCratesGui {
         try {
             plugin.getCrateConfigParser().save(crate, new File(plugin.getDataFolder(), "crates"));
         } catch (IOException e) {
-            player.sendMessage(TextUtil.parse("<red>Failed to save: " + e.getMessage()));
+            me.usainsrht.moderncrates.util.PlaceholderUtil.send(
+                    me.usainsrht.yamlmessage.YamlMessage.chat("<red>Failed to save: " + e.getMessage()), player);
         }
     }
 
@@ -307,7 +308,8 @@ public abstract class EditorGuiBase implements ModernCratesGui {
         try {
             plugin.getAnimationConfigParser().save(anim, new File(plugin.getDataFolder(), "animations"));
         } catch (IOException e) {
-            player.sendMessage(TextUtil.parse("<red>Failed to save: " + e.getMessage()));
+            me.usainsrht.moderncrates.util.PlaceholderUtil.send(
+                    me.usainsrht.yamlmessage.YamlMessage.chat("<red>Failed to save: " + e.getMessage()), player);
         }
     }
 }

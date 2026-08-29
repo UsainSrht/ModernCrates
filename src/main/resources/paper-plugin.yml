@@ -18,3 +18,9 @@ dependencies:
     HolographicDisplays:
       required: false
       join-classpath: true
+    MiniPlaceholders:
+      required: false
+      join-classpath: true
+    LuckPerms:
+      required: false
+      join-classpath: true
