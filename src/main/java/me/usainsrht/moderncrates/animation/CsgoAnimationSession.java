@@ -330,6 +330,10 @@ public class CsgoAnimationSession implements AnimationSession, ModernCratesGui {
     public void cancel() {
         cancelled.set(true);
         cancelAllTasks();
+        if (selectedReward == null) {
+            selectedReward = RewardSelector.selectWeighted(crate, player);
+        }
+        finished.set(true);
     }
 
     @Override
@@ -353,12 +357,8 @@ public class CsgoAnimationSession implements AnimationSession, ModernCratesGui {
             // Player closed early â€” stop everything and determine reward
             cancelAllTasks();
             if (selectedReward == null) {
-                int ri = animation.getRewardIndex() - 1;
-                Reward landed = null;
-                if (displayedRewards != null && ri >= 0 && ri < displayedRewards.length) {
-                    landed = displayedRewards[ri];
-                }
-                selectedReward = RewardSelector.resolveWinner(landed, player, crate);
+                // Closed while animation is playing: grant a random weighted reward
+                selectedReward = RewardSelector.selectWeighted(crate, player);
             }
             SoundUtil.play(player, animation.getRewardSounds());
             finished.set(true);

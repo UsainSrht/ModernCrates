@@ -232,6 +232,10 @@ public class ClickAnimationSession implements AnimationSession, ModernCratesGui 
     public void cancel() {
         cancelled.set(true);
         cleanup();
+        if (revealedSlots.isEmpty() && fallbackReward == null) {
+            fallbackReward = RewardSelector.selectWeighted(crate, player);
+        }
+        finished.set(true);
     }
 
     private void cleanup() {

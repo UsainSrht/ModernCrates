@@ -462,6 +462,13 @@ public class SlotAnimationSession implements AnimationSession, ModernCratesGui {
     public void cancel() {
         cancelled.set(true);
         cancelAllTasks();
+        if (selectedReward == null) {
+            selectedReward = willMatch ? matchReward : RewardSelector.selectWeighted(crate, player);
+            if (selectedReward == null) {
+                selectedReward = RewardSelector.selectWeighted(crate, player);
+            }
+        }
+        finished.set(true);
     }
 
     @Override

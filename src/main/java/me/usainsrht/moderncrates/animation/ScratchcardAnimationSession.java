@@ -272,6 +272,18 @@ public class ScratchcardAnimationSession implements AnimationSession, ModernCrat
     public void cancel() {
         cancelled.set(true);
         cleanup();
+        if (!finished.get()) {
+            if (scratchesRemaining > 0) {
+                List<Integer> unrevealedRewardSlots = new ArrayList<>(slotRewardMap.keySet());
+                unrevealedRewardSlots.removeAll(revealedSlots);
+                Collections.shuffle(unrevealedRewardSlots);
+                for (int i = 0; i < scratchesRemaining && i < unrevealedRewardSlots.size(); i++) {
+                    revealedSlots.add(unrevealedRewardSlots.get(i));
+                }
+                scratchesRemaining = 0;
+            }
+            evaluateResult(false);
+        }
     }
 
     private void cleanup() {
