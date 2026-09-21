@@ -2,6 +2,7 @@ package me.usainsrht.moderncrates.api.crate;
 
 import org.bukkit.inventory.ItemStack;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,6 +19,16 @@ public class CrateKeyConfig {
     private String name;
     private List<String> lore;
 
+    private ItemStack itemStack;
+
+    public ItemStack getItemStack() {
+        return itemStack != null ? itemStack.clone() : null;
+    }
+
+    public void setItemStack(ItemStack itemStack) {
+        this.itemStack = itemStack != null ? itemStack.clone() : null;
+    }
+
     public boolean isRequired() {
         return required;
     }
@@ -32,6 +43,7 @@ public class CrateKeyConfig {
 
     public void setMaterial(String material) {
         this.material = material;
+        this.itemStack = null;
     }
 
     public int getCount() {
@@ -40,6 +52,7 @@ public class CrateKeyConfig {
 
     public void setCount(int count) {
         this.count = count;
+        if (this.itemStack != null) this.itemStack.setAmount(Math.max(1, count));
     }
 
     public Map<String, Integer> getEnchantments() {
@@ -48,6 +61,7 @@ public class CrateKeyConfig {
 
     public void setEnchantments(Map<String, Integer> enchantments) {
         this.enchantments = enchantments;
+        this.itemStack = null;
     }
 
     public List<String> getItemFlags() {
@@ -56,6 +70,7 @@ public class CrateKeyConfig {
 
     public void setItemFlags(List<String> itemFlags) {
         this.itemFlags = itemFlags;
+        this.itemStack = null;
     }
 
     public String getName() {
@@ -64,6 +79,7 @@ public class CrateKeyConfig {
 
     public void setName(String name) {
         this.name = name;
+        this.itemStack = null;
     }
 
     public List<String> getLore() {
@@ -72,6 +88,7 @@ public class CrateKeyConfig {
 
     public void setLore(List<String> lore) {
         this.lore = lore;
+        this.itemStack = null;
     }
 
     private boolean hideTooltip;
@@ -82,6 +99,7 @@ public class CrateKeyConfig {
 
     public void setHideTooltip(boolean hideTooltip) {
         this.hideTooltip = hideTooltip;
+        this.itemStack = null;
     }
 
     private Map<String, Integer> storedEnchantments;
@@ -92,5 +110,6 @@ public class CrateKeyConfig {
 
     public void setStoredEnchantments(Map<String, Integer> storedEnchantments) {
         this.storedEnchantments = storedEnchantments;
+        this.itemStack = null;
     }
 }

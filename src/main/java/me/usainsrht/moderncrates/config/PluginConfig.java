@@ -25,9 +25,7 @@ public class PluginConfig {
     private boolean allowShiftLeftClickRemove;
     private String announcementMuteMetaKey;
     private final Map<String, YamlMessage> messages = new LinkedHashMap<>();
-    private final Map<String, YamlMessage> sounds = new LinkedHashMap<>();
     private final Map<String, Object> rawMessages = new LinkedHashMap<>();
-    private final Map<String, Object> rawSounds = new LinkedHashMap<>();
     private CommandConfig commandConfig;
 
     public PluginConfig(File dataFolder) {
@@ -54,17 +52,6 @@ public class PluginConfig {
             }
         }
 
-        sounds.clear();
-        rawSounds.clear();
-        var soundSection = yaml.getConfigurationSection("sounds");
-        if (soundSection != null) {
-            for (String key : soundSection.getKeys(false)) {
-                Object raw = soundSection.get(key);
-                rawSounds.put(key, raw);
-                sounds.put(key, parseSoundMessage(raw));
-            }
-        }
-
         var cmdSection = yaml.getConfigurationSection("command");
         commandConfig = new CommandConfig();
         if (cmdSection != null) {
@@ -74,23 +61,6 @@ public class PluginConfig {
             commandConfig.setPermission(cmdSection.getString("permission", "moderncrates.use"));
             commandConfig.setAliases(cmdSection.getStringList("aliases"));
         }
-    }
-
-    public static @NotNull YamlMessage parseSoundMessage(Object raw) {
-        if (raw == null) return YamlMessage.empty();
-        if (raw instanceof ConfigurationSection section) {
-            if (section.contains("sound") || section.contains("sounds")) {
-                return YamlMessage.parse(section);
-            }
-            return YamlMessage.parse(Map.of("sound", section.getValues(false)));
-        }
-        if (raw instanceof Map<?, ?> map) {
-            if (map.containsKey("sound") || map.containsKey("sounds")) {
-                return YamlMessage.parse(map);
-            }
-            return YamlMessage.parse(Map.of("sound", map));
-        }
-        return YamlMessage.parse(Map.of("sounds", raw));
     }
 
     public void save() throws IOException {
@@ -103,9 +73,6 @@ public class PluginConfig {
         for (var entry : rawMessages.entrySet()) {
             yaml.set("messages." + entry.getKey(), entry.getValue());
         }
-        for (var entry : rawSounds.entrySet()) {
-            yaml.set("sounds." + entry.getKey(), entry.getValue());
-        }
 
         yaml.set("command.name", commandConfig.getName());
         yaml.set("command.description", commandConfig.getDescription());
@@ -115,8 +82,6 @@ public class PluginConfig {
 
         yaml.save(file);
     }
-
-
 
     public String getPrefix() { return prefix; }
     public String getHologramSystem() { return hologramSystem; }
@@ -129,19 +94,11 @@ public class PluginConfig {
         return messages.getOrDefault(key, YamlMessage.empty());
     }
 
-    public @NotNull YamlMessage getSound(String key) {
-        return sounds.getOrDefault(key, YamlMessage.empty());
-    }
-
     public String getRawMessageString(String key) {
         Object raw = rawMessages.get(key);
         return raw != null ? String.valueOf(raw) : "";
     }
 
-    public String getRawSoundString(String key) {
-        Object raw = rawSounds.get(key);
-        return raw != null ? String.valueOf(raw) : "";
-    }
 
     public CommandConfig getCommandConfig() { return commandConfig; }
     public YamlConfiguration getYaml() { return yaml; }

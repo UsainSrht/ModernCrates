@@ -5,7 +5,6 @@ import me.usainsrht.moderncrates.api.crate.Crate;
 import me.usainsrht.moderncrates.api.crate.CrateLocation;
 import me.usainsrht.moderncrates.gui.PreviewGui;
 import me.usainsrht.moderncrates.util.PlaceholderUtil;
-import me.usainsrht.moderncrates.util.SoundUtil;
 import me.usainsrht.moderncrates.util.TextUtil;
 import me.usainsrht.yamlmessage.YamlMessage;
 import org.bukkit.Location;
@@ -121,7 +120,6 @@ public class CrateInteractListener implements Listener {
                 bounceBack(player, block);
                 PlaceholderUtil.send(plugin.getPluginConfig().getMessage("no_key"), player, plugin.getPluginConfig().getPrefix(),
                         PlaceholderUtil.crateResolvers(player, crate));
-                SoundUtil.play(player, plugin.getPluginConfig().getSound("no_key"));
                 return;
             }
 

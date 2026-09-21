@@ -98,10 +98,10 @@ public class PreviewGui implements ModernCratesGui {
         inventory = Bukkit.createInventory(this, rows * 9, TextUtil.parse(title));
 
         // Fill background
-        if (config != null && config.getFill() != null) {
-            ItemStack fill = ItemBuilder.create(config.getFill().getMaterial(), config.getFill().getName(), null, config.getFill().isHideTooltip());
+        if (config != null && config.getFill() != null && config.getFill().getItemStack() != null) {
+            ItemStack fill = config.getFill().getItemStack();
             for (int i = 0; i < inventory.getSize(); i++) {
-                inventory.setItem(i, fill);
+                inventory.setItem(i, fill.clone());
             }
         }
 
@@ -110,8 +110,8 @@ public class PreviewGui implements ModernCratesGui {
             for (var entry : config.getCustomSlots().entrySet()) {
                 int slot = entry.getKey();
                 var item = entry.getValue();
-                if (slot >= 0 && slot < inventory.getSize()) {
-                    inventory.setItem(slot, ItemBuilder.create(item.getMaterial(), item.getName(), item.getLore(), item.isHideTooltip()));
+                if (slot >= 0 && slot < inventory.getSize() && item != null && item.getItemStack() != null) {
+                    inventory.setItem(slot, item.getItemStack());
                 }
             }
         }
@@ -135,8 +135,8 @@ public class PreviewGui implements ModernCratesGui {
     }
 
     private void placeNavItem(PreviewConfig.SlotItem item) {
-        if (item.getSlot() >= 0 && item.getSlot() < inventory.getSize()) {
-            inventory.setItem(item.getSlot(), ItemBuilder.create(item.getMaterial(), item.getName(), item.getLore(), item.isHideTooltip()));
+        if (item != null && item.getItemStack() != null && item.getSlot() >= 0 && item.getSlot() < inventory.getSize()) {
+            inventory.setItem(item.getSlot(), item.getItemStack());
         }
     }
 

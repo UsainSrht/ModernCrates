@@ -19,7 +19,6 @@ import me.usainsrht.moderncrates.gui.PlayerMenuGui;
 import me.usainsrht.moderncrates.gui.PreviewGui;
 import me.usainsrht.moderncrates.gui.editor.MainMenuGui;
 import me.usainsrht.moderncrates.util.PlaceholderUtil;
-import me.usainsrht.moderncrates.util.SoundUtil;
 import me.usainsrht.yamlmessage.YamlMessage;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -156,8 +155,6 @@ public class ModernCratesCommand {
         plugin.reloadPlugin();
         PlaceholderUtil.send(plugin.getPluginConfig().getMessage("reload"),
                 ctx.getSource().getSender(), plugin.getPluginConfig().getPrefix());
-        SoundUtil.play(ctx.getSource().getSender() instanceof Player p ? p : null,
-                plugin.getPluginConfig().getSound("reload"));
         return Command.SINGLE_SUCCESS;
     }
 

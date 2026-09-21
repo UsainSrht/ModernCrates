@@ -4,6 +4,7 @@ import me.usainsrht.moderncrates.api.crate.*;
 import me.usainsrht.moderncrates.api.reward.Reward;
 import me.usainsrht.moderncrates.api.reward.RewardDisplay;
 import me.usainsrht.moderncrates.api.reward.RewardItem;
+import me.usainsrht.itemapi.yamlitem.YamlItem;
 import me.usainsrht.yamlmessage.YamlMessage;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -60,36 +61,7 @@ public class CrateConfigParser {
         if (keySection != null) {
             CrateKeyConfig keyConfig = new CrateKeyConfig();
             keyConfig.setRequired(keySection.getBoolean("required", false));
-            keyConfig.setMaterial(keySection.getString("material", "TRIPWIRE_HOOK"));
-            keyConfig.setCount(keySection.getInt("count", 1));
-            keyConfig.setName(keySection.getString("name"));
-            keyConfig.setLore(keySection.getStringList("lore"));
-
-            // Enchantments
-            ConfigurationSection enchSection = keySection.getConfigurationSection("enchantments");
-            if (enchSection != null) {
-                Map<String, Integer> enchants = new LinkedHashMap<>();
-                for (String key : enchSection.getKeys(false)) {
-                    enchants.put(key, enchSection.getInt(key));
-                }
-                keyConfig.setEnchantments(enchants);
-            }
-
-            // Stored Enchantments
-            ConfigurationSection storedEnchSection = keySection.getConfigurationSection("stored_enchantments");
-            if (storedEnchSection == null) {
-                storedEnchSection = keySection.getConfigurationSection("stored-enchantments");
-            }
-            if (storedEnchSection != null) {
-                Map<String, Integer> storedEnchants = new LinkedHashMap<>();
-                for (String key : storedEnchSection.getKeys(false)) {
-                    storedEnchants.put(key, storedEnchSection.getInt(key));
-                }
-                keyConfig.setStoredEnchantments(storedEnchants);
-            }
-
-            keyConfig.setItemFlags(keySection.getStringList("item_flags"));
-            keyConfig.setHideTooltip(keySection.getBoolean("hide-tooltip", keySection.getBoolean("hide_tooltip", false)));
+            keyConfig.setItemStack(YamlItem.parse(keySection));
             crate.setKeyConfig(keyConfig);
         }
 
@@ -97,10 +69,7 @@ public class CrateConfigParser {
         ConfigurationSection itemSection = yaml.getConfigurationSection("item");
         if (itemSection != null) {
             CrateItemConfig itemConfig = new CrateItemConfig();
-            itemConfig.setMaterial(itemSection.getString("material", "CHEST"));
-            itemConfig.setName(itemSection.getString("name"));
-            itemConfig.setLore(itemSection.getStringList("lore"));
-            itemConfig.setHideTooltip(itemSection.getBoolean("hide-tooltip", itemSection.getBoolean("hide_tooltip", false)));
+            itemConfig.setItemStack(YamlItem.parse(itemSection));
             crate.setItemConfig(itemConfig);
         }
 
@@ -176,19 +145,13 @@ public class CrateConfigParser {
             AnnounceConfig ann = new AnnounceConfig();
             ann.setToEveryone(annSection.getBoolean("to_everyone", true));
             if (annSection.contains("single")) {
-                Object raw = annSection.get("single");
-                if (raw instanceof String s) ann.setSingle(s);
-                else ann.setSingleMessage(YamlMessage.parse(raw));
+                ann.setSingleMessage(YamlMessage.parse(annSection.get("single")));
             }
             if (annSection.contains("multiple")) {
-                Object raw = annSection.get("multiple");
-                if (raw instanceof String s) ann.setMultiple(s);
-                else ann.setMultipleMessage(YamlMessage.parse(raw));
+                ann.setMultipleMessage(YamlMessage.parse(annSection.get("multiple")));
             }
             if (annSection.contains("multiple_item")) {
-                Object raw = annSection.get("multiple_item");
-                if (raw instanceof String s) ann.setMultipleItem(s);
-                else ann.setMultipleItemMessage(YamlMessage.parse(raw));
+                ann.setMultipleItemMessage(YamlMessage.parse(annSection.get("multiple_item")));
             }
             crate.setAnnounceConfig(ann);
         }
@@ -212,9 +175,7 @@ public class CrateConfigParser {
         ConfigurationSection fillSection = section.getConfigurationSection("fill");
         if (fillSection != null) {
             PreviewConfig.GuiItem fill = new PreviewConfig.GuiItem();
-            fill.setMaterial(fillSection.getString("material", "BLACK_STAINED_GLASS_PANE"));
-            fill.setName(fillSection.getString("name", " "));
-            fill.setHideTooltip(fillSection.getBoolean("hide-tooltip", fillSection.getBoolean("hide_tooltip", false)));
+            fill.setItemStack(YamlItem.parse(fillSection));
             config.setFill(fill);
         }
 
@@ -233,10 +194,7 @@ public class CrateConfigParser {
                     ConfigurationSection slotSection = customSection.getConfigurationSection(key);
                     if (slotSection != null) {
                         PreviewConfig.GuiItem item = new PreviewConfig.GuiItem();
-                        item.setMaterial(slotSection.getString("material"));
-                        item.setName(slotSection.getString("name"));
-                        item.setLore(slotSection.getStringList("lore"));
-                        item.setHideTooltip(slotSection.getBoolean("hide-tooltip", slotSection.getBoolean("hide_tooltip", false)));
+                        item.setItemStack(YamlItem.parse(slotSection));
                         customSlots.put(slot, item);
                     }
                 } catch (NumberFormatException ignored) {
@@ -252,10 +210,7 @@ public class CrateConfigParser {
         if (section == null) return null;
         PreviewConfig.SlotItem item = new PreviewConfig.SlotItem();
         item.setSlot(section.getInt("slot"));
-        item.setMaterial(section.getString("material"));
-        item.setName(section.getString("name"));
-        item.setLore(section.getStringList("lore"));
-        item.setHideTooltip(section.getBoolean("hide-tooltip", section.getBoolean("hide_tooltip", false)));
+        item.setItemStack(YamlItem.parse(section));
         return item;
     }
 
@@ -272,34 +227,7 @@ public class CrateConfigParser {
             ConfigurationSection displaySection = rewardSection.getConfigurationSection("display");
             if (displaySection != null) {
                 RewardDisplay display = new RewardDisplay();
-                display.setMaterial(displaySection.getString("material"));
-                display.setName(displaySection.getString("name"));
-                display.setLore(displaySection.getStringList("lore"));
-                display.setAmount(displaySection.getInt("amount", 1));
-
-                ConfigurationSection enchSection = displaySection.getConfigurationSection("enchantments");
-                if (enchSection != null) {
-                    Map<String, Integer> enchants = new LinkedHashMap<>();
-                    for (String ek : enchSection.getKeys(false)) {
-                        enchants.put(ek, enchSection.getInt(ek));
-                    }
-                    display.setEnchantments(enchants);
-                }
-
-                ConfigurationSection storedEnchSection = displaySection.getConfigurationSection("stored_enchantments");
-                if (storedEnchSection == null) {
-                    storedEnchSection = displaySection.getConfigurationSection("stored-enchantments");
-                }
-                if (storedEnchSection != null) {
-                    Map<String, Integer> storedEnchants = new LinkedHashMap<>();
-                    for (String ek : storedEnchSection.getKeys(false)) {
-                        storedEnchants.put(ek, storedEnchSection.getInt(ek));
-                    }
-                    display.setStoredEnchantments(storedEnchants);
-                }
-                display.setItemFlags(displaySection.getStringList("item_flags"));
-                display.setHideTooltip(displaySection.getBoolean("hide-tooltip", displaySection.getBoolean("hide_tooltip", false)));
-                display.setHideEnchantments(displaySection.getBoolean("hide-enchantments", displaySection.getBoolean("hide_enchantments", false)));
+                display.setItemStack(YamlItem.parse(displaySection));
                 reward.setDisplay(display);
             }
 
@@ -311,34 +239,7 @@ public class CrateConfigParser {
                     ConfigurationSection itemSection = itemsSection.getConfigurationSection(itemKey);
                     if (itemSection != null) {
                         RewardItem rewardItem = new RewardItem();
-                        rewardItem.setMaterial(itemSection.getString("material"));
-                        rewardItem.setAmount(itemSection.getInt("amount", 1));
-                        rewardItem.setName(itemSection.getString("name"));
-                        rewardItem.setLore(itemSection.getStringList("lore"));
-
-                        ConfigurationSection riEnch = itemSection.getConfigurationSection("enchantments");
-                        if (riEnch != null) {
-                            Map<String, Integer> enchants = new LinkedHashMap<>();
-                            for (String ek : riEnch.getKeys(false)) {
-                                enchants.put(ek, riEnch.getInt(ek));
-                            }
-                            rewardItem.setEnchantments(enchants);
-                        }
-
-                        ConfigurationSection riStoredEnch = itemSection.getConfigurationSection("stored_enchantments");
-                        if (riStoredEnch == null) {
-                            riStoredEnch = itemSection.getConfigurationSection("stored-enchantments");
-                        }
-                        if (riStoredEnch != null) {
-                            Map<String, Integer> storedEnchants = new LinkedHashMap<>();
-                            for (String ek : riStoredEnch.getKeys(false)) {
-                                storedEnchants.put(ek, riStoredEnch.getInt(ek));
-                            }
-                            rewardItem.setStoredEnchantments(storedEnchants);
-                        }
-                        rewardItem.setItemFlags(itemSection.getStringList("item_flags"));
-                        rewardItem.setHideTooltip(itemSection.getBoolean("hide-tooltip", itemSection.getBoolean("hide_tooltip", false)));
-                        rewardItem.setHideEnchantments(itemSection.getBoolean("hide-enchantments", itemSection.getBoolean("hide_enchantments", false)));
+                        rewardItem.setItemStack(YamlItem.parse(itemSection));
                         items.put(itemKey, rewardItem);
                     }
                 }
@@ -350,12 +251,7 @@ public class CrateConfigParser {
 
             // Per-reward announce
             if (rewardSection.contains("announce")) {
-                Object rawAnn = rewardSection.get("announce");
-                if (rawAnn instanceof String s) {
-                    reward.setAnnounce(s);
-                } else {
-                    reward.setAnnounceMessage(YamlMessage.parse(rawAnn));
-                }
+                reward.setAnnounceMessage(YamlMessage.parse(rewardSection.get("announce")));
             }
 
             String requiredPermission = rewardSection.getString("required-permission");

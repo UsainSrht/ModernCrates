@@ -20,56 +20,16 @@ public class KeyManager {
     /**
      * Creates a physical key ItemStack for a crate.
      */
-    @SuppressWarnings("deprecation")
     public ItemStack createKey(Crate crate, int amount) {
         CrateKeyConfig config = crate.getKeyConfig();
         if (config == null) return null;
 
-        Material mat = Material.matchMaterial(config.getMaterial().toUpperCase());
-        if (mat == null) mat = Material.TRIPWIRE_HOOK;
+        ItemStack key = config.getItemStack();
+        if (key == null) return null;
 
-        ItemStack key = new ItemStack(mat, amount);
+        key.setAmount(Math.max(1, amount));
         ItemMeta meta = key.getItemMeta();
         if (meta == null) return key;
-
-        if (config.getName() != null) {
-            meta.displayName(TextUtil.parse(config.getName()));
-        }
-        if (config.getLore() != null) {
-            meta.lore(config.getLore().stream()
-                    .map(TextUtil::parse)
-                    .collect(Collectors.toList()));
-        }
-        if (config.getEnchantments() != null) {
-            for (var entry : config.getEnchantments().entrySet()) {
-                Enchantment ench = Enchantment.getByName(entry.getKey().toUpperCase());
-                if (ench != null) {
-                    if (meta instanceof org.bukkit.inventory.meta.EnchantmentStorageMeta bookMeta) {
-                        bookMeta.addStoredEnchant(ench, entry.getValue(), true);
-                    } else {
-                        meta.addEnchant(ench, entry.getValue(), true);
-                    }
-                }
-            }
-        }
-        if (config.getStoredEnchantments() != null) {
-            if (meta instanceof org.bukkit.inventory.meta.EnchantmentStorageMeta bookMeta) {
-                for (var entry : config.getStoredEnchantments().entrySet()) {
-                    Enchantment ench = Enchantment.getByName(entry.getKey().toUpperCase());
-                    if (ench != null) {
-                        bookMeta.addStoredEnchant(ench, entry.getValue(), true);
-                    }
-                }
-            }
-        }
-        if (config.getItemFlags() != null) {
-            for (String flag : config.getItemFlags()) {
-                try {
-                    meta.addItemFlags(ItemFlag.valueOf(flag.toUpperCase()));
-                } catch (IllegalArgumentException ignored) {}
-            }
-        }
-        meta.setHideTooltip(config.isHideTooltip());
 
         // Store crate ID in persistent data for identification
         meta.getPersistentDataContainer().set(
@@ -89,21 +49,12 @@ public class KeyManager {
         var config = crate.getItemConfig();
         if (config == null) return null;
 
-        Material mat = Material.matchMaterial(config.getMaterial().toUpperCase());
-        if (mat == null) mat = Material.CHEST;
+        ItemStack item = config.getItemStack();
+        if (item == null) return null;
 
-        ItemStack item = new ItemStack(mat, amount);
+        item.setAmount(Math.max(1, amount));
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return item;
-
-        if (config.getName() != null) {
-            meta.displayName(TextUtil.parse(config.getName()));
-        }
-        if (config.getLore() != null) {
-            meta.lore(config.getLore().stream()
-                    .map(TextUtil::parse)
-                    .collect(Collectors.toList()));
-        }
 
         // Store crate ID
         meta.getPersistentDataContainer().set(
@@ -112,7 +63,6 @@ public class KeyManager {
                 crate.getId()
         );
 
-        meta.setHideTooltip(config.isHideTooltip());
         item.setItemMeta(meta);
         return item;
     }
@@ -165,7 +115,12 @@ public class KeyManager {
      */
     public ItemStack createCratePlacerItem(Crate crate) {
         var config = crate.getItemConfig();
-        Material mat = config != null ? Material.matchMaterial(config.getMaterial().toUpperCase()) : null;
+        Material mat = null;
+        if (config != null && config.getItemStack() != null) {
+            mat = config.getItemStack().getType();
+        } else if (config != null && config.getMaterial() != null) {
+            mat = Material.matchMaterial(config.getMaterial().toUpperCase());
+        }
         if (mat == null) mat = Material.CHEST;
 
         ItemStack item = new ItemStack(mat, 1);

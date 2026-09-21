@@ -25,7 +25,6 @@ import me.usainsrht.moderncrates.manager.VirtualKeyManager;
 import me.usainsrht.moderncrates.hologram.HologramProvider;
 import me.usainsrht.moderncrates.hologram.VanillaHologramProvider;
 import me.usainsrht.moderncrates.util.PlaceholderUtil;
-import me.usainsrht.moderncrates.util.SoundUtil;
 import me.usainsrht.moderncrates.util.TextUtil;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -302,7 +301,6 @@ public class ModernCratesPlugin extends JavaPlugin {
             } else {
                 PlaceholderUtil.send(pluginConfig.getMessage("no_key"), player, pluginConfig.getPrefix(),
                         PlaceholderUtil.crateResolvers(player, crate));
-                SoundUtil.play(player, pluginConfig.getSound("no_key"));
                 return false;
             }
         }

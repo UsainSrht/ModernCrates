@@ -1,5 +1,6 @@
 package me.usainsrht.moderncrates.config;
 
+import me.usainsrht.itemapi.yamlitem.YamlItem;
 import me.usainsrht.moderncrates.api.animation.Animation;
 import me.usainsrht.moderncrates.api.animation.GuiItemConfig;
 import me.usainsrht.moderncrates.api.animation.PointerConfig;
@@ -170,13 +171,7 @@ public class AnimationConfigParser {
     private GuiItemConfig parseGuiItemConfig(ConfigurationSection section) {
         if (section == null) return null;
         GuiItemConfig config = new GuiItemConfig();
-        config.setMaterial(section.getString("material"));
-        config.setName(section.getString("name"));
-        config.setLore(section.getStringList("lore"));
-        config.setHideTooltip(section.getBoolean("hide-tooltip", section.getBoolean("hide_tooltip", false)));
-        if (section.contains("nbt")) {
-            config.setNbt(sectionToMap(section.getConfigurationSection("nbt")));
-        }
+        config.setItemStack(YamlItem.parse(section));
         return config;
     }
 
@@ -225,13 +220,7 @@ public class AnimationConfigParser {
         if (section == null) return null;
         PointerConfig config = new PointerConfig();
         config.setSlot(section.getInt("slot"));
-        config.setMaterial(section.getString("material"));
-        config.setName(section.getString("name"));
-        config.setLore(section.getStringList("lore"));
-        config.setHideTooltip(section.getBoolean("hide-tooltip", section.getBoolean("hide_tooltip", false)));
-        if (section.contains("nbt")) {
-            config.setNbt(sectionToMap(section.getConfigurationSection("nbt")));
-        }
+        config.setItemStack(YamlItem.parse(section));
         return config;
     }
 

@@ -17,7 +17,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <paper.version>1.21.11-R0.1-SNAPSHOT</paper.version>
         <morepaperlib.version>0.4.4</morepaperlib.version>
-        <itemtext.version>1.0.3</itemtext.version>
+        <itemapi.version>1.0.6</itemapi.version>
         <yamlmessage.version>1.0.0</yamlmessage.version>
         <miniplaceholders.version>3.2.0</miniplaceholders.version>
         <luckperms.version>5.4</luckperms.version>
@@ -70,7 +70,14 @@
         <dependency>
             <groupId>me.usainsrht.itemapi</groupId>
             <artifactId>itemtext</artifactId>
-            <version>${itemtext.version}</version>
+            <version>${itemapi.version}</version>
+        </dependency>
+
+        <!-- YamlItem: YAML → ItemStack (shaded) -->
+        <dependency>
+            <groupId>me.usainsrht.itemapi</groupId>
+            <artifactId>yamlitem</artifactId>
+            <version>${itemapi.version}</version>
         </dependency>
 
         <!-- YamlMessageAPI (shaded) -->
