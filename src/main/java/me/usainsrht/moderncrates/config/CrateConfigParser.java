@@ -2,6 +2,7 @@ package me.usainsrht.moderncrates.config;
 
 import me.usainsrht.moderncrates.api.crate.*;
 import me.usainsrht.moderncrates.api.reward.Reward;
+import me.usainsrht.moderncrates.api.reward.RewardAnnounce;
 import me.usainsrht.moderncrates.api.reward.RewardDisplay;
 import me.usainsrht.moderncrates.api.reward.RewardItem;
 import me.usainsrht.moderncrates.api.reward.requirement.RewardRequirements;
@@ -158,10 +159,10 @@ public class CrateConfigParser {
         if (annSection != null) {
             AnnounceConfig ann = new AnnounceConfig();
             ann.setToEveryone(annSection.getBoolean("to_everyone", true));
-            if (annSection.contains("default")) {
-                ann.setDefaultAnnounce(annSection.getBoolean("default", true));
-            } else if (annSection.contains("enabled")) {
-                ann.setDefaultAnnounce(annSection.getBoolean("enabled", true));
+            if (annSection.contains("enabled")) {
+                ann.setEnabled(annSection.getBoolean("enabled", true));
+            } else if (annSection.contains("default")) {
+                ann.setEnabled(annSection.getBoolean("default", true));
             }
             if (annSection.contains("single")) {
                 ann.setSingleMessage(YamlMessage.parse(annSection.get("single")));
@@ -269,24 +270,71 @@ public class CrateConfigParser {
             reward.setCommands(rewardSection.getStringList("commands"));
 
             // Per-reward announce
-            if (rewardSection.contains("announce")) {
+            RewardAnnounce rewardAnnounce = null;
+            if (rewardSection.isConfigurationSection("announce")) {
+                ConfigurationSection annSec = rewardSection.getConfigurationSection("announce");
+                if (annSec != null) {
+                    rewardAnnounce = new RewardAnnounce();
+                    if (annSec.contains("enabled")) {
+                        rewardAnnounce.setEnabled(annSec.getBoolean("enabled"));
+                    } else if (annSec.contains("default")) {
+                        rewardAnnounce.setEnabled(annSec.getBoolean("default"));
+                    }
+                    if (annSec.contains("to_everyone")) {
+                        rewardAnnounce.setToEveryone(annSec.getBoolean("to_everyone"));
+                    } else if (annSec.contains("to-everyone")) {
+                        rewardAnnounce.setToEveryone(annSec.getBoolean("to-everyone"));
+                    } else if (annSec.contains("toEveryone")) {
+                        rewardAnnounce.setToEveryone(annSec.getBoolean("toEveryone"));
+                    }
+                    if (annSec.contains("message")) {
+                        rewardAnnounce.setMessage(YamlMessage.parse(annSec.get("message")));
+                    } else if (annSec.contains("announce-message")) {
+                        rewardAnnounce.setMessage(YamlMessage.parse(annSec.get("announce-message")));
+                    } else if (annSec.contains("announcement-message")) {
+                        rewardAnnounce.setMessage(YamlMessage.parse(annSec.get("announcement-message")));
+                    } else if (annSec.contains("announcement_message")) {
+                        rewardAnnounce.setMessage(YamlMessage.parse(annSec.get("announcement_message")));
+                    }
+                }
+            } else if (rewardSection.contains("announce")) {
+                rewardAnnounce = new RewardAnnounce();
                 if (rewardSection.isBoolean("announce")) {
-                    reward.setAnnounce(rewardSection.getBoolean("announce"));
+                    rewardAnnounce.setEnabled(rewardSection.getBoolean("announce"));
                 } else {
                     Object val = rewardSection.get("announce");
                     if (val instanceof String str && (str.equalsIgnoreCase("true") || str.equalsIgnoreCase("false"))) {
-                        reward.setAnnounce(Boolean.parseBoolean(str));
+                        rewardAnnounce.setEnabled(Boolean.parseBoolean(str));
                     } else {
                         // Legacy per-reward announce message support
-                        reward.setAnnouncementMessage(YamlMessage.parse(val));
+                        rewardAnnounce.setMessage(YamlMessage.parse(val));
                     }
                 }
             }
 
-            if (rewardSection.contains("announcement-message")) {
-                reward.setAnnouncementMessage(YamlMessage.parse(rewardSection.get("announcement-message")));
+            // Flat announce-message / announcement-message support (can supplement or override message)
+            Object flatMsgVal = null;
+            if (rewardSection.contains("announce-message")) {
+                flatMsgVal = rewardSection.get("announce-message");
+            } else if (rewardSection.contains("announce_message")) {
+                flatMsgVal = rewardSection.get("announce_message");
+            } else if (rewardSection.contains("announcement-message")) {
+                flatMsgVal = rewardSection.get("announcement-message");
             } else if (rewardSection.contains("announcement_message")) {
-                reward.setAnnouncementMessage(YamlMessage.parse(rewardSection.get("announcement_message")));
+                flatMsgVal = rewardSection.get("announcement_message");
+            }
+
+            if (flatMsgVal != null) {
+                if (rewardAnnounce == null) {
+                    rewardAnnounce = new RewardAnnounce();
+                }
+                if (!rewardAnnounce.hasMessage()) {
+                    rewardAnnounce.setMessage(YamlMessage.parse(flatMsgVal));
+                }
+            }
+
+            if (rewardAnnounce != null && !rewardAnnounce.isEmpty()) {
+                reward.setAnnounce(rewardAnnounce);
             }
 
             String requiredPermission = rewardSection.getString("required-permission");
@@ -445,10 +493,8 @@ public class CrateConfigParser {
         // Announce
         AnnounceConfig ann = crate.getAnnounceConfig();
         if (ann != null) {
+            yaml.set("announce.enabled", ann.isEnabled());
             yaml.set("announce.to_everyone", ann.isToEveryone());
-            if (!ann.isDefaultAnnounce()) {
-                yaml.set("announce.default", false);
-            }
             yaml.set("announce.single", ann.getSingle());
             yaml.set("announce.multiple", ann.getMultiple());
             yaml.set("announce.multiple_item", ann.getMultipleItem());
@@ -506,14 +552,29 @@ public class CrateConfigParser {
             }
 
             if (reward.getCommands() != null) yaml.set(rewardKey + ".commands", reward.getCommands());
-            if (reward.getAnnounce() != null) {
-                yaml.set(rewardKey + ".announce", reward.getAnnounce());
-            }
-            if (reward.getAnnouncementMessage() != null && !reward.getAnnouncementMessage().isEmpty()) {
-                if (reward.getAnnouncementMessageRaw() != null) {
-                    yaml.set(rewardKey + ".announcement-message", reward.getAnnouncementMessageRaw());
-                } else if (reward.getAnnouncementMessage().chat() != null && !reward.getAnnouncementMessage().chat().isEmpty()) {
-                    yaml.set(rewardKey + ".announcement-message", String.join("\n", reward.getAnnouncementMessage().chat()));
+            RewardAnnounce rAnn = reward.getAnnounce();
+            if (rAnn != null && !rAnn.isEmpty()) {
+                if (rAnn.getToEveryone() != null) {
+                    if (rAnn.getEnabled() != null) {
+                        yaml.set(rewardKey + ".announce.enabled", rAnn.getEnabled());
+                    }
+                    yaml.set(rewardKey + ".announce.to_everyone", rAnn.getToEveryone());
+                    if (rAnn.hasMessage()) {
+                        String msg = rAnn.getMessageRaw() != null ? rAnn.getMessageRaw()
+                                : (rAnn.getMessage().chat() != null ? String.join("\n", rAnn.getMessage().chat()) : "");
+                        yaml.set(rewardKey + ".announce.message", msg);
+                    }
+                } else if (rAnn.hasMessage() && rAnn.getEnabled() != null) {
+                    yaml.set(rewardKey + ".announce.enabled", rAnn.getEnabled());
+                    String msg = rAnn.getMessageRaw() != null ? rAnn.getMessageRaw()
+                            : (rAnn.getMessage().chat() != null ? String.join("\n", rAnn.getMessage().chat()) : "");
+                    yaml.set(rewardKey + ".announce.message", msg);
+                } else if (rAnn.getEnabled() != null) {
+                    yaml.set(rewardKey + ".announce", rAnn.getEnabled());
+                } else if (rAnn.hasMessage()) {
+                    String msg = rAnn.getMessageRaw() != null ? rAnn.getMessageRaw()
+                            : (rAnn.getMessage().chat() != null ? String.join("\n", rAnn.getMessage().chat()) : "");
+                    yaml.set(rewardKey + ".announcement-message", msg);
                 }
             }
             if (reward.getRequiredPermission() != null) {

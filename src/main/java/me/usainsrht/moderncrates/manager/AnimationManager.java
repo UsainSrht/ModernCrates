@@ -196,21 +196,10 @@ public class AnimationManager {
         TagResolver[] resolvers = PlaceholderUtil.rewardResolvers(player, crate, reward, rewardDisplayName);
         String prefix = plugin != null ? plugin.getPluginConfig().getPrefix() : null;
 
-        // Per-reward custom announcement
-        YamlMessage rewardAnnounce = reward.getAnnouncementMessage();
-        if (rewardAnnounce != null && !rewardAnnounce.isEmpty()) {
-            boolean toEveryone = crate != null && crate.getAnnounceConfig() != null && crate.getAnnounceConfig().isToEveryone();
-            dispatchAnnouncement(rewardAnnounce, player, toEveryone, prefix, resolvers);
-            return;
-        }
-
-        // Default crate announcement
-        if (crate != null && crate.getAnnounceConfig() != null) {
-            AnnounceConfig annConfig = crate.getAnnounceConfig();
-            YamlMessage singleMsg = annConfig.getSingleMessage();
-            if (!singleMsg.isEmpty()) {
-                dispatchAnnouncement(singleMsg, player, annConfig.isToEveryone(), prefix, resolvers);
-            }
+        boolean toEveryone = reward.getEffectiveToEveryone(crate);
+        YamlMessage message = reward.getEffectiveMessage(crate);
+        if (message != null && !message.isEmpty()) {
+            dispatchAnnouncement(message, player, toEveryone, prefix, resolvers);
         }
     }
 
@@ -256,7 +245,8 @@ public class AnimationManager {
                 ItemStack displayItem = ItemBuilder.fromDisplay(reward, crate);
                 Component rewardDisplayName = ItemText.format(displayItem);
                 TagResolver[] resolvers = PlaceholderUtil.rewardResolvers(player, crate, reward, rewardDisplayName);
-                dispatchAnnouncement(rewardAnnounce, player, annConfig.isToEveryone(), prefix, resolvers);
+                boolean toEveryone = reward.getEffectiveToEveryone(crate);
+                dispatchAnnouncement(rewardAnnounce, player, toEveryone, prefix, resolvers);
             }
         }
 

@@ -174,8 +174,7 @@ public final class ItemBuilder {
         if (reward.getDisplay() != null) {
             ItemStack stack = reward.getDisplay().getItemStack();
             if (stack != null && stack.hasItemMeta() && stack.getItemMeta().hasDisplayName()) {
-                return TextUtil.parse(replaceChancePlaceholders(
-                        componentToMiniMessage(stack.getItemMeta().displayName()), formattedChance));
+                return replaceChancePlaceholders(stack.getItemMeta().displayName(), formattedChance);
             }
             if (reward.getDisplay().getName() != null) {
                 return TextUtil.parse(replaceChancePlaceholders(reward.getDisplay().getName(), formattedChance));
@@ -190,8 +189,7 @@ public final class ItemBuilder {
             RewardItem firstItem = reward.getItems().values().iterator().next();
             ItemStack stack = firstItem.getItemStack();
             if (stack != null && stack.hasItemMeta() && stack.getItemMeta().hasDisplayName()) {
-                return TextUtil.parse(replaceChancePlaceholders(
-                        componentToMiniMessage(stack.getItemMeta().displayName()), formattedChance));
+                return replaceChancePlaceholders(stack.getItemMeta().displayName(), formattedChance);
             }
             if (firstItem.getName() != null) {
                 return TextUtil.parse(replaceChancePlaceholders(firstItem.getName(), formattedChance));
@@ -228,14 +226,11 @@ public final class ItemBuilder {
 
         String formattedChance = formatChance(chancePercentage);
         if (meta.hasDisplayName()) {
-            meta.displayName(TextUtil.parse(
-                    replaceChancePlaceholders(componentToMiniMessage(meta.displayName()), formattedChance)));
+            meta.displayName(replaceChancePlaceholders(meta.displayName(), formattedChance));
         }
         if (meta.hasLore() && meta.lore() != null) {
             meta.lore(meta.lore().stream()
-                    .map(ItemBuilder::componentToMiniMessage)
                     .map(line -> replaceChancePlaceholders(line, formattedChance))
-                    .map(TextUtil::parse)
                     .collect(Collectors.toList()));
         }
         item.setItemMeta(meta);
@@ -259,7 +254,14 @@ public final class ItemBuilder {
     }
 
     private static String replaceChancePlaceholders(String text, String formattedChance) {
+        if (text == null) return "";
         return text.replace("<chance>", formattedChance).replace("%chance%", formattedChance);
+    }
+
+    private static Component replaceChancePlaceholders(Component component, String formattedChance) {
+        if (component == null) return Component.empty();
+        return component.replaceText(b -> b.matchLiteral("<chance>").replacement(formattedChance))
+                .replaceText(b -> b.matchLiteral("%chance%").replacement(formattedChance));
     }
 
     private static String componentToMiniMessage(Component component) {

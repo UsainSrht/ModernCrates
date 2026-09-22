@@ -59,6 +59,7 @@ preview:
     - "block.chest.open"
 
 announce:
+  enabled: true
   to_everyone: true
   single: "<gold><player> <gray>won <gold><reward_name> <gray>from the <gold>Example Crate<gray>!"
   multiple: "<gold><player> <gray>won multiple rewards from the <gold>Example Crate<gray>!"
@@ -85,7 +86,10 @@ rewards:
         enchantments:
           SHARPNESS: 3
           UNBREAKING: 2
-    announcement-message: "<gold><player> <gray>won a <aqua><bold>Diamond Sword <gray>from the <gold>Example Crate<gray>!"
+    announce:
+      enabled: true
+      to_everyone: true
+      message: "<gold><player> <gray>won a <aqua><bold>Diamond Sword <gray>from the <gold>Example Crate<gray>!"
   golden_apple:
     chance: 15.0
     display:

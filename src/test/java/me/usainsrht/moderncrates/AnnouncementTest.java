@@ -3,6 +3,7 @@ package me.usainsrht.moderncrates;
 import me.usainsrht.moderncrates.api.crate.AnnounceConfig;
 import me.usainsrht.moderncrates.api.crate.Crate;
 import me.usainsrht.moderncrates.api.reward.Reward;
+import me.usainsrht.moderncrates.api.reward.RewardAnnounce;
 import me.usainsrht.moderncrates.util.PlaceholderUtil;
 import me.usainsrht.yamlmessage.YamlMessage;
 import net.kyori.adventure.audience.Audience;
@@ -130,7 +131,8 @@ public class AnnouncementTest {
 
         // announce: false overrides crate default true
         assertFalse(junkReward.shouldAnnounce(crate));
-        assertEquals(Boolean.FALSE, junkReward.getAnnounce());
+        assertNotNull(junkReward.getAnnounce());
+        assertEquals(Boolean.FALSE, junkReward.getAnnounce().getEnabled());
         assertEquals(Boolean.FALSE, junkReward.isAnnounce());
 
         // Even with an announcementMessage set, announce: false must exempt the reward
@@ -166,7 +168,8 @@ public class AnnouncementTest {
 
         // announce: true overrides crate default false
         assertTrue(forcedReward.shouldAnnounce(crate));
-        assertEquals(Boolean.TRUE, forcedReward.getAnnounce());
+        assertNotNull(forcedReward.getAnnounce());
+        assertEquals(Boolean.TRUE, forcedReward.getAnnounce().getEnabled());
         assertEquals(Boolean.TRUE, forcedReward.isAnnounce());
     }
 
@@ -233,12 +236,12 @@ public class AnnouncementTest {
 
             Reward junk = parsedCrate.getRewards().get("junk");
             assertNotNull(junk);
-            assertEquals(Boolean.FALSE, junk.getAnnounce());
+            assertEquals(Boolean.FALSE, junk.isAnnounce());
             assertFalse(junk.shouldAnnounce(parsedCrate));
 
             Reward forced = parsedCrate.getRewards().get("forced");
             assertNotNull(forced);
-            assertEquals(Boolean.TRUE, forced.getAnnounce());
+            assertEquals(Boolean.TRUE, forced.isAnnounce());
             assertTrue(forced.shouldAnnounce(parsedCrate));
 
             Reward rare = parsedCrate.getRewards().get("rare");
@@ -269,10 +272,10 @@ public class AnnouncementTest {
                 assertFalse(reloadedCrate.getAnnounceConfig().isDefaultAnnounce());
 
                 Reward reloadedJunk = reloadedCrate.getRewards().get("junk");
-                assertEquals(Boolean.FALSE, reloadedJunk.getAnnounce());
+                assertEquals(Boolean.FALSE, reloadedJunk.isAnnounce());
 
                 Reward reloadedForced = reloadedCrate.getRewards().get("forced");
-                assertEquals(Boolean.TRUE, reloadedForced.getAnnounce());
+                assertEquals(Boolean.TRUE, reloadedForced.isAnnounce());
 
                 Reward reloadedRare = reloadedCrate.getRewards().get("rare");
                 assertNotNull(reloadedRare.getAnnouncementMessage());
@@ -324,5 +327,205 @@ public class AnnouncementTest {
                 .filter(r -> r.shouldAnnounce(crate))
                 .toList();
         assertTrue(announcedJunk.isEmpty());
+    }
+
+    @Test
+    public void testFullRewardAnnounceObjectConfig() throws java.io.IOException {
+        java.io.File tempDir = java.nio.file.Files.createTempDirectory("moderncrates_obj_test").toFile();
+        try {
+            java.io.File crateFile = new java.io.File(tempDir, "obj_crate.yml");
+            String yamlContent = """
+                    name: "<gold>Object Crate"
+                    animation: "csgo"
+                    announce:
+                      enabled: true
+                      to_everyone: true
+                      single: "<gold><player> won <reward_name>!"
+                    rewards:
+                      full_obj:
+                        chance: 1.0
+                        announce:
+                          enabled: true
+                          to_everyone: false
+                          message: "<light_purple><player> won the Secret Prize!"
+                      fallback_obj:
+                        chance: 10.0
+                        announce:
+                          to_everyone: false
+                      disabled_obj:
+                        chance: 20.0
+                        announce:
+                          enabled: false
+                      flat_reward:
+                        chance: 15.0
+                        announce: true
+                        announce-message: "<yellow><player> won Flat Reward!"
+                    """;
+            java.nio.file.Files.writeString(crateFile.toPath(), yamlContent);
+
+            me.usainsrht.moderncrates.config.CrateConfigParser parser =
+                    new me.usainsrht.moderncrates.config.CrateConfigParser(null);
+            Crate parsedCrate = parser.parse("obj_crate", crateFile);
+
+            assertNotNull(parsedCrate);
+            assertNotNull(parsedCrate.getAnnounce());
+            assertTrue(parsedCrate.getAnnounce().isEnabled());
+            assertTrue(parsedCrate.getAnnounce().isToEveryone());
+
+            // 1. Full object reward
+            Reward full = parsedCrate.getRewards().get("full_obj");
+            assertNotNull(full);
+            assertNotNull(full.getAnnounce());
+            assertEquals(Boolean.TRUE, full.getAnnounce().getEnabled());
+            assertEquals(Boolean.FALSE, full.getAnnounce().getToEveryone());
+            assertNotNull(full.getAnnounce().getMessage());
+            assertTrue(full.getAnnounce().getMessage().chat().get(0).contains("Secret Prize"));
+
+            // Effective checks
+            assertTrue(full.getEffectiveEnabled(parsedCrate));
+            assertTrue(full.shouldAnnounce(parsedCrate));
+            assertFalse(full.getEffectiveToEveryone(parsedCrate));
+            assertEquals(full.getAnnounce().getMessage(), full.getEffectiveMessage(parsedCrate));
+
+            // 2. Fallback object reward (missing enabled and message)
+            Reward fallback = parsedCrate.getRewards().get("fallback_obj");
+            assertNotNull(fallback);
+            assertNotNull(fallback.getAnnounce());
+            assertNull(fallback.getAnnounce().getEnabled());
+            assertEquals(Boolean.FALSE, fallback.getAnnounce().getToEveryone());
+            assertNull(fallback.getAnnounce().getMessage());
+
+            // Effective checks: enabled falls back to crate (true), message falls back to crate single
+            assertTrue(fallback.getEffectiveEnabled(parsedCrate));
+            assertTrue(fallback.shouldAnnounce(parsedCrate));
+            assertFalse(fallback.getEffectiveToEveryone(parsedCrate)); // overridden to false
+            assertEquals(parsedCrate.getAnnounce().getSingleMessage(), fallback.getEffectiveMessage(parsedCrate));
+
+            // 3. Disabled object reward
+            Reward disabled = parsedCrate.getRewards().get("disabled_obj");
+            assertNotNull(disabled);
+            assertNotNull(disabled.getAnnounce());
+            assertEquals(Boolean.FALSE, disabled.getAnnounce().getEnabled());
+            assertFalse(disabled.getEffectiveEnabled(parsedCrate));
+            assertFalse(disabled.shouldAnnounce(parsedCrate));
+            // to_everyone falls back to crate (true)
+            assertTrue(disabled.getEffectiveToEveryone(parsedCrate));
+
+            // 4. Flat reward (legacy format)
+            Reward flat = parsedCrate.getRewards().get("flat_reward");
+            assertNotNull(flat);
+            assertNotNull(flat.getAnnounce());
+            assertEquals(Boolean.TRUE, flat.getAnnounce().getEnabled());
+            assertNotNull(flat.getAnnounce().getMessage());
+            assertTrue(flat.getAnnounce().getMessage().chat().get(0).contains("Flat Reward"));
+            assertTrue(flat.getEffectiveEnabled(parsedCrate));
+            assertTrue(flat.getEffectiveToEveryone(parsedCrate)); // falls back to crate true
+
+            // Test saving and reloading full object format
+            java.io.File saveDir = java.nio.file.Files.createTempDirectory("moderncrates_save_obj_test").toFile();
+            try {
+                parser.save(parsedCrate, saveDir);
+                java.io.File savedFile = new java.io.File(saveDir, parsedCrate.getId() + ".yml");
+                assertTrue(savedFile.exists());
+
+                Crate reloaded = parser.parse(parsedCrate.getId(), savedFile);
+                assertNotNull(reloaded);
+                assertTrue(reloaded.getAnnounce().isEnabled());
+
+                Reward reloadedFull = reloaded.getRewards().get("full_obj");
+                assertNotNull(reloadedFull);
+                assertNotNull(reloadedFull.getAnnounce());
+                assertEquals(Boolean.TRUE, reloadedFull.getAnnounce().getEnabled());
+                assertEquals(Boolean.FALSE, reloadedFull.getAnnounce().getToEveryone());
+                assertNotNull(reloadedFull.getAnnounce().getMessage());
+                assertTrue(reloadedFull.getAnnounce().getMessage().chat().get(0).contains("Secret Prize"));
+
+                Reward reloadedFallback = reloaded.getRewards().get("fallback_obj");
+                assertNotNull(reloadedFallback);
+                assertEquals(Boolean.FALSE, reloadedFallback.getAnnounce().getToEveryone());
+                assertTrue(reloadedFallback.shouldAnnounce(reloaded));
+            } finally {
+                for (java.io.File f : saveDir.listFiles()) f.delete();
+                saveDir.delete();
+            }
+        } finally {
+            for (java.io.File f : tempDir.listFiles()) f.delete();
+            tempDir.delete();
+        }
+    }
+
+    @Test
+    public void testCrateAnnounceDisabledWithRewardOverride() {
+        Crate crate = new Crate("disabled_crate");
+        AnnounceConfig annConfig = new AnnounceConfig();
+        annConfig.setEnabled(false);
+        annConfig.setToEveryone(true);
+        annConfig.setSingle("<gold><player> won crate item!");
+        crate.setAnnounce(annConfig);
+
+        // Reward with announce: { enabled: true, to_everyone: false }
+        Reward forcedOpener = new Reward("forced_opener");
+        RewardAnnounce forcedAnn = new RewardAnnounce();
+        forcedAnn.setEnabled(true);
+        forcedAnn.setToEveryone(false);
+        forcedOpener.setAnnounce(forcedAnn);
+
+        // Reward with no announce object
+        Reward normal = new Reward("normal");
+
+        // Reward with announce: { enabled: false }
+        Reward explicitlyDisabled = new Reward("explicit_disabled");
+        explicitlyDisabled.setAnnounce(false);
+
+        // 1. forcedOpener overrides crate enabled=false
+        assertTrue(forcedOpener.shouldAnnounce(crate));
+        assertFalse(forcedOpener.getEffectiveToEveryone(crate)); // overrides crate toEveryone=true
+        assertEquals(annConfig.getSingleMessage(), forcedOpener.getEffectiveMessage(crate)); // falls back to crate single
+
+        // 2. normal falls back to crate enabled=false
+        assertFalse(normal.shouldAnnounce(crate));
+
+        // 3. explicitlyDisabled stays disabled
+        assertFalse(explicitlyDisabled.shouldAnnounce(crate));
+    }
+
+    @Test
+    public void testRewardAnnounceOverridesCrateToEveryone() {
+        Crate crateEveryone = new Crate("everyone");
+        AnnounceConfig annEveryone = new AnnounceConfig();
+        annEveryone.setEnabled(true);
+        annEveryone.setToEveryone(true);
+        crateEveryone.setAnnounce(annEveryone);
+
+        Crate crateOpenerOnly = new Crate("opener_only");
+        AnnounceConfig annOpener = new AnnounceConfig();
+        annOpener.setEnabled(true);
+        annOpener.setToEveryone(false);
+        crateOpenerOnly.setAnnounce(annOpener);
+
+        Reward rewardOpener = new Reward("r1");
+        RewardAnnounce ann1 = new RewardAnnounce();
+        ann1.setToEveryone(false);
+        rewardOpener.setAnnounce(ann1);
+
+        Reward rewardBroadcast = new Reward("r2");
+        RewardAnnounce ann2 = new RewardAnnounce();
+        ann2.setToEveryone(true);
+        rewardBroadcast.setAnnounce(ann2);
+
+        Reward rewardDefault = new Reward("r3");
+
+        // Overrides crate toEveryone=true with reward toEveryone=false
+        assertFalse(rewardOpener.getEffectiveToEveryone(crateEveryone));
+        // Overrides crate toEveryone=false with reward toEveryone=true
+        assertTrue(rewardBroadcast.getEffectiveToEveryone(crateOpenerOnly));
+
+        // Falls back to crate
+        assertTrue(rewardDefault.getEffectiveToEveryone(crateEveryone));
+        assertFalse(rewardDefault.getEffectiveToEveryone(crateOpenerOnly));
+
+        // When crate is null, default is true
+        assertTrue(rewardDefault.getEffectiveToEveryone(null));
+        assertFalse(rewardOpener.getEffectiveToEveryone(null));
     }
 }

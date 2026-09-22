@@ -4,7 +4,7 @@
   <groupId>me.usainsrht</groupId>
   <artifactId>moderncrates</artifactId>
   <name>ModernCrates</name>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>1.1.0</version>
   <description>API-first crate lootbox plugin for Paper/Folia</description>
   <build>
     <defaultGoal>clean package</defaultGoal>
@@ -186,7 +186,7 @@
     <java.version>25</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <paper.version>1.21.11-R0.1-SNAPSHOT</paper.version>
-    <itemapi.version>1.0.6</itemapi.version>
+    <itemapi.version>1.0.8</itemapi.version>
     <miniplaceholders.version>3.2.0</miniplaceholders.version>
     <yamlmessage.version>1.0.0</yamlmessage.version>
     <luckperms.version>5.4</luckperms.version>

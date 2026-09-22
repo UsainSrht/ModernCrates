@@ -38,9 +38,9 @@ public class AnnounceEditorGui extends EditorGuiBase {
         } else {
             inventory.setItem(10, ItemBuilder.create(ac.isToEveryone() ? "LIME_DYE" : "GRAY_DYE",
                     "<yellow><bold>To Everyone: <white>" + ac.isToEveryone(), List.of("<gray>Click to toggle")));
-            inventory.setItem(11, ItemBuilder.create(ac.isDefaultAnnounce() ? "LIME_DYE" : "GRAY_DYE",
-                    "<yellow><bold>Default Announce: <white>" + ac.isDefaultAnnounce(),
-                    List.of("<gray>Whether rewards announce by default", "<gray>Click to toggle")));
+            inventory.setItem(11, ItemBuilder.create(ac.isEnabled() ? "LIME_DYE" : "GRAY_DYE",
+                    "<yellow><bold>Enabled: <white>" + ac.isEnabled(),
+                    List.of("<gray>Whether crate announcements are enabled", "<gray>Click to toggle")));
             inventory.setItem(13, ItemBuilder.create("PAPER", "<yellow><bold>Single: <white>" + orNone(ac.getSingle()),
                     List.of("<gray>Click to set")));
             inventory.setItem(15, ItemBuilder.create("PAPER", "<yellow><bold>Multiple: <white>" + orNone(ac.getMultiple()),
@@ -60,8 +60,8 @@ public class AnnounceEditorGui extends EditorGuiBase {
 
         if (slot == 13 && ac == null) {
             ac = new AnnounceConfig();
+            ac.setEnabled(true);
             ac.setToEveryone(true);
-            ac.setDefaultAnnounce(true);
             ac.setSingle("<gold><player> <gray>won <gold><reward_name> <gray>from <gold>" + crate.getName());
             crate.setAnnounceConfig(ac);
             save();
@@ -73,7 +73,7 @@ public class AnnounceEditorGui extends EditorGuiBase {
         AnnounceConfig finalAc = ac;
         switch (slot) {
             case 10 -> { finalAc.setToEveryone(!finalAc.isToEveryone()); save(); open(); }
-            case 11 -> { finalAc.setDefaultAnnounce(!finalAc.isDefaultAnnounce()); save(); open(); }
+            case 11 -> { finalAc.setEnabled(!finalAc.isEnabled()); save(); open(); }
             case 13 -> requestSignInput("Single message", input -> {
                 finalAc.setSingle(input);
                 open();

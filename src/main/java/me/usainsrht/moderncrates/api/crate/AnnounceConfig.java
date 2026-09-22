@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public class AnnounceConfig {
 
+    private boolean enabled = true;
     private boolean toEveryone = true;
     private boolean defaultAnnounce = true;
     private String single;
@@ -19,6 +20,15 @@ public class AnnounceConfig {
     private YamlMessage multipleMessage = YamlMessage.empty();
     private YamlMessage multipleItemMessage = YamlMessage.empty();
 
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+        this.defaultAnnounce = enabled;
+    }
+
     public boolean isToEveryone() {
         return toEveryone;
     }
@@ -28,11 +38,12 @@ public class AnnounceConfig {
     }
 
     public boolean isDefaultAnnounce() {
-        return defaultAnnounce;
+        return enabled;
     }
 
     public void setDefaultAnnounce(boolean defaultAnnounce) {
         this.defaultAnnounce = defaultAnnounce;
+        this.enabled = defaultAnnounce;
     }
 
     public String getSingle() {

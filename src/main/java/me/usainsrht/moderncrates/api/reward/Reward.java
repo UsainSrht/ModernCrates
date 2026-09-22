@@ -4,6 +4,7 @@ import me.usainsrht.moderncrates.api.crate.Crate;
 import me.usainsrht.moderncrates.api.reward.requirement.RewardRequirements;
 import me.usainsrht.yamlmessage.YamlMessage;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -19,9 +20,7 @@ public class Reward {
     private RewardDisplay display;
     private Map<String, RewardItem> items;
     private List<String> commands;
-    private Boolean announce;
-    private YamlMessage announcementMessage;
-    private String announcementMessageRaw;
+    private RewardAnnounce announce;
     private String requiredPermission;
     private RewardRequirements requirements;
 
@@ -65,43 +64,82 @@ public class Reward {
         this.commands = commands;
     }
 
-    public @Nullable Boolean getAnnounce() {
+    public @Nullable RewardAnnounce getAnnounce() {
         return announce;
     }
 
-    public @Nullable Boolean isAnnounce() {
-        return announce;
-    }
-
-    public void setAnnounce(@Nullable Boolean announce) {
+    public void setAnnounce(@Nullable RewardAnnounce announce) {
         this.announce = announce;
     }
 
-    public @Nullable YamlMessage getAnnouncementMessage() {
-        if (announcementMessage != null) return announcementMessage;
-        if (announcementMessageRaw != null) {
-            this.announcementMessage = YamlMessage.parse(announcementMessageRaw);
-            return this.announcementMessage;
+    public @Nullable RewardAnnounce getAnnounceConfig() {
+        return announce;
+    }
+
+    public void setAnnounceConfig(@Nullable RewardAnnounce announce) {
+        this.announce = announce;
+    }
+
+    public @NotNull RewardAnnounce getOrCreateAnnounce() {
+        if (this.announce == null) {
+            this.announce = new RewardAnnounce();
         }
-        return null;
+        return this.announce;
+    }
+
+    public @Nullable Boolean isAnnounce() {
+        return announce != null ? announce.getEnabled() : null;
+    }
+
+    public @Nullable Boolean isAnnounceEnabled() {
+        return isAnnounce();
+    }
+
+    public void setAnnounce(@Nullable Boolean enabled) {
+        if (enabled == null) {
+            if (this.announce != null) {
+                this.announce.setEnabled(null);
+                if (this.announce.isEmpty()) {
+                    this.announce = null;
+                }
+            }
+        } else {
+            getOrCreateAnnounce().setEnabled(enabled);
+        }
+    }
+
+    public @Nullable YamlMessage getAnnouncementMessage() {
+        return announce != null ? announce.getMessage() : null;
     }
 
     public void setAnnouncementMessage(@Nullable YamlMessage announcementMessage) {
-        this.announcementMessage = announcementMessage;
-        if (announcementMessage != null && announcementMessage.chat() != null && !announcementMessage.chat().isEmpty()) {
-            this.announcementMessageRaw = String.join("\n", announcementMessage.chat());
-        } else if (announcementMessage == null) {
-            this.announcementMessageRaw = null;
+        if (announcementMessage == null) {
+            if (this.announce != null) {
+                this.announce.setMessage((YamlMessage) null);
+                if (this.announce.isEmpty()) {
+                    this.announce = null;
+                }
+            }
+        } else {
+            getOrCreateAnnounce().setMessage(announcementMessage);
         }
     }
 
     public void setAnnouncementMessage(@Nullable String message) {
-        this.announcementMessageRaw = message;
-        this.announcementMessage = message != null ? YamlMessage.parse(message) : null;
+        if (message == null) {
+            if (this.announce != null) {
+                this.announce.setMessage((String) null);
+                if (this.announce.isEmpty()) {
+                    this.announce = null;
+                }
+            }
+        } else {
+            getOrCreateAnnounce().setMessage(message);
+        }
     }
 
     public @Nullable String getAnnouncementMessageRaw() {
-        return announcementMessageRaw;
+        return announce != null ? announce.getMessageRaw() : null;
     }
 
     public @Nullable YamlMessage getAnnounceMessage() {
@@ -112,17 +150,51 @@ public class Reward {
         setAnnouncementMessage(announceMessage);
     }
 
-    public boolean shouldAnnounce(@Nullable Crate crate) {
-        if (announce != null) {
-            return announce;
+    public boolean getEffectiveEnabled(@Nullable Crate crate) {
+        if (announce != null && announce.getEnabled() != null) {
+            return announce.getEnabled();
         }
-        if (getAnnouncementMessage() != null && !getAnnouncementMessage().isEmpty()) {
+        if (announce != null && announce.hasMessage()) {
             return true;
         }
         if (crate != null && crate.getAnnounceConfig() != null) {
-            return crate.getAnnounceConfig().isDefaultAnnounce();
+            return crate.getAnnounceConfig().isEnabled();
         }
         return false;
+    }
+
+    public boolean getEffectiveToEveryone(@Nullable Crate crate) {
+        if (announce != null && announce.getToEveryone() != null) {
+            return announce.getToEveryone();
+        }
+        if (crate != null && crate.getAnnounceConfig() != null) {
+            return crate.getAnnounceConfig().isToEveryone();
+        }
+        return true;
+    }
+
+    public @Nullable YamlMessage getEffectiveMessage(@Nullable Crate crate) {
+        if (announce != null && announce.hasMessage()) {
+            return announce.getMessage();
+        }
+        if (crate != null && crate.getAnnounceConfig() != null) {
+            return crate.getAnnounceConfig().getSingleMessage();
+        }
+        return null;
+    }
+
+    public @Nullable String getEffectiveMessageRaw(@Nullable Crate crate) {
+        if (announce != null && announce.hasMessage()) {
+            return announce.getMessageRaw();
+        }
+        if (crate != null && crate.getAnnounceConfig() != null) {
+            return crate.getAnnounceConfig().getSingle();
+        }
+        return null;
+    }
+
+    public boolean shouldAnnounce(@Nullable Crate crate) {
+        return getEffectiveEnabled(crate);
     }
 
     public String getRequiredPermission() {

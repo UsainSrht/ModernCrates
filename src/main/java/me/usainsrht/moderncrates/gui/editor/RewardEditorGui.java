@@ -3,6 +3,7 @@ package me.usainsrht.moderncrates.gui.editor;
 import me.usainsrht.moderncrates.ModernCratesPlugin;
 import me.usainsrht.moderncrates.api.crate.Crate;
 import me.usainsrht.moderncrates.api.reward.Reward;
+import me.usainsrht.moderncrates.api.reward.RewardAnnounce;
 import me.usainsrht.moderncrates.api.reward.RewardDisplay;
 import me.usainsrht.moderncrates.api.reward.RewardItem;
 import me.usainsrht.moderncrates.api.reward.requirement.RewardRequirements;
@@ -100,9 +101,18 @@ public class RewardEditorGui extends EditorGuiBase {
         if (reward.hasCommands()) for (String c : reward.getCommands()) cmdLore.add("<white>" + c);
         inventory.setItem(25, ItemBuilder.create("COMMAND_BLOCK", "<yellow><bold>Commands", cmdLore));
 
-        String announceDesc = reward.getAnnounce() == null ? "<gray>default (crate setting)"
-                : (reward.getAnnounce() ? "<green>true (always announce)" : "<red>false (exempt)");
-        String announceMat = reward.getAnnounce() == null ? "GRAY_DYE" : (reward.getAnnounce() ? "LIME_DYE" : "RED_DYE");
+        Boolean toEveryone = reward.getAnnounce() != null ? reward.getAnnounce().getToEveryone() : null;
+        String toEveryoneDesc = toEveryone == null ? "<gray>default (crate setting)"
+                : (toEveryone ? "<green>true (broadcast)" : "<red>false (opener only)");
+        String toEveryoneMat = toEveryone == null ? "GRAY_DYE" : (toEveryone ? "LIME_DYE" : "RED_DYE");
+        inventory.setItem(36, ItemBuilder.create(toEveryoneMat,
+                "<yellow><bold>To Everyone: <white>" + toEveryoneDesc,
+                List.of("<gray>Click to toggle (default -> true -> false)", "<gray>Right-click to reset to default")));
+
+        Boolean announceEnabled = reward.isAnnounce();
+        String announceDesc = announceEnabled == null ? "<gray>default (crate setting)"
+                : (announceEnabled ? "<green>true (always announce)" : "<red>false (exempt)");
+        String announceMat = announceEnabled == null ? "GRAY_DYE" : (announceEnabled ? "LIME_DYE" : "RED_DYE");
         inventory.setItem(37, ItemBuilder.create(announceMat,
                 "<yellow><bold>Announce: <white>" + announceDesc,
                 List.of("<gray>Click to toggle (default -> true -> false)", "<gray>Right-click to reset to default")));
@@ -249,16 +259,34 @@ public class RewardEditorGui extends EditorGuiBase {
                     });
                 }
             }
+            case 36 -> {
+                RewardAnnounce ann = reward.getOrCreateAnnounce();
+                if (rightClick) {
+                    ann.setToEveryone(null);
+                    if (ann.isEmpty()) reward.setAnnounce((RewardAnnounce) null);
+                } else {
+                    if (ann.getToEveryone() == null) {
+                        ann.setToEveryone(true);
+                    } else if (Boolean.TRUE.equals(ann.getToEveryone())) {
+                        ann.setToEveryone(false);
+                    } else {
+                        ann.setToEveryone(null);
+                        if (ann.isEmpty()) reward.setAnnounce((RewardAnnounce) null);
+                    }
+                }
+                save();
+                open();
+            }
             case 37 -> {
                 if (rightClick) {
-                    reward.setAnnounce(null);
+                    reward.setAnnounce((Boolean) null);
                 } else {
-                    if (reward.getAnnounce() == null) {
+                    if (reward.isAnnounce() == null) {
                         reward.setAnnounce(true);
-                    } else if (Boolean.TRUE.equals(reward.getAnnounce())) {
+                    } else if (Boolean.TRUE.equals(reward.isAnnounce())) {
                         reward.setAnnounce(false);
                     } else {
-                        reward.setAnnounce(null);
+                        reward.setAnnounce((Boolean) null);
                     }
                 }
                 save();

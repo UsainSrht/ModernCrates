@@ -93,4 +93,31 @@ public class YamlItemAndMessageTest {
         // Without itemStack being set, getItemStack() returns null (no fallback legacy builder)
         assertNull(config.getItemStack());
     }
+
+    @Test
+    public void testPlayerHeadObjectPreservationWithChancePlaceholder() {
+        net.kyori.adventure.text.object.PlayerHeadObjectContents contents =
+                net.kyori.adventure.text.object.ObjectContents.playerHead()
+                        .profileProperty(net.kyori.adventure.text.object.PlayerHeadObjectContents.property(
+                                "textures", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly9leGFtcGxlLmNvbS9za2luIn19fQ==", "sig123"))
+                        .build();
+
+        Component headComp = Component.object(contents);
+        Component line = Component.text()
+                .append(headComp)
+                .append(Component.text(" Chance: <chance>%"))
+                .build();
+
+        Component updated = line.replaceText(b -> b.matchLiteral("<chance>").replacement("15.5"))
+                .replaceText(b -> b.matchLiteral("%chance%").replacement("15.5"));
+
+        // Verify head component and textures were not stripped
+        assertTrue(updated.children().stream().anyMatch(c -> c instanceof net.kyori.adventure.text.ObjectComponent obj
+                && obj.contents() instanceof net.kyori.adventure.text.object.PlayerHeadObjectContents head
+                && !head.profileProperties().isEmpty()
+                && "textures".equals(head.profileProperties().get(0).name())));
+
+        // Verify placeholder was replaced
+        assertTrue(net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText().serialize(updated).contains("15.5%"));
+    }
 }

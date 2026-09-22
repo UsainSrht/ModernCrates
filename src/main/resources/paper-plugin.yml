@@ -27,3 +27,6 @@ dependencies:
     PlaceholderAPI:
       required: false
       join-classpath: true
+    FancyTags:
+      required: false
+      join-classpath: false

@@ -127,6 +127,14 @@ public class Crate {
         this.announceConfig = announceConfig;
     }
 
+    public AnnounceConfig getAnnounce() {
+        return announceConfig;
+    }
+
+    public void setAnnounce(AnnounceConfig announceConfig) {
+        this.announceConfig = announceConfig;
+    }
+
     public Map<String, Reward> getRewards() {
         return rewards;
     }
