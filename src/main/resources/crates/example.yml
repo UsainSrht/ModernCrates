@@ -147,3 +147,18 @@ rewards:
       coal:
         material: "COAL"
         amount: 16
+  claim_boost:
+    chance: 10.0
+    display:
+      material: "GOLDEN_SHOVEL"
+      name: "<gold>Claim Limit Increase"
+      lore:
+        - "<gray>Increases your claim limit"
+        - ""
+        - "<yellow>Chance: <gold><chance>%"
+    commands:
+      - "claims addlimit <player> 100"
+    requirements:
+      - "%player_level% >= 5"
+      # - "%griefprevention_claims% < 50"
+

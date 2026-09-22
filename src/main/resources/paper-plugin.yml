@@ -24,3 +24,6 @@ dependencies:
     LuckPerms:
       required: false
       join-classpath: true
+    PlaceholderAPI:
+      required: false
+      join-classpath: true

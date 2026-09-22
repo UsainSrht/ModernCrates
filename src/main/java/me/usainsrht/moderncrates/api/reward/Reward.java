@@ -1,6 +1,7 @@
 package me.usainsrht.moderncrates.api.reward;
 
 import me.usainsrht.moderncrates.api.crate.Crate;
+import me.usainsrht.moderncrates.api.reward.requirement.RewardRequirements;
 import me.usainsrht.yamlmessage.YamlMessage;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
@@ -22,6 +23,7 @@ public class Reward {
     private YamlMessage announcementMessage;
     private String announcementMessageRaw;
     private String requiredPermission;
+    private RewardRequirements requirements;
 
     public Reward(String id) {
         this.id = id;
@@ -136,7 +138,25 @@ public class Reward {
     }
 
     public boolean canWin(Player player) {
-        return !hasRequiredPermission() || player.hasPermission(requiredPermission);
+        if (hasRequiredPermission() && (player == null || !player.hasPermission(requiredPermission))) {
+            return false;
+        }
+        if (requirements != null && !requirements.evaluate(player)) {
+            return false;
+        }
+        return true;
+    }
+
+    public @Nullable RewardRequirements getRequirements() {
+        return requirements;
+    }
+
+    public void setRequirements(@Nullable RewardRequirements requirements) {
+        this.requirements = requirements;
+    }
+
+    public boolean hasRequirements() {
+        return requirements != null && !requirements.isEmpty();
     }
 
     public boolean hasItems() {

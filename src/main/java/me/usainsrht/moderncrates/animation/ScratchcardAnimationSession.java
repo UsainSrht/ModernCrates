@@ -66,7 +66,10 @@ public class ScratchcardAnimationSession implements AnimationSession, ModernCrat
     @Override
     public void start() {
         List<Integer> rewardSlots = animation.getRewardSlots();
-        List<Reward> rewards = RewardSelector.selectMultiple(crate, rewardSlots.size());
+        List<Reward> rewards = RewardSelector.selectMultiple(crate, rewardSlots.size(), player);
+        if (rewards.isEmpty()) {
+            rewards = RewardSelector.selectMultiple(crate, rewardSlots.size());
+        }
         if (rewards.isEmpty()) {
             finished.set(true);
             return;

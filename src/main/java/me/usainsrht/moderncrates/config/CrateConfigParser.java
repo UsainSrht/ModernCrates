@@ -4,6 +4,7 @@ import me.usainsrht.moderncrates.api.crate.*;
 import me.usainsrht.moderncrates.api.reward.Reward;
 import me.usainsrht.moderncrates.api.reward.RewardDisplay;
 import me.usainsrht.moderncrates.api.reward.RewardItem;
+import me.usainsrht.moderncrates.api.reward.requirement.RewardRequirements;
 import me.usainsrht.itemapi.yamlitem.YamlItem;
 import me.usainsrht.yamlmessage.YamlMessage;
 import org.bukkit.configuration.ConfigurationSection;
@@ -294,6 +295,45 @@ public class CrateConfigParser {
             }
             reward.setRequiredPermission(requiredPermission);
 
+            // Requirements
+            RewardRequirements requirements = null;
+            if (rewardSection.isList("requirements")) {
+                List<String> list = rewardSection.getStringList("requirements");
+                requirements = new RewardRequirements(list);
+            } else if (rewardSection.isString("requirements")) {
+                String single = rewardSection.getString("requirements");
+                if (single != null && !single.isBlank()) {
+                    requirements = new RewardRequirements(List.of(single));
+                }
+            } else if (rewardSection.isConfigurationSection("requirements")) {
+                ConfigurationSection reqSec = rewardSection.getConfigurationSection("requirements");
+                if (reqSec != null) {
+                    requirements = new RewardRequirements();
+                    if (reqSec.contains("mode")) {
+                        requirements.setMode(RewardRequirements.LogicalMode.fromString(reqSec.getString("mode")));
+                    }
+                    if (reqSec.contains("permission")) {
+                        requirements.setPermission(reqSec.getString("permission"));
+                    }
+                    List<String> condList = null;
+                    if (reqSec.isList("conditions")) {
+                        condList = reqSec.getStringList("conditions");
+                    } else if (reqSec.isList("expressions")) {
+                        condList = reqSec.getStringList("expressions");
+                    } else if (reqSec.isList("list")) {
+                        condList = reqSec.getStringList("list");
+                    }
+                    if (condList != null) {
+                        for (String c : condList) {
+                            requirements.addCondition(c);
+                        }
+                    }
+                }
+            }
+            if (requirements != null && !requirements.isEmpty()) {
+                reward.setRequirements(requirements);
+            }
+
             rewards.put(key, reward);
         }
         return rewards;
@@ -478,6 +518,20 @@ public class CrateConfigParser {
             }
             if (reward.getRequiredPermission() != null) {
                 yaml.set(rewardKey + ".required-permission", reward.getRequiredPermission());
+            }
+            if (reward.hasRequirements()) {
+                RewardRequirements reqs = reward.getRequirements();
+                if (reqs != null) {
+                    if (reqs.hasPermission() || reqs.getMode() != RewardRequirements.LogicalMode.AND) {
+                        yaml.set(rewardKey + ".requirements.mode", reqs.getMode().name());
+                        if (reqs.hasPermission()) {
+                            yaml.set(rewardKey + ".requirements.permission", reqs.getPermission());
+                        }
+                        yaml.set(rewardKey + ".requirements.conditions", reqs.getRawConditions());
+                    } else {
+                        yaml.set(rewardKey + ".requirements", reqs.getRawConditions());
+                    }
+                }
             }
         }
 

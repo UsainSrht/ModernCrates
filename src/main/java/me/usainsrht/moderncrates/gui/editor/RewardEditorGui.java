@@ -5,6 +5,7 @@ import me.usainsrht.moderncrates.api.crate.Crate;
 import me.usainsrht.moderncrates.api.reward.Reward;
 import me.usainsrht.moderncrates.api.reward.RewardDisplay;
 import me.usainsrht.moderncrates.api.reward.RewardItem;
+import me.usainsrht.moderncrates.api.reward.requirement.RewardRequirements;
 import me.usainsrht.moderncrates.util.ItemBuilder;
 import me.usainsrht.moderncrates.util.TextUtil;
 import me.usainsrht.yamlmessage.YamlMessage;
@@ -67,6 +68,30 @@ public class RewardEditorGui extends EditorGuiBase {
         inventory.setItem(23, ItemBuilder.create("EXPERIENCE_BOTTLE",
                 "<yellow><bold>Chance: <white>" + reward.getChance(),
                 List.of("<gray>Left-click +1 | Right-click -1", "<gray>Shift for +/- 5")));
+
+        List<String> reqLore = new ArrayList<>();
+        reqLore.add("<gray>Left-click to add condition");
+        reqLore.add("<gray>Right-click to clear");
+        reqLore.add("<gray>Shift-click to toggle mode (AND/OR)");
+        reqLore.add("");
+        RewardRequirements reqs = reward.getRequirements();
+        if (reqs != null && !reqs.isEmpty()) {
+            reqLore.add("<yellow>Mode: <white>" + reqs.getMode().name());
+            if (reqs.hasPermission()) {
+                reqLore.add("<yellow>Permission: <white>" + reqs.getPermission());
+            }
+            if (!reqs.getRawConditions().isEmpty()) {
+                reqLore.add("<yellow>Conditions (" + reqs.getRawConditions().size() + "):");
+                for (String c : reqs.getRawConditions()) {
+                    reqLore.add("<white>- " + c);
+                }
+            }
+        } else if (reward.hasRequiredPermission()) {
+            reqLore.add("<yellow>Permission: <white>" + reward.getRequiredPermission());
+        } else {
+            reqLore.add("<dark_gray>No requirements configured");
+        }
+        inventory.setItem(24, ItemBuilder.create("COMPARATOR", "<yellow><bold>Requirements", reqLore));
 
         List<String> cmdLore = new ArrayList<>();
         cmdLore.add("<gray>Click to add command");
@@ -176,6 +201,39 @@ public class RewardEditorGui extends EditorGuiBase {
                 }
                 save();
                 open();
+            }
+            case 24 -> {
+                if (rightClick) {
+                    reward.setRequirements(null);
+                    save();
+                    open();
+                } else if (shiftClick) {
+                    RewardRequirements req = reward.getRequirements();
+                    if (req == null) {
+                        req = new RewardRequirements();
+                        reward.setRequirements(req);
+                    }
+                    req.setMode(req.getMode() == RewardRequirements.LogicalMode.AND
+                            ? RewardRequirements.LogicalMode.OR
+                            : RewardRequirements.LogicalMode.AND);
+                    save();
+                    open();
+                } else {
+                    requestSignInput("Condition e.g. %claims% < 50", input -> {
+                        RewardRequirements req = reward.getRequirements();
+                        if (req == null) {
+                            req = new RewardRequirements();
+                            reward.setRequirements(req);
+                        }
+                        try {
+                            req.addCondition(input);
+                            save();
+                        } catch (Exception e) {
+                            player.sendMessage(TextUtil.parse("<red>Invalid condition: " + e.getMessage()));
+                        }
+                        open();
+                    });
+                }
             }
             case 25 -> {
                 if (rightClick) {

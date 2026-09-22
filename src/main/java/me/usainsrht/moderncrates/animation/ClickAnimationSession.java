@@ -68,7 +68,10 @@ public class ClickAnimationSession implements AnimationSession, ModernCratesGui 
     public void start() {
         // Pre-select all rewards for slots
         List<Integer> rewardSlots = animation.getRewardSlots();
-        selectedRewards = RewardSelector.selectMultiple(crate, rewardSlots.size());
+        selectedRewards = RewardSelector.selectMultiple(crate, rewardSlots.size(), player);
+        if (selectedRewards.isEmpty()) {
+            selectedRewards = RewardSelector.selectMultiple(crate, rewardSlots.size());
+        }
         if (selectedRewards.isEmpty()) {
             finished.set(true);
             return;

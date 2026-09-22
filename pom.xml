@@ -21,6 +21,7 @@
         <yamlmessage.version>1.0.0</yamlmessage.version>
         <miniplaceholders.version>3.2.0</miniplaceholders.version>
         <luckperms.version>5.4</luckperms.version>
+        <placeholderapi.version>2.11.6</placeholderapi.version>
     </properties>
 
     <repositories>
@@ -47,6 +48,10 @@
         <repository>
             <id>fancyplugins</id>
             <url>https://repo.fancyplugins.de/releases</url>
+        </repository>
+        <repository>
+            <id>placeholderapi</id>
+            <url>https://repo.helpch.at/releases/</url>
         </repository>
     </repositories>
 
@@ -100,6 +105,14 @@
             <groupId>net.luckperms</groupId>
             <artifactId>api</artifactId>
             <version>${luckperms.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- PlaceholderAPI (optional, provided) -->
+        <dependency>
+            <groupId>me.clip</groupId>
+            <artifactId>placeholderapi</artifactId>
+            <version>${placeholderapi.version}</version>
             <scope>provided</scope>
         </dependency>
 

@@ -65,4 +65,7 @@ messages:
   inventory_full_dropped: "<yellow>Your inventory was full! The crate <gold><crate> <yellow>was dropped at your feet."
   inventory_full_virtual_key: "<yellow>Your inventory was full! A virtual key for <gold><crate> <yellow>was added to your account instead."
   inventory_full_no_space: "<red>Your inventory is full! The item for <dark_red><crate> <red>could not be given."
+  no_eligible_rewards:
+    chat: "<red>You do not meet the requirements to receive any rewards from this crate!"
+    sound: "entity.villager.no"
 

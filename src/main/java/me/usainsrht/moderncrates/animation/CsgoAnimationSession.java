@@ -109,7 +109,8 @@ public class CsgoAnimationSession implements AnimationSession, ModernCratesGui {
 
         // Initialize reward slots with random rewards
         for (int i = 0; i < rewardSlots.size(); i++) {
-            Reward reward = RewardSelector.selectWeighted(crate);
+            Reward reward = RewardSelector.selectWeighted(crate, player);
+            if (reward == null) reward = RewardSelector.selectWeighted(crate);
             displayedRewards[i] = reward;
             int slot = rewardSlots.get(i);
             if (slot >= 0 && slot < inventory.getSize()) {
@@ -142,7 +143,8 @@ public class CsgoAnimationSession implements AnimationSession, ModernCratesGui {
             }
 
             // Generate new random reward on the right edge
-            Reward generatedReward = RewardSelector.selectWeighted(crate);
+            Reward generatedReward = RewardSelector.selectWeighted(crate, player);
+            if (generatedReward == null) generatedReward = RewardSelector.selectWeighted(crate);
             displayedRewards[displayedRewards.length - 1] = generatedReward;
             inventory.setItem(rewardSlots.get(rewardSlots.size() - 1), buildRewardDisplay(generatedReward));
 

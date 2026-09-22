@@ -162,7 +162,8 @@ public class SlotAnimationSession implements AnimationSession, ModernCratesGui {
             // Generate the circular reel strip with random weighted rewards
             Reward[] strip = new Reward[REEL_STRIP_SIZE];
             for (int i = 0; i < REEL_STRIP_SIZE; i++) {
-                strip[i] = RewardSelector.selectWeighted(crate);
+                Reward r = RewardSelector.selectWeighted(crate, player);
+                strip[i] = r != null ? r : RewardSelector.selectWeighted(crate);
             }
 
             // Plant the winning reward at the exact landing position for winner columns

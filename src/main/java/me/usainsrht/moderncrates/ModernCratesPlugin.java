@@ -5,6 +5,7 @@ import me.usainsrht.moderncrates.animation.ClickAnimationType;
 import me.usainsrht.moderncrates.animation.CsgoAnimationType;
 import me.usainsrht.moderncrates.animation.ItemRiseAnimationType;
 import me.usainsrht.moderncrates.animation.ScratchcardAnimationType;
+import me.usainsrht.moderncrates.animation.RewardSelector;
 import me.usainsrht.moderncrates.animation.SlotAnimationType;
 import me.usainsrht.moderncrates.api.ModernCratesAPI;
 import me.usainsrht.moderncrates.api.ModernCratesProvider;
@@ -303,6 +304,13 @@ public class ModernCratesPlugin extends JavaPlugin {
                         PlaceholderUtil.crateResolvers(player, crate));
                 return false;
             }
+        }
+
+        // Check if player is eligible for any rewards in the crate
+        if (RewardSelector.getEligibleRewards(crate, player).isEmpty()) {
+            PlaceholderUtil.send(pluginConfig.getMessage("no_eligible_rewards"), player, pluginConfig.getPrefix(),
+                    PlaceholderUtil.crateResolvers(player, crate));
+            return false;
         }
 
         AnimationType type = animationTypeRegistry.get(animation.getTypeId());
