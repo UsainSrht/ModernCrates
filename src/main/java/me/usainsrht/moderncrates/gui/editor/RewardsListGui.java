@@ -84,6 +84,9 @@ public class RewardsListGui extends EditorGuiBase {
             display.setName("<gray>New Reward");
             reward.setDisplay(display);
             crate.getRewards().put(newId, reward);
+            if (crate.getAutoSortOnChance().isEnabled()) {
+                crate.sortRewards();
+            }
             save();
             open();
             return;

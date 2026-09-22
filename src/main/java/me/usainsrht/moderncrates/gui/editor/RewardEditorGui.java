@@ -171,6 +171,9 @@ public class RewardEditorGui extends EditorGuiBase {
                 double delta = rightClick ? -1 : 1;
                 if (shiftClick) delta *= 5;
                 reward.setChance(Math.max(0.01, reward.getChance() + delta));
+                if (crate.getAutoSortOnChance().isEnabled()) {
+                    crate.sortRewards();
+                }
                 save();
                 open();
             }

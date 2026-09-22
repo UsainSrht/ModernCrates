@@ -114,6 +114,19 @@ public class CrateConfigParser {
         }
         crate.setChanceLoreTemplate(chanceLoreTemplate);
 
+        Object sortVal = yaml.get("auto_sort_on_chance");
+        if (sortVal == null) sortVal = yaml.get("auto-sort-on-chance");
+        if (sortVal == null) sortVal = yaml.get("auto_sort_chance");
+        if (sortVal == null) sortVal = yaml.get("auto-sort-chance");
+
+        if (sortVal instanceof Boolean b) {
+            crate.setAutoSortOnChance(b ? AutoSortMode.ASCENDING : AutoSortMode.DISABLED);
+        } else if (sortVal instanceof String s) {
+            crate.setAutoSortOnChance(AutoSortMode.fromString(s));
+        } else {
+            crate.setAutoSortOnChance(AutoSortMode.DISABLED);
+        }
+
         // Hologram
         ConfigurationSection holoSection = yaml.getConfigurationSection("hologram");
         if (holoSection != null) {
@@ -344,6 +357,7 @@ public class CrateConfigParser {
         if (crate.getChanceLoreTemplate() != null && !crate.getChanceLoreTemplate().isEmpty()) {
             yaml.set("chance-lore-template", crate.getChanceLoreTemplate());
         }
+        yaml.set("auto_sort_on_chance", crate.getAutoSortOnChance().name().toLowerCase());
 
         // Hologram
         HologramConfig holo = crate.getHologramConfig();

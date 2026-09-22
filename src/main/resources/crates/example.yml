@@ -22,6 +22,7 @@ item:
     - "<gray>or use in your inventory"
 
 bounce_back: true
+auto_sort_on_chance: "disabled" # Options: disabled, ascending, descending
 
 hologram:
   lines:

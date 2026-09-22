@@ -3,6 +3,8 @@ package me.usainsrht.moderncrates.api.crate;
 import me.usainsrht.moderncrates.api.reward.Reward;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,6 +26,7 @@ public class Crate {
     private Map<String, Reward> rewards;
     private boolean autoShowChanceOnLore;
     private List<String> chanceLoreTemplate = new ArrayList<>();
+    private AutoSortMode autoSortOnChance = AutoSortMode.DISABLED;
 
     public Crate(String id) {
         this.id = id;
@@ -130,6 +133,45 @@ public class Crate {
 
     public void setRewards(Map<String, Reward> rewards) {
         this.rewards = rewards;
+        if (getAutoSortOnChance().isEnabled()) {
+            sortRewards();
+        }
+    }
+
+    public AutoSortMode getAutoSortOnChance() {
+        return autoSortOnChance != null ? autoSortOnChance : AutoSortMode.DISABLED;
+    }
+
+    public void setAutoSortOnChance(AutoSortMode autoSortOnChance) {
+        this.autoSortOnChance = autoSortOnChance != null ? autoSortOnChance : AutoSortMode.DISABLED;
+        if (this.autoSortOnChance.isEnabled()) {
+            sortRewards();
+        }
+    }
+
+    public boolean isAutoSortOnChance() {
+        return getAutoSortOnChance().isEnabled();
+    }
+
+    public void sortRewards() {
+        if (rewards == null || rewards.size() <= 1) return;
+        AutoSortMode mode = getAutoSortOnChance();
+        if (!mode.isEnabled()) return;
+
+        List<Map.Entry<String, Reward>> list = new ArrayList<>(rewards.entrySet());
+        if (mode == AutoSortMode.ASCENDING) {
+            list.sort(Comparator.<Map.Entry<String, Reward>>comparingDouble(e -> e.getValue().getChance())
+                    .thenComparing(Map.Entry::getKey));
+        } else if (mode == AutoSortMode.DESCENDING) {
+            list.sort(Comparator.<Map.Entry<String, Reward>>comparingDouble((Map.Entry<String, Reward> e) -> e.getValue().getChance()).reversed()
+                    .thenComparing(Map.Entry::getKey));
+        }
+
+        Map<String, Reward> sortedMap = new LinkedHashMap<>();
+        for (Map.Entry<String, Reward> entry : list) {
+            sortedMap.put(entry.getKey(), entry.getValue());
+        }
+        this.rewards = sortedMap;
     }
 
     public boolean isAutoShowChanceOnLore() {

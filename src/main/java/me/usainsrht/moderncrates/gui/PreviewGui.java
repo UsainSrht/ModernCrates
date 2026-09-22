@@ -1,5 +1,6 @@
 package me.usainsrht.moderncrates.gui;
 
+import me.usainsrht.moderncrates.api.crate.AutoSortMode;
 import me.usainsrht.moderncrates.api.crate.Crate;
 import me.usainsrht.moderncrates.api.crate.PreviewConfig;
 import me.usainsrht.moderncrates.api.reward.Reward;
@@ -32,7 +33,13 @@ public class PreviewGui implements ModernCratesGui {
     public PreviewGui(Player player, Crate crate) {
         this.player = player;
         this.crate = crate;
-        this.rewards = new ArrayList<>(crate.getRewards().values());
+        List<Reward> rewardList = new ArrayList<>(crate.getRewards().values());
+        if (crate.getAutoSortOnChance() == AutoSortMode.ASCENDING) {
+            rewardList.sort(Comparator.comparingDouble(Reward::getChance).thenComparing(Reward::getId));
+        } else if (crate.getAutoSortOnChance() == AutoSortMode.DESCENDING) {
+            rewardList.sort(Comparator.comparingDouble(Reward::getChance).reversed().thenComparing(Reward::getId));
+        }
+        this.rewards = rewardList;
 
         PreviewConfig config = crate.getPreviewConfig();
         int totalSlots = config != null ? config.getRows() * 9 : 54;

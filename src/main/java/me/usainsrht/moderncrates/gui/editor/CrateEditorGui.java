@@ -1,6 +1,7 @@
 package me.usainsrht.moderncrates.gui.editor;
 
 import me.usainsrht.moderncrates.ModernCratesPlugin;
+import me.usainsrht.moderncrates.api.crate.AutoSortMode;
 import me.usainsrht.moderncrates.api.crate.Crate;
 import me.usainsrht.moderncrates.api.crate.CrateKeyConfig;
 import me.usainsrht.moderncrates.api.crate.CrateLocation;
@@ -62,6 +63,19 @@ public class CrateEditorGui extends EditorGuiBase {
                 "<yellow><bold>Auto Chance Lore: <white>" + (crate.isAutoShowChanceOnLore() ? "On" : "Off"),
                 List.of("<gray>Appends chance-lore-template to reward lore",
                         "<gray>Click to toggle")));
+
+        String sortMat = switch (crate.getAutoSortOnChance()) {
+            case ASCENDING -> "LIME_DYE";
+            case DESCENDING -> "CYAN_DYE";
+            case DISABLED -> "GRAY_DYE";
+        };
+        inventory.setItem(40, ItemBuilder.create(sortMat,
+                "<yellow><bold>Auto Sort on Chance: <white>" + crate.getAutoSortOnChance().name(),
+                List.of("<gray>Left-click: next mode",
+                        "<gray>Right-click: previous mode",
+                        "",
+                        "<gray>Modes: <white>Disabled, Ascending, Descending",
+                        "<gray>Current: <white>" + crate.getAutoSortOnChance().name())));
 
         // Location
         List<String> locLore = new ArrayList<>();
@@ -162,6 +176,26 @@ public class CrateEditorGui extends EditorGuiBase {
                 if (crate.getChanceLoreTemplate().isEmpty()) {
                     crate.setChanceLoreTemplate(List.of("", " <yellow>%<chance> ", ""));
                 }
+                save();
+                open();
+            }
+            case 40 -> {
+                AutoSortMode current = crate.getAutoSortOnChance();
+                AutoSortMode next;
+                if (rightClick) {
+                    next = switch (current) {
+                        case DISABLED -> AutoSortMode.DESCENDING;
+                        case DESCENDING -> AutoSortMode.ASCENDING;
+                        case ASCENDING -> AutoSortMode.DISABLED;
+                    };
+                } else {
+                    next = switch (current) {
+                        case DISABLED -> AutoSortMode.ASCENDING;
+                        case ASCENDING -> AutoSortMode.DESCENDING;
+                        case DESCENDING -> AutoSortMode.DISABLED;
+                    };
+                }
+                crate.setAutoSortOnChance(next);
                 save();
                 open();
             }
