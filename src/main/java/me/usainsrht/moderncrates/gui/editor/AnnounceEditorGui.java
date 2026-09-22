@@ -38,11 +38,14 @@ public class AnnounceEditorGui extends EditorGuiBase {
         } else {
             inventory.setItem(10, ItemBuilder.create(ac.isToEveryone() ? "LIME_DYE" : "GRAY_DYE",
                     "<yellow><bold>To Everyone: <white>" + ac.isToEveryone(), List.of("<gray>Click to toggle")));
-            inventory.setItem(12, ItemBuilder.create("PAPER", "<yellow><bold>Single: <white>" + orNone(ac.getSingle()),
+            inventory.setItem(11, ItemBuilder.create(ac.isDefaultAnnounce() ? "LIME_DYE" : "GRAY_DYE",
+                    "<yellow><bold>Default Announce: <white>" + ac.isDefaultAnnounce(),
+                    List.of("<gray>Whether rewards announce by default", "<gray>Click to toggle")));
+            inventory.setItem(13, ItemBuilder.create("PAPER", "<yellow><bold>Single: <white>" + orNone(ac.getSingle()),
                     List.of("<gray>Click to set")));
-            inventory.setItem(14, ItemBuilder.create("PAPER", "<yellow><bold>Multiple: <white>" + orNone(ac.getMultiple()),
+            inventory.setItem(15, ItemBuilder.create("PAPER", "<yellow><bold>Multiple: <white>" + orNone(ac.getMultiple()),
                     List.of("<gray>Click to set")));
-            inventory.setItem(16, ItemBuilder.create("PAPER", "<yellow><bold>Multiple Item: <white>" + orNone(ac.getMultipleItem()),
+            inventory.setItem(17, ItemBuilder.create("PAPER", "<yellow><bold>Multiple Item: <white>" + orNone(ac.getMultipleItem()),
                     List.of("<gray>Click to set")));
         }
 
@@ -58,6 +61,7 @@ public class AnnounceEditorGui extends EditorGuiBase {
         if (slot == 13 && ac == null) {
             ac = new AnnounceConfig();
             ac.setToEveryone(true);
+            ac.setDefaultAnnounce(true);
             ac.setSingle("<gold><player> <gray>won <gold><reward_name> <gray>from <gold>" + crate.getName());
             crate.setAnnounceConfig(ac);
             save();
@@ -69,15 +73,16 @@ public class AnnounceEditorGui extends EditorGuiBase {
         AnnounceConfig finalAc = ac;
         switch (slot) {
             case 10 -> { finalAc.setToEveryone(!finalAc.isToEveryone()); save(); open(); }
-            case 12 -> requestSignInput("Single message", input -> {
+            case 11 -> { finalAc.setDefaultAnnounce(!finalAc.isDefaultAnnounce()); save(); open(); }
+            case 13 -> requestSignInput("Single message", input -> {
                 finalAc.setSingle(input);
                 open();
             });
-            case 14 -> requestSignInput("Multiple msg", input -> {
+            case 15 -> requestSignInput("Multiple msg", input -> {
                 finalAc.setMultiple(input);
                 open();
             });
-            case 16 -> requestSignInput("Multi item msg", input -> {
+            case 17 -> requestSignInput("Multi item msg", input -> {
                 finalAc.setMultipleItem(input);
                 open();
             });

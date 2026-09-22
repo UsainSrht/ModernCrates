@@ -7,6 +7,7 @@ import me.usainsrht.moderncrates.api.reward.RewardDisplay;
 import me.usainsrht.moderncrates.api.reward.RewardItem;
 import me.usainsrht.moderncrates.util.ItemBuilder;
 import me.usainsrht.moderncrates.util.TextUtil;
+import me.usainsrht.yamlmessage.YamlMessage;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -74,9 +75,17 @@ public class RewardEditorGui extends EditorGuiBase {
         if (reward.hasCommands()) for (String c : reward.getCommands()) cmdLore.add("<white>" + c);
         inventory.setItem(25, ItemBuilder.create("COMMAND_BLOCK", "<yellow><bold>Commands", cmdLore));
 
-        inventory.setItem(37, ItemBuilder.create("GOAT_HORN",
-                "<yellow><bold>Announce: <white>" + orNone(reward.getAnnounce()),
-                List.of("<gray>Click to set", "<gray>Right-click to clear")));
+        String announceDesc = reward.getAnnounce() == null ? "<gray>default (crate setting)"
+                : (reward.getAnnounce() ? "<green>true (always announce)" : "<red>false (exempt)");
+        String announceMat = reward.getAnnounce() == null ? "GRAY_DYE" : (reward.getAnnounce() ? "LIME_DYE" : "RED_DYE");
+        inventory.setItem(37, ItemBuilder.create(announceMat,
+                "<yellow><bold>Announce: <white>" + announceDesc,
+                List.of("<gray>Click to toggle (default -> true -> false)", "<gray>Right-click to reset to default")));
+
+        String msgDesc = reward.getAnnouncementMessageRaw() != null ? reward.getAnnouncementMessageRaw() : "none (uses crate default)";
+        inventory.setItem(38, ItemBuilder.create("WRITABLE_BOOK",
+                "<yellow><bold>Announcement Message",
+                List.of("<gray>Current: <white>" + msgDesc, "", "<gray>Click to set unique message", "<gray>Right-click to clear")));
 
         inventory.setItem(39, ItemBuilder.create("CHEST",
                 "<yellow><bold>Reward Items",
@@ -182,11 +191,26 @@ public class RewardEditorGui extends EditorGuiBase {
             case 37 -> {
                 if (rightClick) {
                     reward.setAnnounce(null);
+                } else {
+                    if (reward.getAnnounce() == null) {
+                        reward.setAnnounce(true);
+                    } else if (Boolean.TRUE.equals(reward.getAnnounce())) {
+                        reward.setAnnounce(false);
+                    } else {
+                        reward.setAnnounce(null);
+                    }
+                }
+                save();
+                open();
+            }
+            case 38 -> {
+                if (rightClick) {
+                    reward.setAnnouncementMessage((YamlMessage) null);
                     save();
                     open();
                 } else {
                     requestSignInput("Announce msg", input -> {
-                        reward.setAnnounce(input);
+                        reward.setAnnouncementMessage(input);
                         open();
                     });
                 }

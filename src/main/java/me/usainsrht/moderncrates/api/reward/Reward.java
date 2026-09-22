@@ -1,5 +1,6 @@
 package me.usainsrht.moderncrates.api.reward;
 
+import me.usainsrht.moderncrates.api.crate.Crate;
 import me.usainsrht.yamlmessage.YamlMessage;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
@@ -17,8 +18,9 @@ public class Reward {
     private RewardDisplay display;
     private Map<String, RewardItem> items;
     private List<String> commands;
-    private String announce;
-    private YamlMessage announceMessage;
+    private Boolean announce;
+    private YamlMessage announcementMessage;
+    private String announcementMessageRaw;
     private String requiredPermission;
 
     public Reward(String id) {
@@ -61,31 +63,64 @@ public class Reward {
         this.commands = commands;
     }
 
-    public String getAnnounce() {
+    public @Nullable Boolean getAnnounce() {
         return announce;
     }
 
-    public void setAnnounce(String announce) {
-        this.announce = announce;
-        this.announceMessage = announce != null ? YamlMessage.parse(announce) : null;
+    public @Nullable Boolean isAnnounce() {
+        return announce;
     }
 
-    public @Nullable YamlMessage getAnnounceMessage() {
-        if (announceMessage != null) return announceMessage;
-        if (announce != null) {
-            this.announceMessage = YamlMessage.parse(announce);
-            return this.announceMessage;
+    public void setAnnounce(@Nullable Boolean announce) {
+        this.announce = announce;
+    }
+
+    public @Nullable YamlMessage getAnnouncementMessage() {
+        if (announcementMessage != null) return announcementMessage;
+        if (announcementMessageRaw != null) {
+            this.announcementMessage = YamlMessage.parse(announcementMessageRaw);
+            return this.announcementMessage;
         }
         return null;
     }
 
-    public void setAnnounceMessage(@Nullable YamlMessage announceMessage) {
-        this.announceMessage = announceMessage;
-        if (announceMessage != null && announceMessage.chat() != null && !announceMessage.chat().isEmpty()) {
-            this.announce = String.join("\n", announceMessage.chat());
-        } else if (announceMessage == null) {
-            this.announce = null;
+    public void setAnnouncementMessage(@Nullable YamlMessage announcementMessage) {
+        this.announcementMessage = announcementMessage;
+        if (announcementMessage != null && announcementMessage.chat() != null && !announcementMessage.chat().isEmpty()) {
+            this.announcementMessageRaw = String.join("\n", announcementMessage.chat());
+        } else if (announcementMessage == null) {
+            this.announcementMessageRaw = null;
         }
+    }
+
+    public void setAnnouncementMessage(@Nullable String message) {
+        this.announcementMessageRaw = message;
+        this.announcementMessage = message != null ? YamlMessage.parse(message) : null;
+    }
+
+    public @Nullable String getAnnouncementMessageRaw() {
+        return announcementMessageRaw;
+    }
+
+    public @Nullable YamlMessage getAnnounceMessage() {
+        return getAnnouncementMessage();
+    }
+
+    public void setAnnounceMessage(@Nullable YamlMessage announceMessage) {
+        setAnnouncementMessage(announceMessage);
+    }
+
+    public boolean shouldAnnounce(@Nullable Crate crate) {
+        if (announce != null) {
+            return announce;
+        }
+        if (getAnnouncementMessage() != null && !getAnnouncementMessage().isEmpty()) {
+            return true;
+        }
+        if (crate != null && crate.getAnnounceConfig() != null) {
+            return crate.getAnnounceConfig().isDefaultAnnounce();
+        }
+        return false;
     }
 
     public String getRequiredPermission() {

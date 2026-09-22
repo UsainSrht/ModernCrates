@@ -187,70 +187,91 @@ public class AnimationManager {
     }
 
     private void announceReward(Player player, Crate crate, Reward reward) {
+        if (!reward.shouldAnnounce(crate)) {
+            return;
+        }
+
         ItemStack displayItem = ItemBuilder.fromDisplay(reward, crate);
         Component rewardDisplayName = ItemText.format(displayItem);
         TagResolver[] resolvers = PlaceholderUtil.rewardResolvers(player, crate, reward, rewardDisplayName);
         String prefix = plugin != null ? plugin.getPluginConfig().getPrefix() : null;
 
         // Per-reward custom announcement
-        YamlMessage rewardAnnounce = reward.getAnnounceMessage();
+        YamlMessage rewardAnnounce = reward.getAnnouncementMessage();
         if (rewardAnnounce != null && !rewardAnnounce.isEmpty()) {
-            boolean toEveryone = crate.getAnnounceConfig() != null && crate.getAnnounceConfig().isToEveryone();
-            dispatchAnnouncement(rewardAnnounce, player, toEveryone, null, resolvers);
+            boolean toEveryone = crate != null && crate.getAnnounceConfig() != null && crate.getAnnounceConfig().isToEveryone();
+            dispatchAnnouncement(rewardAnnounce, player, toEveryone, prefix, resolvers);
             return;
         }
 
         // Default crate announcement
-        if (crate.getAnnounceConfig() != null) {
+        if (crate != null && crate.getAnnounceConfig() != null) {
             AnnounceConfig annConfig = crate.getAnnounceConfig();
             YamlMessage singleMsg = annConfig.getSingleMessage();
             if (!singleMsg.isEmpty()) {
-                dispatchAnnouncement(singleMsg, player, annConfig.isToEveryone(), null, resolvers);
+                dispatchAnnouncement(singleMsg, player, annConfig.isToEveryone(), prefix, resolvers);
             }
         }
     }
 
     private void announceRewards(Player player, Crate crate, List<Reward> rewards) {
-        if (crate.getAnnounceConfig() == null) return;
-        AnnounceConfig annConfig = crate.getAnnounceConfig();
+        if (rewards == null || rewards.isEmpty()) return;
 
-        if (rewards.size() == 1) {
-            announceReward(player, crate, rewards.get(0));
+        List<Reward> announcedRewards = rewards.stream()
+                .filter(reward -> reward.shouldAnnounce(crate))
+                .toList();
+
+        if (announcedRewards.isEmpty()) {
             return;
         }
+
+        if (announcedRewards.size() == 1) {
+            announceReward(player, crate, announcedRewards.get(0));
+            return;
+        }
+
+        if (crate == null || crate.getAnnounceConfig() == null) {
+            for (Reward reward : announcedRewards) {
+                announceReward(player, crate, reward);
+            }
+            return;
+        }
+
+        AnnounceConfig annConfig = crate.getAnnounceConfig();
+        String prefix = plugin != null ? plugin.getPluginConfig().getPrefix() : null;
 
         // Fallback to single announcements if multiple is not configured
         YamlMessage multipleHeader = annConfig.getMultipleMessage();
         if (multipleHeader.isEmpty()) {
-            for (Reward reward : rewards) {
+            for (Reward reward : announcedRewards) {
                 announceReward(player, crate, reward);
             }
             return;
         }
 
         // Send custom announcements for any rewards that have custom overrides
-        for (Reward reward : rewards) {
-            YamlMessage rewardAnnounce = reward.getAnnounceMessage();
+        for (Reward reward : announcedRewards) {
+            YamlMessage rewardAnnounce = reward.getAnnouncementMessage();
             if (rewardAnnounce != null && !rewardAnnounce.isEmpty()) {
                 ItemStack displayItem = ItemBuilder.fromDisplay(reward, crate);
                 Component rewardDisplayName = ItemText.format(displayItem);
                 TagResolver[] resolvers = PlaceholderUtil.rewardResolvers(player, crate, reward, rewardDisplayName);
-                dispatchAnnouncement(rewardAnnounce, player, annConfig.isToEveryone(), null, resolvers);
+                dispatchAnnouncement(rewardAnnounce, player, annConfig.isToEveryone(), prefix, resolvers);
             }
         }
 
         // Send the multiple rewards announcement header
         TagResolver[] crateResolvers = PlaceholderUtil.crateResolvers(player, crate);
-        dispatchAnnouncement(multipleHeader, player, annConfig.isToEveryone(), null, crateResolvers);
+        dispatchAnnouncement(multipleHeader, player, annConfig.isToEveryone(), prefix, crateResolvers);
 
         // Send multiple item lines
         YamlMessage itemMessage = annConfig.getMultipleItemMessage();
         if (!itemMessage.isEmpty()) {
-            for (Reward reward : rewards) {
+            for (Reward reward : announcedRewards) {
                 ItemStack displayItem = ItemBuilder.fromDisplay(reward, crate);
                 Component rewardDisplayName = ItemText.format(displayItem);
                 TagResolver[] resolvers = PlaceholderUtil.rewardResolvers(player, crate, reward, rewardDisplayName);
-                dispatchAnnouncement(itemMessage, player, annConfig.isToEveryone(), null, resolvers);
+                dispatchAnnouncement(itemMessage, player, annConfig.isToEveryone(), prefix, resolvers);
             }
         }
     }

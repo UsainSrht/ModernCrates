@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 public class AnnounceConfig {
 
     private boolean toEveryone = true;
+    private boolean defaultAnnounce = true;
     private String single;
     private String multiple;
     private String multipleItem;
@@ -24,6 +25,14 @@ public class AnnounceConfig {
 
     public void setToEveryone(boolean toEveryone) {
         this.toEveryone = toEveryone;
+    }
+
+    public boolean isDefaultAnnounce() {
+        return defaultAnnounce;
+    }
+
+    public void setDefaultAnnounce(boolean defaultAnnounce) {
+        this.defaultAnnounce = defaultAnnounce;
     }
 
     public String getSingle() {

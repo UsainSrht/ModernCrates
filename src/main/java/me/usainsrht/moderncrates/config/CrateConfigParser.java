@@ -144,6 +144,11 @@ public class CrateConfigParser {
         if (annSection != null) {
             AnnounceConfig ann = new AnnounceConfig();
             ann.setToEveryone(annSection.getBoolean("to_everyone", true));
+            if (annSection.contains("default")) {
+                ann.setDefaultAnnounce(annSection.getBoolean("default", true));
+            } else if (annSection.contains("enabled")) {
+                ann.setDefaultAnnounce(annSection.getBoolean("enabled", true));
+            }
             if (annSection.contains("single")) {
                 ann.setSingleMessage(YamlMessage.parse(annSection.get("single")));
             }
@@ -251,7 +256,23 @@ public class CrateConfigParser {
 
             // Per-reward announce
             if (rewardSection.contains("announce")) {
-                reward.setAnnounceMessage(YamlMessage.parse(rewardSection.get("announce")));
+                if (rewardSection.isBoolean("announce")) {
+                    reward.setAnnounce(rewardSection.getBoolean("announce"));
+                } else {
+                    Object val = rewardSection.get("announce");
+                    if (val instanceof String str && (str.equalsIgnoreCase("true") || str.equalsIgnoreCase("false"))) {
+                        reward.setAnnounce(Boolean.parseBoolean(str));
+                    } else {
+                        // Legacy per-reward announce message support
+                        reward.setAnnouncementMessage(YamlMessage.parse(val));
+                    }
+                }
+            }
+
+            if (rewardSection.contains("announcement-message")) {
+                reward.setAnnouncementMessage(YamlMessage.parse(rewardSection.get("announcement-message")));
+            } else if (rewardSection.contains("announcement_message")) {
+                reward.setAnnouncementMessage(YamlMessage.parse(rewardSection.get("announcement_message")));
             }
 
             String requiredPermission = rewardSection.getString("required-permission");
@@ -371,6 +392,9 @@ public class CrateConfigParser {
         AnnounceConfig ann = crate.getAnnounceConfig();
         if (ann != null) {
             yaml.set("announce.to_everyone", ann.isToEveryone());
+            if (!ann.isDefaultAnnounce()) {
+                yaml.set("announce.default", false);
+            }
             yaml.set("announce.single", ann.getSingle());
             yaml.set("announce.multiple", ann.getMultiple());
             yaml.set("announce.multiple_item", ann.getMultipleItem());
@@ -428,7 +452,16 @@ public class CrateConfigParser {
             }
 
             if (reward.getCommands() != null) yaml.set(rewardKey + ".commands", reward.getCommands());
-            if (reward.getAnnounce() != null) yaml.set(rewardKey + ".announce", reward.getAnnounce());
+            if (reward.getAnnounce() != null) {
+                yaml.set(rewardKey + ".announce", reward.getAnnounce());
+            }
+            if (reward.getAnnouncementMessage() != null && !reward.getAnnouncementMessage().isEmpty()) {
+                if (reward.getAnnouncementMessageRaw() != null) {
+                    yaml.set(rewardKey + ".announcement-message", reward.getAnnouncementMessageRaw());
+                } else if (reward.getAnnouncementMessage().chat() != null && !reward.getAnnouncementMessage().chat().isEmpty()) {
+                    yaml.set(rewardKey + ".announcement-message", String.join("\n", reward.getAnnouncementMessage().chat()));
+                }
+            }
             if (reward.getRequiredPermission() != null) {
                 yaml.set(rewardKey + ".required-permission", reward.getRequiredPermission());
             }
