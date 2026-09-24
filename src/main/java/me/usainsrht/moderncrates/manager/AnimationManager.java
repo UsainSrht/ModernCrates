@@ -166,8 +166,8 @@ public class AnimationManager {
         // Give items
         if (reward.hasItems()) {
             for (RewardItem item : reward.getItems().values()) {
-                if (item.getMaterial() != null) {
-                    ItemStack stack = ItemBuilder.fromRewardItem(item);
+                ItemStack stack = ItemBuilder.fromRewardItem(item);
+                if (stack != null && !stack.getType().isAir()) {
                     Map<Integer, ItemStack> overflow = player.getInventory().addItem(stack);
                     // Drop overflow items at player location
                     overflow.values().forEach(dropped ->

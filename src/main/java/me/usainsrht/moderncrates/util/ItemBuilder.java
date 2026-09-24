@@ -98,7 +98,6 @@ public final class ItemBuilder {
         if (stack == null || stack.getType() == Material.AIR) {
             return rewardItem;
         }
-        rewardItem.setItemStack(stack.clone());
         rewardItem.setMaterial(stack.getType().name());
         rewardItem.setAmount(stack.getAmount());
 
@@ -114,6 +113,7 @@ public final class ItemBuilder {
             }
             rewardItem.setHideTooltip(meta.isHideTooltip());
         }
+        rewardItem.setItemStack(stack.clone());
         return rewardItem;
     }
 
@@ -122,7 +122,6 @@ public final class ItemBuilder {
         if (stack == null || stack.getType() == Material.AIR) {
             return display;
         }
-        display.setItemStack(stack.clone());
         display.setMaterial(stack.getType().name());
         display.setAmount(stack.getAmount());
 
@@ -138,6 +137,7 @@ public final class ItemBuilder {
             }
             display.setHideTooltip(meta.isHideTooltip());
         }
+        display.setItemStack(stack.clone());
         return display;
     }
 
@@ -264,7 +264,7 @@ public final class ItemBuilder {
                 .replaceText(b -> b.matchLiteral("%chance%").replacement(formattedChance));
     }
 
-    private static String componentToMiniMessage(Component component) {
+    public static String componentToMiniMessage(Component component) {
         if (component == null) return "";
         return MINI_MESSAGE.serialize(component);
     }
