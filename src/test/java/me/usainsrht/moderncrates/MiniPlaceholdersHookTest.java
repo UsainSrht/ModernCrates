@@ -90,6 +90,28 @@ public class MiniPlaceholdersHookTest {
         ItemTextOptions bracketsOpt = MiniPlaceholdersHook.parseOptions(itemStack, bracketsQueue);
         assertTrue(bracketsOpt.displayBrackets());
         assertFalse(bracketsOpt.hoverEnabled());
+
+        // Test show_one option
+        ArgumentQueue showOneQueue = mockQueue("show_one");
+        ItemTextOptions showOneOpt = MiniPlaceholdersHook.parseOptions(itemSingle, showOneQueue);
+        assertTrue(showOneOpt.showAmountWhenOne());
+
+        // Test no_sprite + show_one
+        ArgumentQueue noSpriteShowOneQueue = mockQueue("no_sprite", "show_one");
+        ItemTextOptions noSpriteShowOneOpt = MiniPlaceholdersHook.parseOptions(itemSingle, noSpriteShowOneQueue);
+        assertTrue(noSpriteShowOneOpt.showAmountWhenOne());
+        assertEquals("<subscript_number> <item_displayname>", noSpriteShowOneOpt.pattern());
+
+        // Test amount styles & direct number
+        ArgumentQueue amountQueue = mockQueue("superscript", "5");
+        ItemTextOptions amountOpt = MiniPlaceholdersHook.parseOptions(itemSingle, amountQueue);
+        assertEquals(me.usainsrht.itemapi.itemtext.AmountDisplay.SUPERSCRIPT, amountOpt.amountDisplay());
+        assertEquals(5, amountOpt.amount());
+
+        // Test custom pattern
+        ArgumentQueue patternQueue = mockQueue("pattern:<item_displayname> x<normal_number>");
+        ItemTextOptions patternOpt = MiniPlaceholdersHook.parseOptions(itemSingle, patternQueue);
+        assertEquals("<item_displayname> x<normal_number>", patternOpt.pattern());
     }
 
     @Test
@@ -135,6 +157,14 @@ public class MiniPlaceholdersHookTest {
         // Test with option flags: <moderncrates_crate_money:name_only>
         Component nameOnlyComp = mm.deserialize("<moderncrates_crate_money:name_only>");
         assertNotNull(nameOnlyComp);
+
+        // Test with show_one: <moderncrates_key:money:show_one>
+        Component showOneComp = mm.deserialize("<moderncrates_key:money:show_one>");
+        assertNotNull(showOneComp);
+
+        // Test with custom amount: <moderncrates_key:money:5>
+        Component customAmtComp = mm.deserialize("<moderncrates_key:money:5>");
+        assertNotNull(customAmtComp);
     }
 
     @Test

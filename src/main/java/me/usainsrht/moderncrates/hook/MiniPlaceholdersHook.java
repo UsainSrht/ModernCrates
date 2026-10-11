@@ -1,6 +1,7 @@
 package me.usainsrht.moderncrates.hook;
 
 import io.github.miniplaceholders.api.Expansion;
+import me.usainsrht.itemapi.itemtext.AmountDisplay;
 import me.usainsrht.itemapi.itemtext.ItemText;
 import me.usainsrht.itemapi.itemtext.ItemTextOptions;
 import me.usainsrht.moderncrates.ModernCratesPlugin;
@@ -31,11 +32,18 @@ import java.util.Locale;
  * Options supported:
  *  - no_sprite / nosprite / no-sprite : disables item icon/sprite
  *  - no_amount / noamount / no-amount : disables item amount display
- *  - name_only / text_only            : disables both sprite and amount (component name only)
- *  - sprite_only / icon_only          : outputs only the sprite icon
+ *  - name_only / text_only / name     : disables both sprite and amount (component name only)
+ *  - sprite_only / icon_only / sprite : outputs only the sprite icon
+ *  - show_one / show-one / force_amount : forces display of amount even when quantity is 1
+ *  - amount=<n> / amount:<n> / <n>    : overrides displayed amount
+ *  - subscript / superscript / normal : controls amount display notation
  *  - no_brackets / brackets           : controls bracket wrapping
  *  - no_hover / hover                 : controls tooltip hover events
- *  - amount=<n>                       : overrides displayed amount
+ *  - pattern=<pattern> / pattern:<pattern> : custom MiniMessage ItemText layout pattern
+ *  - rarity_color / no_rarity_color   : controls rarity color formatting
+ *  - custom_name / no_custom_name     : controls whether custom display name or translated name is used
+ *  - italic / no_italic               : controls italic formatting
+ *  - shadow / no_shadow               : controls text shadow rendering
  */
 public class MiniPlaceholdersHook {
 
@@ -282,28 +290,54 @@ public class MiniPlaceholdersHook {
         boolean includeSprite = true;
         boolean includeAmount = true;
         boolean spriteOnly = false;
+        boolean showAmountWhenOne = false;
+        AmountDisplay amountDisplay = null;
+        String customPattern = null;
         Boolean brackets = null;
         Boolean hover = null;
+        Boolean rarityColor = null;
+        Boolean customName = null;
+        Boolean italic = null;
+        Boolean shadow = null;
         Integer customAmount = null;
 
         while (queue != null && queue.hasNext()) {
-            String arg = queue.pop().value().toLowerCase(Locale.ROOT);
+            String rawArg = queue.pop().value();
+            String arg = rawArg.toLowerCase(Locale.ROOT);
             switch (arg) {
                 case "no_sprite", "nosprite", "no-sprite", "without_sprite", "without-sprite" -> includeSprite = false;
                 case "no_amount", "noamount", "no-amount", "without_amount", "without-amount" -> includeAmount = false;
-                case "name_only", "nameonly", "name-only", "text_only", "textonly", "text-only" -> {
+                case "name_only", "nameonly", "name-only", "text_only", "textonly", "text-only", "name", "text" -> {
                     includeSprite = false;
                     includeAmount = false;
                 }
-                case "sprite_only", "spriteonly", "sprite-only", "icon_only", "icononly", "icon-only" -> spriteOnly = true;
-                case "brackets", "with_brackets", "with-brackets" -> brackets = true;
+                case "sprite_only", "spriteonly", "sprite-only", "icon_only", "icononly", "icon-only", "sprite", "icon" -> spriteOnly = true;
+                case "show_one", "show-one", "show_amount_when_one", "show-amount-when-one", "force_amount" -> showAmountWhenOne = true;
+                case "subscript", "sub" -> amountDisplay = AmountDisplay.SUBSCRIPT;
+                case "superscript", "super" -> amountDisplay = AmountDisplay.SUPERSCRIPT;
+                case "normal", "normal_amount" -> amountDisplay = AmountDisplay.NORMAL;
+                case "brackets", "bracket", "with_brackets", "with-brackets" -> brackets = true;
                 case "no_brackets", "nobrackets", "no-brackets", "without_brackets", "without-brackets" -> brackets = false;
                 case "hover", "with_hover", "with-hover" -> hover = true;
                 case "no_hover", "nohover", "no-hover", "without_hover", "without-hover" -> hover = false;
+                case "rarity_color", "rarity-color", "display_rarity_color" -> rarityColor = true;
+                case "no_rarity_color", "no-rarity-color" -> rarityColor = false;
+                case "custom_name" -> customName = true;
+                case "no_custom_name", "translate" -> customName = false;
+                case "italic" -> italic = true;
+                case "no_italic" -> italic = false;
+                case "shadow" -> shadow = true;
+                case "no_shadow" -> shadow = false;
                 default -> {
                     if (arg.startsWith("amount=") || arg.startsWith("amount:")) {
                         try {
                             customAmount = Integer.parseInt(arg.substring(7));
+                        } catch (NumberFormatException ignored) {}
+                    } else if (arg.startsWith("pattern=") || arg.startsWith("pattern:")) {
+                        customPattern = rawArg.substring(8);
+                    } else if (arg.matches("-?\\d+")) {
+                        try {
+                            customAmount = Integer.parseInt(arg);
                         } catch (NumberFormatException ignored) {}
                     }
                 }
@@ -313,12 +347,14 @@ public class MiniPlaceholdersHook {
         ItemTextOptions.Builder builder = ItemTextOptions.builder();
         int amount = customAmount != null ? customAmount : (item != null ? item.getAmount() : 1);
 
-        if (spriteOnly) {
+        if (customPattern != null && !customPattern.isBlank()) {
+            builder.pattern(customPattern);
+        } else if (spriteOnly) {
             builder.pattern("<item_sprite>");
         } else if (!includeSprite && !includeAmount) {
             builder.pattern("<item_displayname>");
         } else if (!includeSprite) {
-            if (amount > 1) {
+            if (amount > 1 || showAmountWhenOne) {
                 builder.pattern("<subscript_number> <item_displayname>");
             } else {
                 builder.pattern("<item_displayname>");
@@ -327,11 +363,29 @@ public class MiniPlaceholdersHook {
             builder.pattern("<item_sprite> <item_displayname>");
         }
 
+        if (showAmountWhenOne) {
+            builder.showAmountWhenOne(true);
+        }
+        if (amountDisplay != null) {
+            builder.amountDisplay(amountDisplay);
+        }
         if (brackets != null) {
             builder.displayBrackets(brackets);
         }
         if (hover != null) {
             builder.hoverEnabled(hover);
+        }
+        if (rarityColor != null) {
+            builder.displayRarityColor(rarityColor);
+        }
+        if (customName != null) {
+            builder.displayCustomName(customName);
+        }
+        if (italic != null) {
+            builder.removeItalic(!italic);
+        }
+        if (shadow != null) {
+            builder.shadowEnabled(shadow);
         }
         if (customAmount != null) {
             builder.amount(customAmount);
