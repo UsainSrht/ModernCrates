@@ -62,6 +62,18 @@ messages:
   key_given:
     chat: "<green>Crate <dark_green><crate> <green>key given to <dark_green><player><green>!"
     sound: "entity.villager.yes"
+  virtual_key_given:
+    chat: "<green>Given <dark_green><amount> <green>virtual key(s) for <dark_green><crate> <green>to <dark_green><player><green>!"
+    sound: "entity.villager.yes"
+  virtual_key_taken:
+    chat: "<green>Removed <dark_green><amount> <green>virtual key(s) for <dark_green><crate> <green>from <dark_green><player><green>!"
+    sound: "entity.villager.yes"
+  virtual_key_set:
+    chat: "<green>Set virtual keys for <dark_green><crate> <green>to <dark_green><amount> <green>for <dark_green><player><green>!"
+    sound: "entity.villager.yes"
+  virtual_key_list_header: "<gold>Virtual Keys for <yellow><player><gold>:"
+  virtual_key_list_entry: " <gray>- <gold><crate>: <green><amount>"
+  virtual_key_list_empty: "<yellow><player> has no virtual keys."
   inventory_full_dropped: "<yellow>Your inventory was full! The crate <gold><crate> <yellow>was dropped at your feet."
   inventory_full_virtual_key: "<yellow>Your inventory was full! A virtual key for <gold><crate> <yellow>was added to your account instead."
   inventory_full_no_space: "<red>Your inventory is full! The item for <dark_red><crate> <red>could not be given."

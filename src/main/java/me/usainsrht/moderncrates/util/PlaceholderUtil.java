@@ -61,6 +61,16 @@ public final class PlaceholderUtil {
         return Placeholder.component(key, component != null ? component : Component.empty());
     }
 
+    private static volatile TagResolver fallbackTagResolver;
+
+    public static void setFallbackTagResolver(@Nullable TagResolver resolver) {
+        fallbackTagResolver = resolver;
+    }
+
+    public static @Nullable TagResolver getFallbackTagResolver() {
+        return fallbackTagResolver;
+    }
+
     /**
      * Combines custom tag resolvers with global and audience-aware MiniPlaceholders resolvers (if available).
      *
@@ -69,12 +79,16 @@ public final class PlaceholderUtil {
      * @return Array of combined {@link TagResolver}s.
      */
     public static @NotNull TagResolver[] combine(@Nullable Audience audience, @NotNull TagResolver... customResolvers) {
-        List<TagResolver> resolvers = new ArrayList<>(customResolvers.length + 3);
+        List<TagResolver> resolvers = new ArrayList<>(customResolvers.length + 4);
 
         for (TagResolver resolver : customResolvers) {
             if (resolver != null) {
                 resolvers.add(resolver);
             }
+        }
+
+        if (fallbackTagResolver != null) {
+            resolvers.add(fallbackTagResolver);
         }
 
         if (isMiniPlaceholdersAvailable()) {

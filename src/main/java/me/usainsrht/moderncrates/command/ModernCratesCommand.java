@@ -19,13 +19,16 @@ import me.usainsrht.moderncrates.gui.PlayerMenuGui;
 import me.usainsrht.moderncrates.gui.PreviewGui;
 import me.usainsrht.moderncrates.gui.editor.MainMenuGui;
 import me.usainsrht.moderncrates.util.PlaceholderUtil;
+import me.usainsrht.moderncrates.util.TextUtil;
 import me.usainsrht.yamlmessage.YamlMessage;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -123,7 +126,86 @@ public class ModernCratesCommand {
                                         .then(Commands.argument("player", ArgumentTypes.player())
                                                 .executes(this::handleGiveCrate)
                                                 .then(Commands.argument("amount", IntegerArgumentType.integer(1))
-                                                        .executes(this::handleGiveCrateAmount))))));
+                                                        .executes(this::handleGiveCrateAmount))))))
+
+                // /moderncrates virtualkey ...
+                .then(buildVirtualKeyCommand());
+    }
+
+    private LiteralArgumentBuilder<CommandSourceStack> buildVirtualKeyCommand() {
+        return Commands.literal("virtualkey")
+                .executes(this::handleVirtualKeyListSelf)
+
+                // list [player]
+                .then(Commands.literal("list")
+                        .executes(this::handleVirtualKeyListSelf)
+                        .then(Commands.argument("player", ArgumentTypes.player())
+                                .requires(src -> src.getSender().hasPermission("moderncrates.admin"))
+                                .executes(this::handleVirtualKeyList)))
+
+                // set <crate> <player> <amount>
+                .then(Commands.literal("set")
+                        .requires(src -> src.getSender().hasPermission("moderncrates.admin"))
+                        .then(Commands.argument("crate", StringArgumentType.word())
+                                .suggests(suggestCrates())
+                                .then(Commands.argument("player", ArgumentTypes.player())
+                                        .then(Commands.argument("amount", IntegerArgumentType.integer(0))
+                                                .executes(this::handleSetVirtualKey)))))
+
+                // give <crate> [player] [amount]
+                .then(Commands.literal("give")
+                        .requires(src -> src.getSender().hasPermission("moderncrates.admin"))
+                        .then(Commands.argument("crate", StringArgumentType.word())
+                                .suggests(suggestCrates())
+                                .executes(this::handleGiveVirtualKeySelf)
+                                .then(Commands.argument("player", ArgumentTypes.player())
+                                        .executes(this::handleGiveVirtualKey)
+                                        .then(Commands.argument("amount", IntegerArgumentType.integer(1))
+                                                .executes(this::handleGiveVirtualKeyAmount)))))
+
+                // add <crate> [player] [amount]
+                .then(Commands.literal("add")
+                        .requires(src -> src.getSender().hasPermission("moderncrates.admin"))
+                        .then(Commands.argument("crate", StringArgumentType.word())
+                                .suggests(suggestCrates())
+                                .executes(this::handleGiveVirtualKeySelf)
+                                .then(Commands.argument("player", ArgumentTypes.player())
+                                        .executes(this::handleGiveVirtualKey)
+                                        .then(Commands.argument("amount", IntegerArgumentType.integer(1))
+                                                .executes(this::handleGiveVirtualKeyAmount)))))
+
+                // take <crate> [player] [amount]
+                .then(Commands.literal("take")
+                        .requires(src -> src.getSender().hasPermission("moderncrates.admin"))
+                        .then(Commands.argument("crate", StringArgumentType.word())
+                                .suggests(suggestCrates())
+                                .executes(this::handleTakeVirtualKeySelf)
+                                .then(Commands.argument("player", ArgumentTypes.player())
+                                        .executes(this::handleTakeVirtualKey)
+                                        .then(Commands.argument("amount", IntegerArgumentType.integer(1))
+                                                .executes(this::handleTakeVirtualKeyAmount)))))
+
+                // remove <crate> [player] [amount]
+                .then(Commands.literal("remove")
+                        .requires(src -> src.getSender().hasPermission("moderncrates.admin"))
+                        .then(Commands.argument("crate", StringArgumentType.word())
+                                .suggests(suggestCrates())
+                                .executes(this::handleTakeVirtualKeySelf)
+                                .then(Commands.argument("player", ArgumentTypes.player())
+                                        .executes(this::handleTakeVirtualKey)
+                                        .then(Commands.argument("amount", IntegerArgumentType.integer(1))
+                                                .executes(this::handleTakeVirtualKeyAmount)))))
+
+                // rake <crate> [player] [amount]
+                .then(Commands.literal("rake")
+                        .requires(src -> src.getSender().hasPermission("moderncrates.admin"))
+                        .then(Commands.argument("crate", StringArgumentType.word())
+                                .suggests(suggestCrates())
+                                .executes(this::handleTakeVirtualKeySelf)
+                                .then(Commands.argument("player", ArgumentTypes.player())
+                                        .executes(this::handleTakeVirtualKey)
+                                        .then(Commands.argument("amount", IntegerArgumentType.integer(1))
+                                                .executes(this::handleTakeVirtualKeyAmount)))));
     }
 
     // --- Suggestion Providers ---
@@ -327,8 +409,163 @@ public class ModernCratesCommand {
         Crate crate = plugin.getCrateRegistry().get(crateId);
         if (crate == null) { sendNoCrate(ctx, crateId); return Command.SINGLE_SUCCESS; }
         plugin.getVirtualKeyManager().addKeys(target, crateId, amount);
-        sendKeyGiven(ctx, crate, target);
+        sendVirtualKeyGiven(ctx, crateId, crate, target, amount);
         return Command.SINGLE_SUCCESS;
+    }
+
+    // --- Take / Remove virtualkey ---
+    private int handleTakeVirtualKeySelf(CommandContext<CommandSourceStack> ctx) {
+        if (!(ctx.getSource().getSender() instanceof Player player)) {
+            PlaceholderUtil.send(YamlMessage.chat("<red>You must be a player or specify a target."), ctx.getSource().getSender());
+            return Command.SINGLE_SUCCESS;
+        }
+        return takeVirtualKey(ctx, player, 1);
+    }
+
+    private int handleTakeVirtualKey(CommandContext<CommandSourceStack> ctx) {
+        return takeVirtualKey(ctx, resolvePlayer(ctx, "player"), 1);
+    }
+
+    private int handleTakeVirtualKeyAmount(CommandContext<CommandSourceStack> ctx) {
+        return takeVirtualKey(ctx, resolvePlayer(ctx, "player"), IntegerArgumentType.getInteger(ctx, "amount"));
+    }
+
+    private int takeVirtualKey(CommandContext<CommandSourceStack> ctx, Player target, int amount) {
+        if (target == null) return Command.SINGLE_SUCCESS;
+        String crateId = StringArgumentType.getString(ctx, "crate");
+        Crate crate = plugin.getCrateRegistry().get(crateId);
+        if (crate == null && plugin.getVirtualKeyManager().getKeys(target, crateId) <= 0) {
+            sendNoCrate(ctx, crateId);
+            return Command.SINGLE_SUCCESS;
+        }
+        int current = plugin.getVirtualKeyManager().getKeys(target, crateId);
+        int taken = Math.min(current, amount);
+        plugin.getVirtualKeyManager().removeKeys(target, crateId, amount);
+        sendVirtualKeyTaken(ctx, crateId, crate, target, taken);
+        return Command.SINGLE_SUCCESS;
+    }
+
+    // --- Set virtualkey ---
+    private int handleSetVirtualKey(CommandContext<CommandSourceStack> ctx) {
+        Player target = resolvePlayer(ctx, "player");
+        if (target == null) return Command.SINGLE_SUCCESS;
+        String crateId = StringArgumentType.getString(ctx, "crate");
+        int amount = IntegerArgumentType.getInteger(ctx, "amount");
+        Crate crate = plugin.getCrateRegistry().get(crateId);
+        if (crate == null && plugin.getVirtualKeyManager().getKeys(target, crateId) <= 0 && amount > 0) {
+            sendNoCrate(ctx, crateId);
+            return Command.SINGLE_SUCCESS;
+        }
+        plugin.getVirtualKeyManager().setKeys(target, crateId, amount);
+        sendVirtualKeySet(ctx, crateId, crate, target, amount);
+        return Command.SINGLE_SUCCESS;
+    }
+
+    // --- List virtual keys ---
+    private int handleVirtualKeyListSelf(CommandContext<CommandSourceStack> ctx) {
+        if (!(ctx.getSource().getSender() instanceof Player player)) {
+            PlaceholderUtil.send(YamlMessage.chat("<red>You must be a player or specify a target player: /moderncrates virtualkey list <player>"), ctx.getSource().getSender());
+            return Command.SINGLE_SUCCESS;
+        }
+        return listVirtualKeys(ctx, player);
+    }
+
+    private int handleVirtualKeyList(CommandContext<CommandSourceStack> ctx) {
+        Player target = resolvePlayer(ctx, "player");
+        if (target == null) return Command.SINGLE_SUCCESS;
+        return listVirtualKeys(ctx, target);
+    }
+
+    private int listVirtualKeys(CommandContext<CommandSourceStack> ctx, Player target) {
+        Map<String, Integer> playerKeys = plugin.getVirtualKeyManager().getPlayerKeys(target.getUniqueId());
+        var sender = ctx.getSource().getSender();
+        if (playerKeys.isEmpty()) {
+            YamlMessage emptyMsg = plugin.getPluginConfig().getMessage("virtual_key_list_empty");
+            if (emptyMsg.isEmpty()) {
+                emptyMsg = YamlMessage.chat("<yellow><player> has no virtual keys.");
+            }
+            PlaceholderUtil.send(emptyMsg, sender, plugin.getPluginConfig().getPrefix(),
+                    PlaceholderUtil.parsed("player", target.getName()));
+            return Command.SINGLE_SUCCESS;
+        }
+
+        YamlMessage headerMsg = plugin.getPluginConfig().getMessage("virtual_key_list_header");
+        if (headerMsg.isEmpty()) {
+            headerMsg = YamlMessage.chat("<gold>Virtual Keys for <yellow><player><gold>:");
+        }
+        PlaceholderUtil.send(headerMsg, sender, plugin.getPluginConfig().getPrefix(),
+                PlaceholderUtil.parsed("player", target.getName()));
+
+        YamlMessage entryMsg = plugin.getPluginConfig().getMessage("virtual_key_list_entry");
+        boolean hasCustomEntry = !entryMsg.isEmpty();
+
+        for (Map.Entry<String, Integer> entry : playerKeys.entrySet()) {
+            String crateId = entry.getKey();
+            int amount = entry.getValue();
+            Crate crate = plugin.getCrateRegistry().get(crateId);
+            String crateDisplayName = crate != null ? crate.getName() : crateId + " <gray>(unloaded)";
+
+            if (hasCustomEntry) {
+                PlaceholderUtil.send(entryMsg, sender, null,
+                        buildVirtualKeyResolvers(target, crate, crateId, crateDisplayName, amount));
+            } else {
+                sender.sendMessage(TextUtil.parse(" <gray>- <gold>" + crateDisplayName + "<gray>: <green>" + amount));
+            }
+        }
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private TagResolver[] buildVirtualKeyResolvers(Player target, Crate crate, String crateId, String crateName, int amount) {
+        List<TagResolver> list = new ArrayList<>();
+        if (crate != null) {
+            list.addAll(List.of(PlaceholderUtil.crateResolvers(target, crate)));
+        } else {
+            list.add(PlaceholderUtil.parsed("player", target.getName()));
+            list.add(PlaceholderUtil.component("player_display", target.displayName()));
+            list.add(PlaceholderUtil.parsed("crate", crateName));
+            list.add(PlaceholderUtil.parsed("crate_id", crateId));
+        }
+        list.add(PlaceholderUtil.parsed("amount", String.valueOf(amount)));
+        return list.toArray(new TagResolver[0]);
+    }
+
+    private void sendVirtualKeyGiven(CommandContext<CommandSourceStack> ctx, String crateId, Crate crate, Player target, int amount) {
+        YamlMessage msg = plugin.getPluginConfig().getMessage("virtual_key_given");
+        if (msg.isEmpty()) {
+            msg = plugin.getPluginConfig().getMessage("key_given");
+        }
+        if (msg.isEmpty()) {
+            msg = YamlMessage.chat("<green>Given <dark_green><amount> <green>virtual key(s) for <dark_green><crate> <green>to <dark_green><player><green>!");
+        }
+        String crateName = crate != null ? crate.getName() : crateId;
+        PlaceholderUtil.send(msg,
+                ctx.getSource().getSender(), plugin.getPluginConfig().getPrefix(),
+                buildVirtualKeyResolvers(target, crate, crateId, crateName, amount));
+    }
+
+    private void sendVirtualKeyTaken(CommandContext<CommandSourceStack> ctx, String crateId, Crate crate, Player target, int amount) {
+        YamlMessage msg = plugin.getPluginConfig().getMessage("virtual_key_taken");
+        if (msg.isEmpty()) {
+            msg = plugin.getPluginConfig().getMessage("key_taken");
+        }
+        if (msg.isEmpty()) {
+            msg = YamlMessage.chat("<green>Removed <dark_green><amount> <green>virtual key(s) for <dark_green><crate> <green>from <dark_green><player><green>!");
+        }
+        String crateName = crate != null ? crate.getName() : crateId;
+        PlaceholderUtil.send(msg,
+                ctx.getSource().getSender(), plugin.getPluginConfig().getPrefix(),
+                buildVirtualKeyResolvers(target, crate, crateId, crateName, amount));
+    }
+
+    private void sendVirtualKeySet(CommandContext<CommandSourceStack> ctx, String crateId, Crate crate, Player target, int amount) {
+        YamlMessage msg = plugin.getPluginConfig().getMessage("virtual_key_set");
+        if (msg.isEmpty()) {
+            msg = YamlMessage.chat("<green>Set virtual keys for <dark_green><crate> <green>to <dark_green><amount> <green>for <dark_green><player><green>!");
+        }
+        String crateName = crate != null ? crate.getName() : crateId;
+        PlaceholderUtil.send(msg,
+                ctx.getSource().getSender(), plugin.getPluginConfig().getPrefix(),
+                buildVirtualKeyResolvers(target, crate, crateId, crateName, amount));
     }
 
     // --- Give crate item (self) ---

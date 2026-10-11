@@ -19,6 +19,7 @@ import me.usainsrht.moderncrates.config.PluginConfig;
 import me.usainsrht.moderncrates.listener.CrateInteractListener;
 import me.usainsrht.moderncrates.listener.GuiListener;
 import me.usainsrht.moderncrates.listener.PlayerListener;
+import me.usainsrht.moderncrates.hook.MiniPlaceholdersHook;
 import me.usainsrht.moderncrates.manager.AnimationManager;
 import me.usainsrht.moderncrates.manager.HologramManager;
 import me.usainsrht.moderncrates.manager.KeyManager;
@@ -64,6 +65,7 @@ public class ModernCratesPlugin extends JavaPlugin {
     private KeyManager keyManager;
     private VirtualKeyManager virtualKeyManager;
     private HologramManager hologramManager;
+    private MiniPlaceholdersHook miniPlaceholdersHook;
 
 
     // API
@@ -140,6 +142,11 @@ public class ModernCratesPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new CrateInteractListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
 
+        // Initialize MiniPlaceholders expansion
+        miniPlaceholdersHook = new MiniPlaceholdersHook(this);
+        miniPlaceholdersHook.register();
+        PlaceholderUtil.setFallbackTagResolver(miniPlaceholdersHook.createTagResolver());
+
         // Set up API
         apiImpl = new ModernCratesAPIImpl();
         ModernCratesProvider.set(apiImpl);
@@ -159,7 +166,12 @@ public class ModernCratesPlugin extends JavaPlugin {
         animationManager.cancelAll();
 
         // Save virtual keys
-        virtualKeyManager.save();
+        virtualKeyManager.shutdown();
+
+        // Unregister MiniPlaceholders
+        if (miniPlaceholdersHook != null) {
+            miniPlaceholdersHook.unregister();
+        }
 
         // Remove holograms
         hologramManager.removeAll();
@@ -247,11 +259,19 @@ public class ModernCratesPlugin extends JavaPlugin {
         loadCrates();
 
         // Reload virtual keys
-        virtualKeyManager.save();
+        if (virtualKeyManager.isModified()) {
+            virtualKeyManager.saveSync();
+        }
         virtualKeyManager.load();
 
         // Refresh holograms
         hologramManager.refreshAll(crateRegistry);
+
+        // Refresh MiniPlaceholders expansion
+        if (miniPlaceholdersHook != null) {
+            miniPlaceholdersHook.register();
+            PlaceholderUtil.setFallbackTagResolver(miniPlaceholdersHook.createTagResolver());
+        }
     }
 
     /**
@@ -360,6 +380,7 @@ public class ModernCratesPlugin extends JavaPlugin {
     public KeyManager getKeyManager() { return keyManager; }
     public VirtualKeyManager getVirtualKeyManager() { return virtualKeyManager; }
     public HologramManager getHologramManager() { return hologramManager; }
+    public MiniPlaceholdersHook getMiniPlaceholdersHook() { return miniPlaceholdersHook; }
 
 
     // --- API Implementation ---
@@ -460,6 +481,21 @@ public class ModernCratesPlugin extends JavaPlugin {
         @Override
         public void setVirtualKeys(Player player, String crateId, int amount) {
             virtualKeyManager.setKeys(player, crateId, amount);
+        }
+
+        @Override
+        public void addVirtualKeys(Player player, String crateId, int amount) {
+            virtualKeyManager.addKeys(player, crateId, amount);
+        }
+
+        @Override
+        public boolean removeVirtualKeys(Player player, String crateId, int amount) {
+            return virtualKeyManager.removeKeys(player, crateId, amount);
+        }
+
+        @Override
+        public Map<String, Integer> getVirtualKeys(Player player) {
+            return virtualKeyManager.getPlayerKeys(player.getUniqueId());
         }
     }
 }

@@ -67,6 +67,21 @@ public interface ModernCratesAPI {
 
     void setVirtualKeys(Player player, String crateId, int amount);
 
+    default void addVirtualKeys(Player player, String crateId, int amount) {
+        setVirtualKeys(player, crateId, getVirtualKeys(player, crateId) + amount);
+    }
+
+    default boolean removeVirtualKeys(Player player, String crateId, int amount) {
+        int current = getVirtualKeys(player, crateId);
+        if (current <= 0) return false;
+        setVirtualKeys(player, crateId, Math.max(0, current - amount));
+        return true;
+    }
+
+    default java.util.Map<String, Integer> getVirtualKeys(Player player) {
+        return java.util.Map.of();
+    }
+
     // ========================
     // Provider
     // ========================
